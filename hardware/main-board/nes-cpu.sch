@@ -1,0 +1,2075 @@
+EESchema Schematic File Version 2
+LIBS:nes
+LIBS:ac-dc
+LIBS:adc-dac
+LIBS:Altera
+LIBS:analog_devices
+LIBS:analog_switches
+LIBS:atmel
+LIBS:audio
+LIBS:Battery_Management
+LIBS:bbd
+LIBS:Bosch
+LIBS:brooktre
+LIBS:Connector
+LIBS:contrib
+LIBS:cypress
+LIBS:dc-dc
+LIBS:Decawave
+LIBS:device
+LIBS:digital-audio
+LIBS:Diode
+LIBS:Display
+LIBS:driver_gate
+LIBS:dsp
+LIBS:DSP_Microchip_DSPIC33
+LIBS:elec-unifil
+LIBS:ESD_Protection
+LIBS:Espressif
+LIBS:FPGA_Actel
+LIBS:ftdi
+LIBS:gennum
+LIBS:Graphic
+LIBS:hc11
+LIBS:infineon
+LIBS:intel
+LIBS:interface
+LIBS:intersil
+LIBS:ir
+LIBS:Lattice
+LIBS:LED
+LIBS:LEM
+LIBS:linear
+LIBS:Logic_74xgxx
+LIBS:Logic_74xx
+LIBS:Logic_CMOS_4000
+LIBS:Logic_CMOS_IEEE
+LIBS:logic_programmable
+LIBS:Logic_TTL_IEEE
+LIBS:maxim
+LIBS:MCU_Microchip_PIC10
+LIBS:MCU_Microchip_PIC12
+LIBS:MCU_Microchip_PIC16
+LIBS:MCU_Microchip_PIC18
+LIBS:MCU_Microchip_PIC24
+LIBS:MCU_Microchip_PIC32
+LIBS:MCU_NXP_Kinetis
+LIBS:MCU_NXP_LPC
+LIBS:MCU_NXP_S08
+LIBS:MCU_Parallax
+LIBS:MCU_ST_STM8
+LIBS:MCU_ST_STM32
+LIBS:MCU_Texas_MSP430
+LIBS:Mechanical
+LIBS:memory
+LIBS:microchip
+LIBS:microcontrollers
+LIBS:modules
+LIBS:Motor
+LIBS:motor_drivers
+LIBS:motorola
+LIBS:nordicsemi
+LIBS:nxp
+LIBS:onsemi
+LIBS:opto
+LIBS:Oscillators
+LIBS:philips
+LIBS:power
+LIBS:powerint
+LIBS:Power_Management
+LIBS:pspice
+LIBS:references
+LIBS:regul
+LIBS:Relay
+LIBS:RF_Bluetooth
+LIBS:rfcom
+LIBS:RFSolutions
+LIBS:Sensor_Current
+LIBS:Sensor_Humidity
+LIBS:sensors
+LIBS:silabs
+LIBS:siliconi
+LIBS:supertex
+LIBS:Switch
+LIBS:texas
+LIBS:Transformer
+LIBS:Transistor
+LIBS:triac_thyristor
+LIBS:Valve
+LIBS:video
+LIBS:wiznet
+LIBS:Worldsemi
+LIBS:Xicor
+LIBS:xilinx
+LIBS:xilinx-artix7
+LIBS:xilinx-kintex7
+LIBS:xilinx-spartan6
+LIBS:xilinx-virtex5
+LIBS:xilinx-virtex6
+LIBS:xilinx-virtex7
+LIBS:zetex
+LIBS:Zilog
+LIBS:ESP32-footprints-Shem-Lib
+LIBS:nes-cache
+EELAYER 25 0
+EELAYER END
+$Descr USLetter 11000 8500
+encoding utf-8
+Sheet 2 3
+Title "Nestronic Game Music Synthesizer"
+Date "2018-03-13"
+Rev "A"
+Comp "LogicProbe.org"
+Comment1 "Derek Konigsberg"
+Comment2 "NES CPU Schematic"
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L RP2A03 U4
+U 1 1 5A42CBDB
+P 2950 2350
+F 0 "U4" H 2950 2425 60  0000 C CNN
+F 1 "RP2A03" H 2950 2275 60  0000 C CNN
+F 2 "Package_DIP:DIP-40_W15.24mm_Socket" H 2950 1900 60  0001 C CNN
+F 3 "http://www.nesdev.com/2A03%20technical%20reference.txt" H 2950 1900 60  0001 C CNN
+F 4 "RICOH RP2A03H CPU" H 2950 2350 60  0001 C CNN "Description"
+F 5 "Ricoh" H 2950 2350 60  0001 C CNN "Manufacturer"
+F 6 "RP2A03H" H 2950 2350 60  0001 C CNN "Manufacturer PN"
+F 7 "MikesArcade.com" H 2950 2350 60  0001 C CNN "Supplier"
+F 8 "RP2A03" H 2950 2350 60  0001 C CNN "Supplier PN"
+	1    2950 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Crystal Y1
+U 1 1 5A42CCD1
+P 800 4450
+F 0 "Y1" H 800 4600 50  0000 C CNN
+F 1 "21.5 MHz" H 800 4300 50  0000 C CNN
+F 2 "Crystal:Crystal_HC49-4H_Vertical" H 800 4450 50  0001 C CNN
+F 3 "http://www.ecsxtal.com/store/pdf/hc_49us.pdf" H 800 4450 50  0001 C CNN
+F 4 "CRYSTAL 21.47727MHZ SERIES T/H" H 800 4450 60  0001 C CNN "Description"
+F 5 "ECS-214.7-S-4" H 800 4450 60  0001 C CNN "Manufacturer PN"
+F 6 "ECS Inc." H 800 4450 60  0001 C CNN "Manufacturer"
+F 7 "X044-ND" H 800 4450 60  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 800 4450 60  0001 C CNN "Supplier"
+	1    800  4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L SN74LVC1404 U3
+U 1 1 5A42CA23
+P 1800 4200
+F 0 "U3" H 1800 4500 60  0000 C CNN
+F 1 "74LVC1404" H 1800 3900 60  0000 C CNN
+F 2 "Package_SO:MSOP-8_3x3mm_P0.65mm" H 1800 4450 60  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74lvc1404.pdf" H 1200 4350 60  0001 C CNN
+F 4 "IC OSCILLATOR DRIVER SM8" H 1800 4200 60  0001 C CNN "Description"
+F 5 "Texas Instruments" H 1800 4200 60  0001 C CNN "Manufacturer"
+F 6 "SN74LVC1404DCTR" H 1800 4200 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1800 4200 60  0001 C CNN "Supplier"
+F 8 "296-17257-1-ND" H 1800 4200 60  0001 C CNN "Supplier PN"
+	1    1800 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C5
+U 1 1 5A42D077
+P 600 4800
+F 0 "C5" H 625 4900 50  0000 L CNN
+F 1 "30pF" H 625 4700 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 638 4650 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C300JBANNNC.jsp" H 600 4800 50  0001 C CNN
+F 4 "CAP CER 30PF 50V C0G/NP0 0805" H 600 4800 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 600 4800 60  0001 C CNN "Manufacturer"
+F 6 "CL21C300JBANNNC" H 600 4800 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 625 5000 50  0001 C CNN "Supplier"
+F 8 "1276-1130-1-ND" H 600 4800 60  0001 C CNN "Supplier PN"
+	1    600  4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C7
+U 1 1 5A42D1DC
+P 1000 4800
+F 0 "C7" H 1025 4900 50  0000 L CNN
+F 1 "30pF" H 1025 4700 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 1038 4650 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C300JBANNNC.jsp" H 1000 4800 50  0001 C CNN
+F 4 "CAP CER 30PF 50V C0G/NP0 0805" H 1000 4800 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 1000 4800 60  0001 C CNN "Manufacturer"
+F 6 "CL21C300JBANNNC" H 1000 4800 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1025 5000 50  0001 C CNN "Supplier"
+F 8 "1276-1130-1-ND" H 1000 4800 60  0001 C CNN "Supplier PN"
+	1    1000 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R5
+U 1 1 5A42D259
+P 800 4150
+F 0 "R5" V 880 4150 50  0000 C CNN
+F 1 "1k" V 800 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 730 4150 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20037/rcae3.pdf" H 800 4150 50  0001 C CNN
+F 4 "RES SMD 1K OHM 5% 1/8W 0805" H 800 4150 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 800 4150 60  0001 C CNN "Manufacturer"
+F 6 "RCA08051K00JNEA" H 800 4150 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 880 4250 50  0001 C CNN "Supplier"
+F 8 "541-2235-1-ND" H 800 4150 60  0001 C CNN "Supplier PN"
+	1    800  4150
+	0    1    -1   0   
+$EndComp
+$Comp
+L R R6
+U 1 1 5A42D310
+P 1100 4300
+F 0 "R6" V 1180 4300 50  0000 C CNN
+F 1 "2.2M" V 1100 4300 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 1030 4300 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1100 4300 50  0001 C CNN
+F 4 "RES SMD 2.2M OHM 5% 1/8W 0805" H 1100 4300 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1100 4300 60  0001 C CNN "Manufacturer"
+F 6 "CRCW08052M20JNEA" H 1100 4300 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1180 4400 50  0001 C CNN "Supplier"
+F 8 "541-2.2MACT-ND" H 1100 4300 60  0001 C CNN "Supplier PN"
+	1    1100 4300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR011
+U 1 1 5A42E288
+P 600 5000
+F 0 "#PWR011" H 600 4750 50  0001 C CNN
+F 1 "GND" H 600 4850 50  0000 C CNN
+F 2 "" H 600 5000 50  0001 C CNN
+F 3 "" H 600 5000 50  0001 C CNN
+	1    600  5000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR012
+U 1 1 5A42E2AA
+P 1000 5000
+F 0 "#PWR012" H 1000 4750 50  0001 C CNN
+F 1 "GND" H 1000 4850 50  0000 C CNN
+F 2 "" H 1000 5000 50  0001 C CNN
+F 3 "" H 1000 5000 50  0001 C CNN
+	1    1000 5000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR013
+U 1 1 5A42E393
+P 1300 4500
+F 0 "#PWR013" H 1300 4250 50  0001 C CNN
+F 1 "GND" H 1300 4350 50  0000 C CNN
+F 2 "" H 1300 4500 50  0001 C CNN
+F 3 "" H 1300 4500 50  0001 C CNN
+	1    1300 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR014
+U 1 1 5A42E5C6
+P 2500 4050
+F 0 "#PWR014" H 2500 3900 50  0001 C CNN
+F 1 "+5V" H 2500 4190 50  0000 C CNN
+F 2 "" H 2500 4050 50  0001 C CNN
+F 3 "" H 2500 4050 50  0001 C CNN
+	1    2500 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR015
+U 1 1 5A42E707
+P 1300 4000
+F 0 "#PWR015" H 1300 3850 50  0001 C CNN
+F 1 "+5V" H 1300 4140 50  0000 C CNN
+F 2 "" H 1300 4000 50  0001 C CNN
+F 3 "" H 1300 4000 50  0001 C CNN
+	1    1300 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L AS6C6264 U7
+U 1 1 5A42FB92
+P 6250 1950
+F 0 "U7" H 6250 2150 60  0000 C CNN
+F 1 "AS6C6264" H 6250 1950 60  0000 C CNN
+F 2 "Package_SO:SOIC-28W_7.5x17.9mm_P1.27mm" H 6250 1950 60  0001 C CNN
+F 3 "https://www.alliancememory.com/wp-content/uploads/pdf/Alliance%20Memory_64K_AS6C6264v2.0July2017.pdf" H 6250 1950 60  0001 C CNN
+F 4 "IC SRAM 64KBIT 55NS 28SOP" H 6250 1950 60  0001 C CNN "Description"
+F 5 "Alliance Memory, Inc." H 6250 1950 60  0001 C CNN "Manufacturer"
+F 6 "AS6C6264-55SCN" H 6250 1950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6250 1950 60  0001 C CNN "Supplier"
+F 8 "1450-1037-ND" H 6250 1950 60  0001 C CNN "Supplier PN"
+	1    6250 1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L AT28C64B U9
+U 1 1 5A431349
+P 7950 1950
+F 0 "U9" H 7950 2150 50  0000 C CNN
+F 1 "AT28C64B" H 7950 1950 50  0000 C CNN
+F 2 "Package_DIP:DIP-28_W15.24mm_Socket" H 7950 1950 50  0001 C CNN
+F 3 "http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en589327" H 7950 1950 50  0001 C CNN
+F 4 "IC EEPROM 64KBIT 150NS 28DIP" H 7950 1950 60  0001 C CNN "Description"
+F 5 "Microchip Technology" H 7950 1950 60  0001 C CNN "Manufacturer"
+F 6 "AT28C64B-15PU" H 7950 1950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 7950 1950 60  0001 C CNN "Supplier"
+F 8 "AT28C64B-15PU-ND" H 7950 1950 60  0001 C CNN "Supplier PN"
+	1    7950 1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HCT138 U5
+U 1 1 5A4327EF
+P 4650 1500
+F 0 "U5" H 4750 2000 50  0000 C CNN
+F 1 "74HCT138" H 4350 2000 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 4650 1500 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct138.pdf" H 4650 1500 50  0001 C CNN
+F 4 "IC 3-8 LINE DECODER/DEMUX 16-SOIC" H 4650 1500 60  0001 C CNN "Description"
+F 5 "SN74HCT138DR" H 4650 1500 60  0001 C CNN "Manufacturer PN"
+F 6 "Texas Instruments" H 4650 1500 60  0001 C CNN "Manufacturer"
+F 7 "296-14863-1-ND" H 4650 1500 60  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 4650 1500 60  0001 C CNN "Supplier"
+	1    4650 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C8
+U 1 1 5A46D33E
+P 2500 4200
+F 0 "C8" H 2525 4300 50  0000 L CNN
+F 1 "0.1uF" H 2525 4100 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 2538 4050 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 2500 4200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 2525 4400 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 2525 4400 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 2525 4400 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 2525 4400 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 2525 4400 50  0001 C CNN "Supplier"
+	1    2500 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR016
+U 1 1 5A46D3B2
+P 2500 4350
+F 0 "#PWR016" H 2500 4100 50  0001 C CNN
+F 1 "GND" H 2500 4200 50  0000 C CNN
+F 2 "" H 2500 4350 50  0001 C CNN
+F 3 "" H 2500 4350 50  0001 C CNN
+	1    2500 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR017
+U 1 1 5A46E69F
+P 2950 800
+F 0 "#PWR017" H 2950 650 50  0001 C CNN
+F 1 "+5V" H 2950 940 50  0000 C CNN
+F 2 "" H 2950 800 50  0001 C CNN
+F 3 "" H 2950 800 50  0001 C CNN
+	1    2950 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C9
+U 1 1 5A46E6A5
+P 3150 850
+F 0 "C9" H 3175 950 50  0000 L CNN
+F 1 "0.1uF" H 3175 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3188 700 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 3150 850 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 3150 850 60  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 3150 850 60  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 3150 850 60  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 3150 850 60  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 3150 850 60  0001 C CNN "Supplier"
+	1    3150 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR018
+U 1 1 5A46E6AB
+P 3300 850
+F 0 "#PWR018" H 3300 600 50  0001 C CNN
+F 1 "GND" H 3300 700 50  0000 C CNN
+F 2 "" H 3300 850 50  0001 C CNN
+F 3 "" H 3300 850 50  0001 C CNN
+	1    3300 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR019
+U 1 1 5A46E6FF
+P 2950 3850
+F 0 "#PWR019" H 2950 3600 50  0001 C CNN
+F 1 "GND" H 2950 3700 50  0000 C CNN
+F 2 "" H 2950 3850 50  0001 C CNN
+F 3 "" H 2950 3850 50  0001 C CNN
+	1    2950 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR020
+U 1 1 5A477CAF
+P 4150 1900
+F 0 "#PWR020" H 4150 1650 50  0001 C CNN
+F 1 "GND" H 4150 1750 50  0000 C CNN
+F 2 "" H 4150 1900 50  0001 C CNN
+F 3 "" H 4150 1900 50  0001 C CNN
+	1    4150 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR021
+U 1 1 5A47A798
+P 6250 800
+F 0 "#PWR021" H 6250 650 50  0001 C CNN
+F 1 "+5V" H 6250 940 50  0000 C CNN
+F 2 "" H 6250 800 50  0001 C CNN
+F 3 "" H 6250 800 50  0001 C CNN
+	1    6250 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR022
+U 1 1 5A47A7C7
+P 7950 800
+F 0 "#PWR022" H 7950 650 50  0001 C CNN
+F 1 "+5V" H 7950 940 50  0000 C CNN
+F 2 "" H 7950 800 50  0001 C CNN
+F 3 "" H 7950 800 50  0001 C CNN
+	1    7950 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C15
+U 1 1 5A47A7F6
+P 6450 850
+F 0 "C15" H 6475 950 50  0000 L CNN
+F 1 "0.1uF" H 6475 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 6488 700 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 6450 850 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 6475 1050 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 6475 1050 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 6475 1050 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 6475 1050 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 6475 1050 50  0001 C CNN "Supplier"
+	1    6450 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L C C17
+U 1 1 5A47A8AB
+P 8150 850
+F 0 "C17" H 8175 950 50  0000 L CNN
+F 1 "0.1uF" H 8175 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 8188 700 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 8150 850 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 8175 1050 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 8175 1050 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 8175 1050 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 8175 1050 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 8175 1050 50  0001 C CNN "Supplier"
+	1    8150 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR023
+U 1 1 5A47A925
+P 6600 850
+F 0 "#PWR023" H 6600 600 50  0001 C CNN
+F 1 "GND" H 6600 700 50  0000 C CNN
+F 2 "" H 6600 850 50  0001 C CNN
+F 3 "" H 6600 850 50  0001 C CNN
+	1    6600 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR024
+U 1 1 5A47A95A
+P 8300 850
+F 0 "#PWR024" H 8300 600 50  0001 C CNN
+F 1 "GND" H 8300 700 50  0000 C CNN
+F 2 "" H 8300 850 50  0001 C CNN
+F 3 "" H 8300 850 50  0001 C CNN
+	1    8300 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR025
+U 1 1 5A47A98F
+P 6250 3050
+F 0 "#PWR025" H 6250 2800 50  0001 C CNN
+F 1 "GND" H 6250 2900 50  0000 C CNN
+F 2 "" H 6250 3050 50  0001 C CNN
+F 3 "" H 6250 3050 50  0001 C CNN
+	1    6250 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR026
+U 1 1 5A47AFBA
+P 7950 3050
+F 0 "#PWR026" H 7950 2800 50  0001 C CNN
+F 1 "GND" H 7950 2900 50  0000 C CNN
+F 2 "" H 7950 3050 50  0001 C CNN
+F 3 "" H 7950 3050 50  0001 C CNN
+	1    7950 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR027
+U 1 1 5A4822A6
+P 4650 2150
+F 0 "#PWR027" H 4650 1900 50  0001 C CNN
+F 1 "GND" H 4650 2000 50  0000 C CNN
+F 2 "" H 4650 2150 50  0001 C CNN
+F 3 "" H 4650 2150 50  0001 C CNN
+	1    4650 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR028
+U 1 1 5A4822DB
+P 4650 800
+F 0 "#PWR028" H 4650 650 50  0001 C CNN
+F 1 "+5V" H 4650 940 50  0000 C CNN
+F 2 "" H 4650 800 50  0001 C CNN
+F 3 "" H 4650 800 50  0001 C CNN
+	1    4650 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C11
+U 1 1 5A482604
+P 4850 850
+F 0 "C11" H 4875 950 50  0000 L CNN
+F 1 "0.1uF" H 4875 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 4888 700 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 4850 850 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 4850 850 60  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 4850 850 60  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 4850 850 60  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 4850 850 60  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 4850 850 60  0001 C CNN "Supplier"
+	1    4850 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR029
+U 1 1 5A4826E0
+P 5000 850
+F 0 "#PWR029" H 5000 600 50  0001 C CNN
+F 1 "GND" H 5000 700 50  0000 C CNN
+F 2 "" H 5000 850 50  0001 C CNN
+F 3 "" H 5000 850 50  0001 C CNN
+	1    5000 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR030
+U 1 1 5A482A40
+P 5750 3050
+F 0 "#PWR030" H 5750 2900 50  0001 C CNN
+F 1 "+5V" H 5750 3190 50  0000 C CNN
+F 2 "" H 5750 3050 50  0001 C CNN
+F 3 "" H 5750 3050 50  0001 C CNN
+	1    5750 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR031
+U 1 1 5A482A78
+P 5450 2700
+F 0 "#PWR031" H 5450 2450 50  0001 C CNN
+F 1 "GND" H 5450 2550 50  0000 C CNN
+F 2 "" H 5450 2700 50  0001 C CNN
+F 3 "" H 5450 2700 50  0001 C CNN
+	1    5450 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR032
+U 1 1 5A482B38
+P 7350 2850
+F 0 "#PWR032" H 7350 2600 50  0001 C CNN
+F 1 "GND" H 7350 2700 50  0000 C CNN
+F 2 "" H 7350 2850 50  0001 C CNN
+F 3 "" H 7350 2850 50  0001 C CNN
+	1    7350 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR033
+U 1 1 5A482F45
+P 3700 2950
+F 0 "#PWR033" H 3700 2700 50  0001 C CNN
+F 1 "GND" H 3700 2800 50  0000 C CNN
+F 2 "" H 3700 2950 50  0001 C CNN
+F 3 "" H 3700 2950 50  0001 C CNN
+	1    3700 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR034
+U 1 1 5A483009
+P 3950 2150
+F 0 "#PWR034" H 3950 2000 50  0001 C CNN
+F 1 "+5V" H 3950 2290 50  0000 C CNN
+F 2 "" H 3950 2150 50  0001 C CNN
+F 3 "" H 3950 2150 50  0001 C CNN
+	1    3950 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R8
+U 1 1 5A483034
+P 3800 2200
+F 0 "R8" V 3880 2200 50  0000 C CNN
+F 1 "4.7k" V 3800 2200 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3730 2200 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3800 2200 50  0001 C CNN
+F 4 "RES SMD 4.7K OHM 5% 1/8W 0805" H 3800 2200 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3800 2200 60  0001 C CNN "Manufacturer"
+F 6 "CRCW08054K70JNEA" H 3800 2200 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3880 2300 50  0001 C CNN "Supplier"
+F 8 "541-4.7KACT-ND" H 3800 2200 60  0001 C CNN "Supplier PN"
+	1    3800 2200
+	0    1    1    0   
+$EndComp
+$Comp
+L R R10
+U 1 1 5A4830BB
+P 4100 2450
+F 0 "R10" V 4180 2450 50  0000 C CNN
+F 1 "4.7k" V 4100 2450 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4030 2450 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4100 2450 50  0001 C CNN
+F 4 "RES SMD 4.7K OHM 5% 1/8W 0805" H 4100 2450 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4100 2450 60  0001 C CNN "Manufacturer"
+F 6 "CRCW08054K70JNEA" H 4100 2450 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4180 2550 50  0001 C CNN "Supplier"
+F 8 "541-4.7KACT-ND" H 4100 2450 60  0001 C CNN "Supplier PN"
+	1    4100 2450
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW1
+U 1 1 5A48429A
+P 750 1300
+F 0 "SW1" H 800 1400 50  0000 L CNN
+F 1 "NES Reset" H 750 1240 50  0000 C CNN
+F 2 "Button_Switch_SMD:SW_SPST_FSMSM" H 750 1500 50  0001 C CNN
+F 3 "http://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1437566-3&DocType=Customer+Drawing&DocLang=English" H 750 1500 50  0001 C CNN
+F 4 "SWITCH TACTILE SPST-NO 0.05A 24V" H 750 1300 60  0001 C CNN "Description"
+F 5 "TE Connectivity" H 750 1300 60  0001 C CNN "Manufacturer"
+F 6 "FSMSM" H 750 1300 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 750 1300 60  0001 C CNN "Supplier"
+F 8 "450-1140-ND" H 750 1300 60  0001 C CNN "Supplier PN"
+	1    750  1300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L CP C6
+U 1 1 5A48437B
+P 1000 1300
+F 0 "C6" H 1025 1400 50  0000 L CNN
+F 1 "0.47uF" H 1025 1200 50  0000 L CNN
+F 2 "Capacitor_Tantalum_SMD:CP_EIA-2012-12_Kemet-R" H 1038 1150 50  0001 C CNN
+F 3 "http://datasheets.avx.com/TAJ_LOW_PROFILE.pdf" H 1000 1300 50  0001 C CNN
+F 4 "CAP TANT 0.47UF 20V 20% 0805" H 1000 1300 60  0001 C CNN "Description"
+F 5 "AVX Corporation" H 1000 1300 60  0001 C CNN "Manufacturer"
+F 6 "TAJR474M020RNJ" H 1000 1300 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1025 1500 50  0001 C CNN "Supplier"
+F 8 "478-8931-1-ND" H 1000 1300 60  0001 C CNN "Supplier PN"
+	1    1000 1300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR035
+U 1 1 5A484C55
+P 750 1550
+F 0 "#PWR035" H 750 1300 50  0001 C CNN
+F 1 "GND" H 750 1400 50  0000 C CNN
+F 2 "" H 750 1550 50  0001 C CNN
+F 3 "" H 750 1550 50  0001 C CNN
+	1    750  1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R9
+U 1 1 5A487499
+P 3900 3750
+F 0 "R9" V 3980 3750 50  0000 C CNN
+F 1 "100" V 3900 3750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3830 3750 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3900 3750 50  0001 C CNN
+F 4 "RES SMD 100 OHM 5% 1/8W 0805" H 3900 3750 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3900 3750 60  0001 C CNN "Manufacturer"
+F 6 "CRCW0805100RJNEA" H 3900 3750 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3980 3850 50  0001 C CNN "Supplier"
+F 8 "541-100ACT-ND" H 3900 3750 60  0001 C CNN "Supplier PN"
+	1    3900 3750
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R7
+U 1 1 5A487552
+P 3700 3750
+F 0 "R7" V 3780 3750 50  0000 C CNN
+F 1 "100" V 3700 3750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3630 3750 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3700 3750 50  0001 C CNN
+F 4 "RES SMD 100 OHM 5% 1/8W 0805" H 3700 3750 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3700 3750 60  0001 C CNN "Manufacturer"
+F 6 "CRCW0805100RJNEA" H 3700 3750 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3780 3850 50  0001 C CNN "Supplier"
+F 8 "541-100ACT-ND" H 3700 3750 60  0001 C CNN "Supplier PN"
+	1    3700 3750
+	-1   0    0    1   
+$EndComp
+$Comp
+L GND #PWR036
+U 1 1 5A48770F
+P 3800 3950
+F 0 "#PWR036" H 3800 3700 50  0001 C CNN
+F 1 "GND" H 3800 3800 50  0000 C CNN
+F 2 "" H 3800 3950 50  0001 C CNN
+F 3 "" H 3800 3950 50  0001 C CNN
+	1    3800 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR037
+U 1 1 5A4A80C4
+P 7300 2550
+F 0 "#PWR037" H 7300 2400 50  0001 C CNN
+F 1 "+5V" H 7300 2690 50  0000 C CNN
+F 2 "" H 7300 2550 50  0001 C CNN
+F 3 "" H 7300 2550 50  0001 C CNN
+	1    7300 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R11
+U 1 1 5A4AAA12
+P 4150 3400
+F 0 "R11" V 4230 3400 50  0000 C CNN
+F 1 "12k" V 4150 3400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4080 3400 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4150 3400 50  0001 C CNN
+F 4 "RES SMD 12K OHM 5% 1/8W 0805" H 4150 3400 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4150 3400 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080512K0JNEA" H 4150 3400 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4230 3500 50  0001 C CNN "Supplier"
+F 8 "541-12KACT-ND" H 4150 3400 60  0001 C CNN "Supplier PN"
+	1    4150 3400
+	0    1    1    0   
+$EndComp
+$Comp
+L R R12
+U 1 1 5A4AAA67
+P 4150 3550
+F 0 "R12" V 4230 3550 50  0000 C CNN
+F 1 "20k" V 4150 3550 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4080 3550 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4150 3550 50  0001 C CNN
+F 4 "RES SMD 20K OHM 5% 1/8W 0805 " H 4150 3550 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4150 3550 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080520K0JNEA" H 4150 3550 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4230 3650 50  0001 C CNN "Supplier"
+F 8 "541-20KACT-ND" H 4150 3550 60  0001 C CNN "Supplier PN"
+	1    4150 3550
+	0    1    1    0   
+$EndComp
+$Comp
+L LM4889 U6
+U 1 1 5A53256D
+P 5900 4950
+F 0 "U6" H 5800 5375 50  0000 R CNN
+F 1 "LM4889" H 5800 5300 50  0000 R CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 5950 4700 50  0001 L CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm4889.pdf" H 5650 5550 50  0001 C CNN
+F 4 "IC AMP AUDIO PWR 1W MONO 8SOIC" H 5900 4950 60  0001 C CNN "Description"
+F 5 "Texas Instruments" H 5900 4950 60  0001 C CNN "Manufacturer"
+F 6 "LM4889MA/NOPB" H 5900 4950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5900 4950 60  0001 C CNN "Supplier"
+F 8 "296-43508-5-ND" H 5900 4950 60  0001 C CNN "Supplier PN"
+	1    5900 4950
+	1    0    0    -1  
+$EndComp
+$Comp
+L CP C12
+U 1 1 5A53576E
+P 5300 5150
+F 0 "C12" V 5350 5200 50  0000 L CNN
+F 1 "1uF" H 5325 5050 50  0000 L CNN
+F 2 "Capacitor_Tantalum_SMD:CP_EIA-2012-12_Kemet-R" H 5338 5000 50  0001 C CNN
+F 3 "http://datasheets.avx.com/F95.pdf" H 5300 5150 50  0001 C CNN
+F 4 "CAP TANT 1UF 16V 20% 0805" H 5300 5150 60  0001 C CNN "Description"
+F 5 "AVX Corporation" H 5300 5150 60  0001 C CNN "Manufacturer"
+F 6 "F951C105MPAAQ2" H 5300 5150 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5350 5300 50  0001 C CNN "Supplier"
+F 8 "478-8451-1-ND" H 5300 5150 60  0001 C CNN "Supplier PN"
+	1    5300 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR038
+U 1 1 5A535823
+P 5300 5300
+F 0 "#PWR038" H 5300 5050 50  0001 C CNN
+F 1 "GND" H 5300 5150 50  0000 C CNN
+F 2 "" H 5300 5300 50  0001 C CNN
+F 3 "" H 5300 5300 50  0001 C CNN
+	1    5300 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR039
+U 1 1 5A537858
+P 5900 4450
+F 0 "#PWR039" H 5900 4300 50  0001 C CNN
+F 1 "+5V" H 5900 4590 50  0000 C CNN
+F 2 "" H 5900 4450 50  0001 C CNN
+F 3 "" H 5900 4450 50  0001 C CNN
+	1    5900 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR040
+U 1 1 5A5379A4
+P 5900 5300
+F 0 "#PWR040" H 5900 5050 50  0001 C CNN
+F 1 "GND" H 5900 5150 50  0000 C CNN
+F 2 "" H 5900 5300 50  0001 C CNN
+F 3 "" H 5900 5300 50  0001 C CNN
+	1    5900 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L CP C14
+U 1 1 5A537A1E
+P 6150 4500
+F 0 "C14" V 6200 4550 50  0000 L CNN
+F 1 "1uF" H 6175 4400 50  0000 L CNN
+F 2 "Capacitor_Tantalum_SMD:CP_EIA-2012-12_Kemet-R" H 6188 4350 50  0001 C CNN
+F 3 "http://datasheets.avx.com/F95.pdf" H 6150 4500 50  0001 C CNN
+F 4 "CAP TANT 1UF 16V 20% 0805" H 6150 4500 60  0001 C CNN "Description"
+F 5 "AVX Corporation" H 6150 4500 60  0001 C CNN "Manufacturer"
+F 6 "F951C105MPAAQ2" H 6150 4500 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6200 4650 50  0001 C CNN "Supplier"
+F 8 "478-8451-1-ND" H 6150 4500 60  0001 C CNN "Supplier PN"
+	1    6150 4500
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR041
+U 1 1 5A537C65
+P 6300 4500
+F 0 "#PWR041" H 6300 4250 50  0001 C CNN
+F 1 "GND" H 6300 4350 50  0000 C CNN
+F 2 "" H 6300 4500 50  0001 C CNN
+F 3 "" H 6300 4500 50  0001 C CNN
+	1    6300 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR042
+U 1 1 5A53B8FF
+P 5050 5050
+F 0 "#PWR042" H 5050 4900 50  0001 C CNN
+F 1 "+5V" H 5050 5190 50  0000 C CNN
+F 2 "" H 5050 5050 50  0001 C CNN
+F 3 "" H 5050 5050 50  0001 C CNN
+	1    5050 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L PCA9564 U11
+U 1 1 5A5422BF
+P 9600 1650
+F 0 "U11" H 9600 1850 60  0000 C CNN
+F 1 "PCA9564" H 9600 1750 60  0000 C CNN
+F 2 "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm" H 9550 1900 60  0001 C CNN
+F 3 "https://www.nxp.com/docs/en/data-sheet/PCA9564.pdf" H 9550 1900 60  0001 C CNN
+F 4 "IC CTRL PARALLEL/I2C BUS 20-SOIC" H 9600 1650 60  0001 C CNN "Description"
+F 5 "PCA9564D,112" H 9600 1650 60  0001 C CNN "Manufacturer PN"
+F 6 "NXP" H 9600 1650 60  0001 C CNN "Manufacturer"
+F 7 "568-1062-5-ND" H 9600 1650 60  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 9600 1650 60  0001 C CNN "Supplier"
+	1    9600 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C18
+U 1 1 5A54B6AC
+P 9800 850
+F 0 "C18" H 9825 950 50  0000 L CNN
+F 1 "0.1uF" H 9825 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9838 700 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 9800 850 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 9825 1050 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 9825 1050 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 9825 1050 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 9825 1050 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 9825 1050 50  0001 C CNN "Supplier"
+	1    9800 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR043
+U 1 1 5A54B775
+P 9950 850
+F 0 "#PWR043" H 9950 600 50  0001 C CNN
+F 1 "GND" H 9950 700 50  0000 C CNN
+F 2 "" H 9950 850 50  0001 C CNN
+F 3 "" H 9950 850 50  0001 C CNN
+	1    9950 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR044
+U 1 1 5A54CD4E
+P 9600 2550
+F 0 "#PWR044" H 9600 2300 50  0001 C CNN
+F 1 "GND" H 9600 2400 50  0000 C CNN
+F 2 "" H 9600 2550 50  0001 C CNN
+F 3 "" H 9600 2550 50  0001 C CNN
+	1    9600 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HCT00 U10
+U 1 1 5A543DBB
+P 9250 3100
+F 0 "U10" H 9250 3150 50  0000 C CNN
+F 1 "74HCT00" H 9600 3250 50  0000 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9250 3100 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9250 3100 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9250 3250 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 9250 3250 50  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 9250 3250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9250 3250 50  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 9250 3250 50  0001 C CNN "Supplier PN"
+	1    9250 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HCT00 U10
+U 2 1 5A543FB4
+P 9850 3200
+F 0 "U10" H 9850 3250 50  0000 C CNN
+F 1 "74HCT00" H 9850 3150 50  0001 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9850 3200 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9850 3200 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9850 3350 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 9850 3350 50  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 9850 3350 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9850 3350 50  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 9850 3350 50  0001 C CNN "Supplier PN"
+	2    9850 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HCT00 U10
+U 3 1 5A54403F
+P 9850 3600
+F 0 "U10" H 9850 3650 50  0000 C CNN
+F 1 "74HCT00" H 9850 3550 50  0001 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9850 3600 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9850 3600 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9850 3750 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 9850 3750 50  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 9850 3750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9850 3750 50  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 9850 3750 50  0001 C CNN "Supplier PN"
+	3    9850 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HCT00 U10
+U 5 1 5A54415C
+P 9850 5600
+F 0 "U10" H 9850 5650 50  0000 C CNN
+F 1 "74HCT00" H 9850 5550 50  0000 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9850 5600 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9850 5600 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9850 5600 60  0001 C CNN "Description"
+F 5 "Texas Instruments" H 9850 5600 60  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 9850 5600 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9850 5600 60  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 9850 5600 60  0001 C CNN "Supplier PN"
+	5    9850 5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C19
+U 1 1 5A544736
+P 10200 5600
+F 0 "C19" H 10225 5700 50  0000 L CNN
+F 1 "0.1uF" H 10225 5500 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 10238 5450 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 10200 5600 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 10225 5800 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 10225 5800 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 10225 5800 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 10225 5800 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 10225 5800 50  0001 C CNN "Supplier"
+	1    10200 5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR045
+U 1 1 5A544BC2
+P 9850 6100
+F 0 "#PWR045" H 9850 5850 50  0001 C CNN
+F 1 "GND" H 9850 5950 50  0000 C CNN
+F 2 "" H 9850 6100 50  0001 C CNN
+F 3 "" H 9850 6100 50  0001 C CNN
+	1    9850 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR046
+U 1 1 5A544C57
+P 9850 5100
+F 0 "#PWR046" H 9850 4950 50  0001 C CNN
+F 1 "+5V" H 9850 5240 50  0000 C CNN
+F 2 "" H 9850 5100 50  0001 C CNN
+F 3 "" H 9850 5100 50  0001 C CNN
+	1    9850 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR047
+U 1 1 5A5498C0
+P 8950 2950
+F 0 "#PWR047" H 8950 2800 50  0001 C CNN
+F 1 "+5V" H 8950 3090 50  0000 C CNN
+F 2 "" H 8950 2950 50  0001 C CNN
+F 3 "" H 8950 2950 50  0001 C CNN
+	1    8950 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR048
+U 1 1 5A572C0E
+P 4100 2300
+F 0 "#PWR048" H 4100 2150 50  0001 C CNN
+F 1 "+5V" H 4100 2440 50  0000 C CNN
+F 2 "" H 4100 2300 50  0001 C CNN
+F 3 "" H 4100 2300 50  0001 C CNN
+	1    4100 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR049
+U 1 1 5A5AEE39
+P 9600 800
+F 0 "#PWR049" H 9600 650 50  0001 C CNN
+F 1 "+3.3V" H 9600 940 50  0000 C CNN
+F 2 "" H 9600 800 50  0001 C CNN
+F 3 "" H 9600 800 50  0001 C CNN
+	1    9600 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R13
+U 1 1 5A5B465C
+P 5050 5200
+F 0 "R13" V 5130 5200 50  0000 C CNN
+F 1 "20k" V 5050 5200 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4980 5200 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 5050 5200 50  0001 C CNN
+F 4 "RES SMD 20K OHM 5% 1/8W 0805" H 5050 5200 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 5050 5200 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080520K0JNEA" H 5050 5200 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5130 5300 50  0001 C CNN "Supplier"
+F 8 "541-20KACT-ND" H 5050 5200 60  0001 C CNN "Supplier PN"
+	1    5050 5200
+	-1   0    0    1   
+$EndComp
+$Comp
+L C C13
+U 1 1 5A5B7436
+P 6000 4100
+F 0 "C13" H 6025 4200 50  0000 L CNN
+F 1 "30pF" H 6025 4000 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 6038 3950 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C300JBANNNC.jsp" H 6000 4100 50  0001 C CNN
+F 4 "CAP CER 30PF 50V C0G/NP0 0805" H 6000 4100 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 6000 4100 60  0001 C CNN "Manufacturer"
+F 6 "CL21C300JBANNNC" H 6000 4100 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6025 4300 50  0001 C CNN "Supplier"
+F 8 "1276-1130-1-ND" H 6000 4100 60  0001 C CNN "Supplier PN"
+	1    6000 4100
+	1    0    0    -1  
+$EndComp
+Text Label 2100 1150 0    60   ~ 0
+A0
+Text Label 2100 1250 0    60   ~ 0
+A1
+Text Label 2100 1350 0    60   ~ 0
+A2
+Text Label 2100 1450 0    60   ~ 0
+A3
+Text Label 2100 1550 0    60   ~ 0
+A4
+Text Label 2100 1650 0    60   ~ 0
+A5
+Text Label 2100 1750 0    60   ~ 0
+A6
+Text Label 2100 1850 0    60   ~ 0
+A7
+Text Label 2100 1950 0    60   ~ 0
+A8
+Text Label 2100 2050 0    60   ~ 0
+A9
+Text Label 2100 2150 0    60   ~ 0
+A10
+Text Label 2100 2250 0    60   ~ 0
+A11
+Text Label 2100 2350 0    60   ~ 0
+A12
+Text Label 2100 2450 0    60   ~ 0
+A13
+Text Label 2100 2550 0    60   ~ 0
+A14
+Text Label 2100 2650 0    60   ~ 0
+A15
+Text Label 4000 1150 0    60   ~ 0
+A13
+Text Label 4000 1250 0    60   ~ 0
+A14
+Text Label 4000 1350 0    60   ~ 0
+A15
+Text Label 3650 1250 0    60   ~ 0
+D0
+Text Label 3650 1350 0    60   ~ 0
+D1
+Text Label 3650 1450 0    60   ~ 0
+D2
+Text Label 3650 1550 0    60   ~ 0
+D3
+Text Label 3650 1650 0    60   ~ 0
+D4
+Text Label 3650 1750 0    60   ~ 0
+D5
+Text Label 3650 1850 0    60   ~ 0
+D6
+Text Label 3650 1950 0    60   ~ 0
+D7
+Text Label 3650 1150 0    60   ~ 0
+R~W
+Text Label 8550 1150 0    60   ~ 0
+D0
+Text Label 8550 1250 0    60   ~ 0
+D1
+Text Label 8550 1350 0    60   ~ 0
+D2
+Text Label 8550 1450 0    60   ~ 0
+D3
+Text Label 8550 1550 0    60   ~ 0
+D4
+Text Label 8550 1650 0    60   ~ 0
+D5
+Text Label 8550 1750 0    60   ~ 0
+D6
+Text Label 8550 1850 0    60   ~ 0
+D7
+Text Label 7200 1150 0    60   ~ 0
+A0
+Text Label 7200 1250 0    60   ~ 0
+A1
+Text Label 7200 1350 0    60   ~ 0
+A2
+Text Label 7200 1450 0    60   ~ 0
+A3
+Text Label 7200 1550 0    60   ~ 0
+A4
+Text Label 7200 1650 0    60   ~ 0
+A5
+Text Label 7200 1750 0    60   ~ 0
+A6
+Text Label 7200 1850 0    60   ~ 0
+A7
+Text Label 7200 1950 0    60   ~ 0
+A8
+Text Label 7200 2050 0    60   ~ 0
+A9
+Text Label 7200 2150 0    60   ~ 0
+A10
+Text Label 7200 2250 0    60   ~ 0
+A11
+Text Label 7200 2350 0    60   ~ 0
+A12
+Text Label 6850 1150 0    60   ~ 0
+D0
+Text Label 6850 1250 0    60   ~ 0
+D1
+Text Label 6850 1350 0    60   ~ 0
+D2
+Text Label 6850 1450 0    60   ~ 0
+D3
+Text Label 6850 1550 0    60   ~ 0
+D4
+Text Label 6850 1650 0    60   ~ 0
+D5
+Text Label 6850 1750 0    60   ~ 0
+D6
+Text Label 6850 1850 0    60   ~ 0
+D7
+Text Label 5500 1150 0    60   ~ 0
+A0
+Text Label 5500 1250 0    60   ~ 0
+A1
+Text Label 5500 1350 0    60   ~ 0
+A2
+Text Label 5500 1450 0    60   ~ 0
+A3
+Text Label 5500 1550 0    60   ~ 0
+A4
+Text Label 5500 1650 0    60   ~ 0
+A5
+Text Label 5500 1750 0    60   ~ 0
+A6
+Text Label 5500 1850 0    60   ~ 0
+A7
+Text Label 5500 1950 0    60   ~ 0
+A8
+Text Label 5500 2050 0    60   ~ 0
+A9
+Text Label 5500 2150 0    60   ~ 0
+A10
+Text Label 5500 2250 0    60   ~ 0
+A11
+Text Label 5500 2350 0    60   ~ 0
+A12
+Text Label 5500 2500 0    60   ~ 0
+R~W
+Text Notes 6300 2950 0    60   ~ 0
+SRAM
+Text Notes 8000 2950 0    60   ~ 0
+EEPROM
+Text Notes 3000 3750 0    60   ~ 0
+NES CPU
+Text Label 8900 1150 0    60   ~ 0
+A0
+Text Label 8900 1250 0    60   ~ 0
+A1
+Text Label 10150 1150 0    60   ~ 0
+D0
+Text Label 10150 1250 0    60   ~ 0
+D1
+Text Label 10150 1350 0    60   ~ 0
+D2
+Text Label 10150 1450 0    60   ~ 0
+D3
+Text Label 10150 1550 0    60   ~ 0
+D4
+Text Label 10150 1650 0    60   ~ 0
+D5
+Text Label 10150 1750 0    60   ~ 0
+D6
+Text Label 10150 1850 0    60   ~ 0
+D7
+Text Label 5200 1150 0    60   ~ 0
+Y0
+Text Label 5500 2600 0    60   ~ 0
+Y0
+Text Label 5200 1450 0    60   ~ 0
+Y3
+Text Label 5200 1850 0    60   ~ 0
+Y7
+Text Label 7200 2650 0    60   ~ 0
+Y7
+Text Label 8900 1950 0    60   ~ 0
+Y3
+Text Label 8550 2050 0    60   ~ 0
+R~W
+Text Notes 6000 5400 0    60   ~ 0
+Audio\nAmplifier
+Text Notes 9650 2450 0    60   ~ 0
+I2C Controller
+Text Notes 4700 2150 0    60   ~ 0
+Address\nDecoder
+Text Notes 1450 4750 0    60   ~ 0
+Crystal\nOscillator
+Wire Wire Line
+	2300 4250 2300 4150
+Wire Wire Line
+	650  4150 600  4150
+Wire Wire Line
+	600  4150 600  4650
+Wire Wire Line
+	950  4150 1300 4150
+Wire Wire Line
+	950  4450 1250 4450
+Wire Wire Line
+	650  4450 600  4450
+Wire Wire Line
+	1000 4950 1000 5000
+Wire Wire Line
+	600  4950 600  5000
+Wire Wire Line
+	1250 4450 1250 4250
+Wire Wire Line
+	1250 4250 1300 4250
+Wire Wire Line
+	1300 4350 1300 4500
+Wire Wire Line
+	1300 4000 1300 4050
+Wire Bus Line
+	2000 600  2000 2550
+Wire Wire Line
+	2100 2650 2250 2650
+Wire Wire Line
+	2100 2550 2250 2550
+Wire Wire Line
+	2100 2450 2250 2450
+Wire Wire Line
+	2100 2350 2250 2350
+Wire Wire Line
+	2100 2250 2250 2250
+Wire Wire Line
+	2100 2150 2250 2150
+Wire Wire Line
+	2100 2050 2250 2050
+Wire Wire Line
+	2100 1950 2250 1950
+Wire Wire Line
+	2100 1850 2250 1850
+Wire Wire Line
+	2100 1750 2250 1750
+Wire Wire Line
+	2100 1650 2250 1650
+Wire Wire Line
+	2100 1550 2250 1550
+Wire Wire Line
+	2100 1450 2250 1450
+Wire Wire Line
+	2100 1350 2250 1350
+Wire Wire Line
+	2100 1250 2250 1250
+Wire Wire Line
+	2100 1150 2250 1150
+Wire Bus Line
+	2000 600  10400 600 
+Wire Bus Line
+	3900 600  3900 1850
+Wire Wire Line
+	4000 1150 4150 1150
+Wire Wire Line
+	4000 1250 4150 1250
+Wire Wire Line
+	4000 1350 4150 1350
+Wire Wire Line
+	3650 1250 3800 1250
+Wire Wire Line
+	3650 1350 3800 1350
+Wire Wire Line
+	3650 1450 3800 1450
+Wire Wire Line
+	3650 1550 3800 1550
+Wire Wire Line
+	3650 1650 3800 1650
+Wire Wire Line
+	3650 1750 3800 1750
+Wire Wire Line
+	3650 1850 3800 1850
+Wire Wire Line
+	3650 1950 3800 1950
+Wire Wire Line
+	2950 800  2950 850 
+Wire Wire Line
+	2950 850  3000 850 
+Wire Wire Line
+	3800 1150 3650 1150
+Wire Wire Line
+	7950 800  7950 850 
+Wire Wire Line
+	7950 850  8000 850 
+Wire Wire Line
+	8700 1150 8550 1150
+Wire Wire Line
+	8700 1250 8550 1250
+Wire Wire Line
+	8700 1350 8550 1350
+Wire Wire Line
+	8700 1450 8550 1450
+Wire Wire Line
+	8700 1550 8550 1550
+Wire Wire Line
+	8700 1650 8550 1650
+Wire Wire Line
+	8700 1750 8550 1750
+Wire Wire Line
+	8700 1850 8550 1850
+Wire Wire Line
+	7200 1150 7350 1150
+Wire Wire Line
+	7200 1250 7350 1250
+Wire Wire Line
+	7200 1350 7350 1350
+Wire Wire Line
+	7200 1450 7350 1450
+Wire Wire Line
+	7200 1550 7350 1550
+Wire Wire Line
+	7200 1650 7350 1650
+Wire Wire Line
+	7200 1750 7350 1750
+Wire Wire Line
+	7200 1850 7350 1850
+Wire Wire Line
+	7200 1950 7350 1950
+Wire Wire Line
+	7200 2050 7350 2050
+Wire Wire Line
+	7200 2150 7350 2150
+Wire Wire Line
+	7200 2250 7350 2250
+Wire Wire Line
+	7200 2350 7350 2350
+Wire Wire Line
+	7000 1150 6850 1150
+Wire Wire Line
+	7000 1250 6850 1250
+Wire Wire Line
+	7000 1350 6850 1350
+Wire Wire Line
+	7000 1450 6850 1450
+Wire Wire Line
+	7000 1550 6850 1550
+Wire Wire Line
+	7000 1650 6850 1650
+Wire Wire Line
+	7000 1750 6850 1750
+Wire Wire Line
+	7000 1850 6850 1850
+Wire Bus Line
+	5400 600  5400 2500
+Wire Wire Line
+	5500 1150 5650 1150
+Wire Wire Line
+	5500 1250 5650 1250
+Wire Wire Line
+	5500 1350 5650 1350
+Wire Wire Line
+	5500 1450 5650 1450
+Wire Wire Line
+	5500 1550 5650 1550
+Wire Wire Line
+	5500 1650 5650 1650
+Wire Wire Line
+	5500 1750 5650 1750
+Wire Wire Line
+	5500 1850 5650 1850
+Wire Wire Line
+	5500 1950 5650 1950
+Wire Wire Line
+	5500 2050 5650 2050
+Wire Wire Line
+	5500 2150 5650 2150
+Wire Wire Line
+	5500 2250 5650 2250
+Wire Wire Line
+	5500 2350 5650 2350
+Wire Wire Line
+	5500 2500 5650 2500
+Wire Wire Line
+	4150 1750 4150 1900
+Wire Wire Line
+	6250 800  6250 850 
+Wire Wire Line
+	4650 800  4650 850 
+Wire Wire Line
+	6250 850  6300 850 
+Wire Wire Line
+	4650 850  4700 850 
+Wire Wire Line
+	5650 2700 5450 2700
+Wire Wire Line
+	7350 2750 7350 2850
+Wire Wire Line
+	5650 2800 5650 3050
+Wire Wire Line
+	5650 3050 5750 3050
+Wire Wire Line
+	3650 2900 3700 2900
+Wire Wire Line
+	3700 2900 3700 2950
+Wire Wire Line
+	3950 2150 3950 2200
+Wire Wire Line
+	750  1000 750  1100
+Wire Wire Line
+	750  1500 750  1550
+Wire Wire Line
+	1000 1150 1000 1100
+Wire Wire Line
+	1000 1100 750  1100
+Wire Wire Line
+	1000 1450 1000 1500
+Wire Wire Line
+	1000 1500 750  1500
+Wire Wire Line
+	3650 3550 4000 3550
+Wire Wire Line
+	3700 3550 3700 3600
+Wire Wire Line
+	3650 3400 4000 3400
+Wire Wire Line
+	3900 3400 3900 3600
+Wire Wire Line
+	3700 3900 3700 3950
+Wire Wire Line
+	3700 3950 3900 3950
+Wire Wire Line
+	3900 3950 3900 3900
+Wire Bus Line
+	7100 600  7100 2550
+Wire Wire Line
+	7350 2550 7300 2550
+Wire Wire Line
+	5900 4450 5900 4550
+Wire Wire Line
+	6000 4500 5900 4500
+Wire Wire Line
+	6300 4750 6550 4750
+Wire Wire Line
+	5500 4850 5500 5000
+Wire Wire Line
+	5500 5000 5300 5000
+Wire Wire Line
+	6550 4900 6300 4900
+Wire Wire Line
+	8900 1150 9050 1150
+Wire Wire Line
+	8900 1250 9050 1250
+Wire Wire Line
+	9650 850  9600 850 
+Wire Wire Line
+	9600 850  9600 800 
+Wire Bus Line
+	10400 600  10400 1750
+Wire Wire Line
+	10300 1150 10150 1150
+Wire Wire Line
+	10300 1250 10150 1250
+Wire Wire Line
+	10300 1350 10150 1350
+Wire Wire Line
+	10300 1450 10150 1450
+Wire Wire Line
+	10300 1550 10150 1550
+Wire Wire Line
+	10300 1650 10150 1650
+Wire Wire Line
+	10300 1750 10150 1750
+Wire Wire Line
+	10300 1850 10150 1850
+Wire Wire Line
+	9850 5100 10200 5100
+Wire Wire Line
+	10200 5100 10200 5450
+Wire Wire Line
+	10200 5750 10200 6100
+Wire Wire Line
+	10200 6100 9850 6100
+Wire Wire Line
+	9550 3300 9550 3500
+Wire Wire Line
+	5500 2600 5650 2600
+Wire Wire Line
+	5300 1150 5150 1150
+Wire Wire Line
+	5300 1450 5150 1450
+Wire Bus Line
+	8800 600  8800 1950
+Wire Wire Line
+	5150 1850 5300 1850
+Wire Wire Line
+	7200 2650 7350 2650
+Wire Wire Line
+	8900 1950 9050 1950
+Wire Wire Line
+	8700 2050 8500 2050
+Wire Wire Line
+	3650 2350 3950 2350
+Wire Wire Line
+	9450 3400 9550 3400
+Wire Wire Line
+	8500 3200 8950 3200
+Wire Wire Line
+	10150 3200 10250 3200
+Wire Wire Line
+	10150 3600 10250 3600
+Wire Wire Line
+	8950 3200 8950 3700
+Wire Wire Line
+	8950 3700 9550 3700
+Wire Wire Line
+	8950 2950 8950 3000
+Wire Wire Line
+	8500 2050 8500 3200
+Wire Wire Line
+	3950 2350 3950 2600
+Wire Wire Line
+	3950 2600 4250 2600
+Wire Wire Line
+	8950 2150 9050 2150
+Wire Wire Line
+	4300 3400 4300 3550
+Wire Wire Line
+	4300 3550 4450 3550
+Wire Wire Line
+	1000 4650 1000 4450
+Wire Wire Line
+	2300 4050 2500 4050
+Wire Wire Line
+	2300 4350 2300 4600
+Wire Wire Line
+	2300 4600 2750 4600
+Wire Wire Line
+	2750 4600 2750 3800
+Wire Wire Line
+	2750 3800 1900 3800
+Wire Wire Line
+	1900 3800 1900 3400
+Wire Wire Line
+	1900 3400 2250 3400
+Wire Wire Line
+	4850 4750 5500 4750
+Wire Wire Line
+	4750 3550 4850 3550
+Wire Wire Line
+	4850 3550 4850 4750
+Wire Wire Line
+	5500 5500 5500 5100
+Wire Wire Line
+	4950 5500 5500 5500
+Wire Wire Line
+	5050 5350 5050 5500
+Entry Wire Line
+	2000 2550 2100 2650
+Entry Wire Line
+	2000 2450 2100 2550
+Entry Wire Line
+	2000 2350 2100 2450
+Entry Wire Line
+	2000 2250 2100 2350
+Entry Wire Line
+	2000 2150 2100 2250
+Entry Wire Line
+	2000 2050 2100 2150
+Entry Wire Line
+	2000 1950 2100 2050
+Entry Wire Line
+	2000 1850 2100 1950
+Entry Wire Line
+	2000 1750 2100 1850
+Entry Wire Line
+	2000 1650 2100 1750
+Entry Wire Line
+	2000 1550 2100 1650
+Entry Wire Line
+	2000 1450 2100 1550
+Entry Wire Line
+	2000 1350 2100 1450
+Entry Wire Line
+	2000 1250 2100 1350
+Entry Wire Line
+	2000 1150 2100 1250
+Entry Wire Line
+	2000 1050 2100 1150
+Entry Wire Line
+	3900 1250 4000 1350
+Entry Wire Line
+	3900 1150 4000 1250
+Entry Wire Line
+	3900 1050 4000 1150
+Entry Wire Line
+	3800 1950 3900 1850
+Entry Wire Line
+	3800 1850 3900 1750
+Entry Wire Line
+	3800 1750 3900 1650
+Entry Wire Line
+	3800 1650 3900 1550
+Entry Wire Line
+	3800 1550 3900 1450
+Entry Wire Line
+	3800 1450 3900 1350
+Entry Wire Line
+	3800 1350 3900 1250
+Entry Wire Line
+	3800 1250 3900 1150
+Entry Wire Line
+	3800 1150 3900 1050
+Entry Wire Line
+	8700 1850 8800 1750
+Entry Wire Line
+	8700 1750 8800 1650
+Entry Wire Line
+	8700 1650 8800 1550
+Entry Wire Line
+	8700 1550 8800 1450
+Entry Wire Line
+	8700 1450 8800 1350
+Entry Wire Line
+	8700 1350 8800 1250
+Entry Wire Line
+	8700 1250 8800 1150
+Entry Wire Line
+	8700 1150 8800 1050
+Entry Wire Line
+	7100 1050 7200 1150
+Entry Wire Line
+	7100 1150 7200 1250
+Entry Wire Line
+	7100 1250 7200 1350
+Entry Wire Line
+	7100 1350 7200 1450
+Entry Wire Line
+	7100 1450 7200 1550
+Entry Wire Line
+	7100 1550 7200 1650
+Entry Wire Line
+	7100 1650 7200 1750
+Entry Wire Line
+	7100 1750 7200 1850
+Entry Wire Line
+	7100 1850 7200 1950
+Entry Wire Line
+	7100 1950 7200 2050
+Entry Wire Line
+	7100 2050 7200 2150
+Entry Wire Line
+	7100 2150 7200 2250
+Entry Wire Line
+	7100 2250 7200 2350
+Entry Wire Line
+	7000 1150 7100 1050
+Entry Wire Line
+	7000 1250 7100 1150
+Entry Wire Line
+	7000 1350 7100 1250
+Entry Wire Line
+	7000 1450 7100 1350
+Entry Wire Line
+	7000 1550 7100 1450
+Entry Wire Line
+	7000 1650 7100 1550
+Entry Wire Line
+	7000 1750 7100 1650
+Entry Wire Line
+	7000 1850 7100 1750
+Entry Wire Line
+	5400 1050 5500 1150
+Entry Wire Line
+	5400 1150 5500 1250
+Entry Wire Line
+	5400 1250 5500 1350
+Entry Wire Line
+	5400 1350 5500 1450
+Entry Wire Line
+	5400 1450 5500 1550
+Entry Wire Line
+	5400 1550 5500 1650
+Entry Wire Line
+	5400 1650 5500 1750
+Entry Wire Line
+	5400 1750 5500 1850
+Entry Wire Line
+	5400 1850 5500 1950
+Entry Wire Line
+	5400 1950 5500 2050
+Entry Wire Line
+	5400 2050 5500 2150
+Entry Wire Line
+	5400 2150 5500 2250
+Entry Wire Line
+	5400 2250 5500 2350
+Entry Wire Line
+	5400 2400 5500 2500
+Entry Wire Line
+	8800 1050 8900 1150
+Entry Wire Line
+	8800 1150 8900 1250
+Entry Wire Line
+	10300 1150 10400 1050
+Entry Wire Line
+	10300 1250 10400 1150
+Entry Wire Line
+	10300 1350 10400 1250
+Entry Wire Line
+	10300 1450 10400 1350
+Entry Wire Line
+	10300 1550 10400 1450
+Entry Wire Line
+	10300 1650 10400 1550
+Entry Wire Line
+	10300 1750 10400 1650
+Entry Wire Line
+	10300 1850 10400 1750
+Entry Wire Line
+	5400 2500 5500 2600
+Entry Wire Line
+	5300 1150 5400 1050
+Entry Wire Line
+	5300 1450 5400 1350
+Entry Wire Line
+	5300 1850 5400 1750
+Entry Wire Line
+	7100 2550 7200 2650
+Entry Wire Line
+	8800 1850 8900 1950
+Entry Wire Line
+	8700 2050 8800 1950
+Connection ~ 1000 4450
+Connection ~ 600  4450
+Connection ~ 1100 4150
+Connection ~ 1100 4450
+Connection ~ 4150 1850
+Connection ~ 3800 3950
+Connection ~ 3900 3400
+Connection ~ 3700 3550
+Connection ~ 4300 3550
+Connection ~ 5400 4750
+Connection ~ 5900 4500
+Connection ~ 6450 4750
+Connection ~ 9550 3400
+Connection ~ 4100 2600
+Connection ~ 5050 5500
+NoConn ~ 2250 2800
+NoConn ~ 2250 2900
+NoConn ~ 2250 3150
+NoConn ~ 2250 3250
+NoConn ~ 5150 1250
+NoConn ~ 5150 1350
+NoConn ~ 5150 1550
+NoConn ~ 5150 1650
+NoConn ~ 5150 1750
+$Comp
+L 74HCT00 U10
+U 4 1 5A5C869E
+P 9850 4000
+F 0 "U10" H 9850 4050 50  0000 C CNN
+F 1 "74HCT00" H 9850 3950 50  0001 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9850 4000 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9850 4000 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9850 4150 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 9850 4150 50  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 9850 4150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9850 4150 50  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 9850 4150 50  0001 C CNN "Supplier PN"
+	4    9850 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR050
+U 1 1 5A5C8B93
+P 9500 4150
+F 0 "#PWR050" H 9500 3900 50  0001 C CNN
+F 1 "GND" H 9500 4000 50  0000 C CNN
+F 2 "" H 9500 4150 50  0001 C CNN
+F 3 "" H 9500 4150 50  0001 C CNN
+	1    9500 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9550 3900 9550 4100
+Wire Wire Line
+	9550 4000 9500 4000
+Wire Wire Line
+	9500 4000 9500 4150
+Connection ~ 9550 4000
+NoConn ~ 10150 4000
+Text HLabel 10250 2150 2    60   BiDi ~ 0
+SDA
+Text HLabel 10250 2250 2    60   BiDi ~ 0
+SCL
+$Comp
+L MCP40D17 U8
+U 1 1 5A641BDB
+P 6800 4000
+F 0 "U8" H 6700 4350 60  0000 C CNN
+F 1 "MCP40D17" H 7100 4350 60  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-363_SC-70-6" H 6800 4000 60  0001 C CNN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/22152b.pdf" H 6800 4000 60  0001 C CNN
+F 4 "IC DGTL POT 100K 128TAPS SC70-6" H 6800 4000 60  0001 C CNN "Description"
+F 5 "Microchip Technology" H 6800 4000 60  0001 C CNN "Manufacturer"
+F 6 "MCP40D17T-104E/LT" H 6800 4000 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6800 4000 60  0001 C CNN "Supplier"
+F 8 "MCP40D17T-104E/LTCT-ND" H 6800 4000 60  0001 C CNN "Supplier PN"
+	1    6800 4000
+	-1   0    0    -1  
+$EndComp
+Text HLabel 6550 4750 2    60   Output ~ 0
+SPK+
+Text HLabel 6550 4900 2    60   Output ~ 0
+SPK-
+$Comp
+L C C16
+U 1 1 5A64F201
+P 7000 3550
+F 0 "C16" H 7025 3650 50  0000 L CNN
+F 1 "0.1uF" H 7025 3450 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 7038 3400 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 7000 3550 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 7025 3750 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 7025 3750 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 7025 3750 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 7025 3750 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 7025 3750 50  0001 C CNN "Supplier"
+	1    7000 3550
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +3.3V #PWR051
+U 1 1 5A64F776
+P 6800 3500
+F 0 "#PWR051" H 6800 3350 50  0001 C CNN
+F 1 "+3.3V" H 6800 3640 50  0000 C CNN
+F 2 "" H 6800 3500 50  0001 C CNN
+F 3 "" H 6800 3500 50  0001 C CNN
+	1    6800 3500
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR052
+U 1 1 5A65083D
+P 7150 3550
+F 0 "#PWR052" H 7150 3300 50  0001 C CNN
+F 1 "GND" H 7150 3400 50  0000 C CNN
+F 2 "" H 7150 3550 50  0001 C CNN
+F 3 "" H 7150 3550 50  0001 C CNN
+	1    7150 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 3500 6800 3550
+Wire Wire Line
+	6800 3550 6850 3550
+$Comp
+L GND #PWR053
+U 1 1 5A6540A9
+P 6800 4450
+F 0 "#PWR053" H 6800 4200 50  0001 C CNN
+F 1 "GND" H 6800 4300 50  0000 C CNN
+F 2 "" H 6800 4450 50  0001 C CNN
+F 3 "" H 6800 4450 50  0001 C CNN
+	1    6800 4450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6450 4050 6450 4750
+Wire Wire Line
+	5400 4750 5400 3950
+Wire Wire Line
+	6000 4250 6450 4250
+Connection ~ 6450 4250
+Text Label 2150 3050 2    60   ~ 0
+OUT0
+Wire Wire Line
+	2250 3050 2150 3050
+Text Label 4950 5500 2    60   ~ 0
+OUT0
+Text Label 2150 3550 2    60   ~ 0
+~RST
+Wire Wire Line
+	2250 3550 2150 3550
+Text Label 8950 2250 2    60   ~ 0
+~RST
+Wire Wire Line
+	9050 2250 8950 2250
+Text Label 4250 2600 0    60   ~ 0
+~IRQ
+Text Label 8950 2150 2    60   ~ 0
+~IRQ
+Text Label 750  1000 1    60   ~ 0
+~RST
+Wire Wire Line
+	7150 3950 7250 3950
+Wire Wire Line
+	7150 4050 7250 4050
+Wire Wire Line
+	10150 2150 10250 2150
+Wire Wire Line
+	10150 2250 10250 2250
+Text Label 3750 2500 0    60   ~ 0
+φ2
+Wire Wire Line
+	3650 2500 3750 2500
+Text Label 4050 1650 2    60   ~ 0
+φ2
+Wire Wire Line
+	4150 1650 4050 1650
+Text Label 9450 3400 2    60   ~ 0
+φ2
+Text Label 10250 3200 0    60   ~ 0
+~WR
+Text Label 10250 3600 0    60   ~ 0
+~RD
+Text Label 9000 1750 2    60   ~ 0
+~WR
+Text Label 9000 1850 2    60   ~ 0
+~RD
+Wire Wire Line
+	9000 1750 9050 1750
+Wire Wire Line
+	9000 1850 9050 1850
+Text HLabel 7250 3950 2    60   BiDi ~ 0
+SCL
+Text HLabel 7250 4050 2    60   BiDi ~ 0
+SDA
+Text Notes 6850 4500 0    60   ~ 0
+Volume\nControl
+$Comp
+L C C10
+U 1 1 5A6441F6
+P 4600 3550
+F 0 "C10" H 4625 3650 50  0000 L CNN
+F 1 "0.33uF" H 4625 3450 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 4638 3400 50  0001 C CNN
+F 3 "http://datasheets.avx.com/FlexitermMLCC.pdf" H 4600 3550 50  0001 C CNN
+F 4 "CAP CER 0.33UF 50V X7R 0805" H 4600 3550 60  0001 C CNN "Description"
+F 5 "AVX Corporation" H 4600 3550 60  0001 C CNN "Manufacturer"
+F 6 "08055C334K4Z2A" H 4600 3550 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4600 3550 60  0001 C CNN "Supplier"
+F 8 "478-10065-1-ND" H 4600 3550 60  0001 C CNN "Supplier PN"
+	1    4600 3550
+	0    1    1    0   
+$EndComp
+$Comp
+L R R14
+U 1 1 5A72B537
+P 6300 3950
+F 0 "R14" V 6380 3950 50  0000 C CNN
+F 1 "20k" V 6300 3950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 6230 3950 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 6300 3950 50  0001 C CNN
+F 4 "RES SMD 20K OHM 5% 1/8W 0805" H 6300 3950 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 6300 3950 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080520K0JNEA" H 6300 3950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6380 4050 50  0001 C CNN "Supplier"
+F 8 "541-20KACT-ND" H 6300 3950 60  0001 C CNN "Supplier PN"
+	1    6300 3950
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5400 3950 6150 3950
+Connection ~ 6000 3950
+Text Notes 600  1850 0    60   ~ 0
+Reset Button
+$EndSCHEMATC

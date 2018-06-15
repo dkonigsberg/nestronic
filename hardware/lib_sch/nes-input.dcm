@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TCA8418
+D I2C Controlled Keypad Scan IC
+K Keypad I2C
+F http://www.ti.com/lit/ds/symlink/tca8418.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,53 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 74HCT138
+D Decoder 3 to 8 (active low outputs)
+$ENDCMP
+#
+$CMP AS6C6264
+D 8K x 8 bit Low Power CMOS SRAM
+$ENDCMP
+#
+$CMP AT28C64B
+D 64K (8K x 8) Parallel EEPROM
+$ENDCMP
+#
+$CMP EClamp2410P
+D ESD Protection Device for T-Flash / MicroSD Interfaces
+$ENDCMP
+#
+$CMP LM4889
+D Audio 1W Mono Power Amplifier
+K Audio Boomer BTL Mono Amplifier
+F http://www.ti.com/lit/ds/symlink/lm4889.pdf
+$ENDCMP
+#
+$CMP MCP40D17
+D 7-bit Single I2C Digital POT
+$ENDCMP
+#
+$CMP NC7SZU04
+D TinyLogic UHS Unbuffered Inverter
+$ENDCMP
+#
+$CMP PCA9564
+D Parallel bus to I2C-bus controller
+$ENDCMP
+#
+$CMP RP2A03
+D Ricoh RP2A03
+$ENDCMP
+#
+$CMP SN74LVC1404
+D Oscillator Driver for Crystal Oscillator or Ceramic Resonator
+$ENDCMP
+#
+$CMP TC7SU04F
+D High speed Unbuffered CMOS Inverter
+$ENDCMP
+#
+$CMP TSL251R
+D Light-to-Voltage Optical Sensor
+$ENDCMP
+#
+#End Doc Library

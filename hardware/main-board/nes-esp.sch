@@ -1,0 +1,1552 @@
+EESchema Schematic File Version 2
+LIBS:nes
+LIBS:ac-dc
+LIBS:adc-dac
+LIBS:Altera
+LIBS:analog_devices
+LIBS:analog_switches
+LIBS:atmel
+LIBS:audio
+LIBS:Battery_Management
+LIBS:bbd
+LIBS:Bosch
+LIBS:brooktre
+LIBS:Connector
+LIBS:contrib
+LIBS:cypress
+LIBS:dc-dc
+LIBS:Decawave
+LIBS:device
+LIBS:digital-audio
+LIBS:Diode
+LIBS:Display
+LIBS:driver_gate
+LIBS:dsp
+LIBS:DSP_Microchip_DSPIC33
+LIBS:elec-unifil
+LIBS:ESD_Protection
+LIBS:Espressif
+LIBS:FPGA_Actel
+LIBS:ftdi
+LIBS:gennum
+LIBS:Graphic
+LIBS:hc11
+LIBS:infineon
+LIBS:intel
+LIBS:interface
+LIBS:intersil
+LIBS:ir
+LIBS:Lattice
+LIBS:LED
+LIBS:LEM
+LIBS:linear
+LIBS:Logic_74xgxx
+LIBS:Logic_74xx
+LIBS:Logic_CMOS_4000
+LIBS:Logic_CMOS_IEEE
+LIBS:logic_programmable
+LIBS:Logic_TTL_IEEE
+LIBS:maxim
+LIBS:MCU_Microchip_PIC10
+LIBS:MCU_Microchip_PIC12
+LIBS:MCU_Microchip_PIC16
+LIBS:MCU_Microchip_PIC18
+LIBS:MCU_Microchip_PIC24
+LIBS:MCU_Microchip_PIC32
+LIBS:MCU_NXP_Kinetis
+LIBS:MCU_NXP_LPC
+LIBS:MCU_NXP_S08
+LIBS:MCU_Parallax
+LIBS:MCU_ST_STM8
+LIBS:MCU_ST_STM32
+LIBS:MCU_Texas_MSP430
+LIBS:Mechanical
+LIBS:memory
+LIBS:microchip
+LIBS:microcontrollers
+LIBS:modules
+LIBS:Motor
+LIBS:motor_drivers
+LIBS:motorola
+LIBS:nordicsemi
+LIBS:nxp
+LIBS:onsemi
+LIBS:opto
+LIBS:Oscillators
+LIBS:philips
+LIBS:power
+LIBS:powerint
+LIBS:Power_Management
+LIBS:pspice
+LIBS:references
+LIBS:regul
+LIBS:Relay
+LIBS:RF_Bluetooth
+LIBS:rfcom
+LIBS:RFSolutions
+LIBS:Sensor_Current
+LIBS:Sensor_Humidity
+LIBS:sensors
+LIBS:silabs
+LIBS:siliconi
+LIBS:supertex
+LIBS:Switch
+LIBS:texas
+LIBS:Transformer
+LIBS:Transistor
+LIBS:triac_thyristor
+LIBS:Valve
+LIBS:video
+LIBS:wiznet
+LIBS:Worldsemi
+LIBS:Xicor
+LIBS:xilinx
+LIBS:xilinx-artix7
+LIBS:xilinx-kintex7
+LIBS:xilinx-spartan6
+LIBS:xilinx-virtex5
+LIBS:xilinx-virtex6
+LIBS:xilinx-virtex7
+LIBS:zetex
+LIBS:Zilog
+LIBS:ESP32-footprints-Shem-Lib
+LIBS:nes-cache
+EELAYER 25 0
+EELAYER END
+$Descr USLetter 11000 8500
+encoding utf-8
+Sheet 3 3
+Title "Nestronic Game Music Synthesizer"
+Date "2018-03-13"
+Rev "A"
+Comp "LogicProbe.org"
+Comment1 "Derek Konigsberg"
+Comment2 "ESP32 Schematic"
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L ESP32-WROOM U13
+U 1 1 5A63B353
+P 2500 1950
+F 0 "U13" H 1800 3200 60  0000 C CNN
+F 1 "ESP-WROOM-32" H 3000 3200 60  0000 C CNN
+F 2 "lib_fp:ESP32-WROOM" H 2850 3300 60  0001 C CNN
+F 3 "https://www.espressif.com/sites/default/files/documentation/esp-wroom-32_datasheet_en.pdf" H 2050 2400 60  0001 C CNN
+F 4 "TXRX MOD BLE WIFI ESP-WROOM-32" H 2500 1950 60  0001 C CNN "Description"
+F 5 "Espressif Systems" H 2500 1950 60  0001 C CNN "Manufacturer"
+	1    2500 1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR054
+U 1 1 5A63B62A
+P 1550 2650
+F 0 "#PWR054" H 1550 2400 50  0001 C CNN
+F 1 "GND" H 1550 2500 50  0000 C CNN
+F 2 "" H 1550 2650 50  0001 C CNN
+F 3 "" H 1550 2650 50  0001 C CNN
+	1    1550 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR055
+U 1 1 5A63B69F
+P 3550 7550
+F 0 "#PWR055" H 3550 7300 50  0001 C CNN
+F 1 "GND" H 3550 7400 50  0000 C CNN
+F 2 "" H 3550 7550 50  0001 C CNN
+F 3 "" H 3550 7550 50  0001 C CNN
+	1    3550 7550
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR056
+U 1 1 5A63B6BB
+P 3400 2600
+F 0 "#PWR056" H 3400 2350 50  0001 C CNN
+F 1 "GND" H 3400 2450 50  0000 C CNN
+F 2 "" H 3400 2600 50  0001 C CNN
+F 3 "" H 3400 2600 50  0001 C CNN
+	1    3400 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR057
+U 1 1 5A63B6D0
+P 3600 2600
+F 0 "#PWR057" H 3600 2350 50  0001 C CNN
+F 1 "GND" H 3600 2450 50  0000 C CNN
+F 2 "" H 3600 2600 50  0001 C CNN
+F 3 "" H 3600 2600 50  0001 C CNN
+	1    3600 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR058
+U 1 1 5A63B6E2
+P 1050 900
+F 0 "#PWR058" H 1050 750 50  0001 C CNN
+F 1 "+3.3V" H 1050 1040 50  0000 C CNN
+F 2 "" H 1050 900 50  0001 C CNN
+F 3 "" H 1050 900 50  0001 C CNN
+	1    1050 900 
+	1    0    0    -1  
+$EndComp
+Text HLabel 3550 2200 2    60   BiDi ~ 0
+SDA0
+Text HLabel 3550 2100 2    60   BiDi ~ 0
+SCL0
+$Comp
+L GND #PWR059
+U 1 1 5A63E91F
+P 8000 2150
+F 0 "#PWR059" H 8000 1900 50  0001 C CNN
+F 1 "GND" H 8000 2000 50  0000 C CNN
+F 2 "" H 8000 2150 50  0001 C CNN
+F 3 "" H 8000 2150 50  0001 C CNN
+	1    8000 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR060
+U 1 1 5A63E930
+P 6150 2250
+F 0 "#PWR060" H 6150 2000 50  0001 C CNN
+F 1 "GND" H 6150 2100 50  0000 C CNN
+F 2 "" H 6150 2250 50  0001 C CNN
+F 3 "" H 6150 2250 50  0001 C CNN
+	1    6150 2250
+	1    0    0    -1  
+$EndComp
+NoConn ~ 1550 1550
+NoConn ~ 1550 1650
+NoConn ~ 2250 3000
+NoConn ~ 2350 3000
+NoConn ~ 2450 3000
+NoConn ~ 2550 3000
+NoConn ~ 2650 3000
+NoConn ~ 2750 3000
+$Comp
+L Conn_01x20 J5
+U 1 1 5A659257
+P 6450 4100
+F 0 "J5" H 6450 5100 50  0000 C CNN
+F 1 "NHD OLED Connector" H 6650 3000 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical" H 6450 4100 50  0001 C CNN
+F 3 "" H 6450 4100 50  0001 C CNN
+	1    6450 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R23
+U 1 1 5A659929
+P 6000 2400
+F 0 "R23" V 6080 2400 50  0000 C CNN
+F 1 "10k" V 6000 2400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 5930 2400 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 6000 2400 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/8W 0805" H 6000 2400 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 6000 2400 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080510K0JNEA" H 6000 2400 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6080 2500 50  0001 C CNN "Supplier"
+F 8 "541-10KACT-ND" H 6000 2400 60  0001 C CNN "Supplier PN"
+	1    6000 2400
+	-1   0    0    1   
+$EndComp
+$Comp
+L +3.3V #PWR061
+U 1 1 5A659A54
+P 4400 850
+F 0 "#PWR061" H 4400 700 50  0001 C CNN
+F 1 "+3.3V" H 4400 990 50  0000 C CNN
+F 2 "" H 4400 850 50  0001 C CNN
+F 3 "" H 4400 850 50  0001 C CNN
+	1    4400 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR062
+U 1 1 5A659B80
+P 6000 2250
+F 0 "#PWR062" H 6000 2100 50  0001 C CNN
+F 1 "+3.3V" H 6000 2390 50  0000 C CNN
+F 2 "" H 6000 2250 50  0001 C CNN
+F 3 "" H 6000 2250 50  0001 C CNN
+	1    6000 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR063
+U 1 1 5A659FBB
+P 6150 5200
+F 0 "#PWR063" H 6150 4950 50  0001 C CNN
+F 1 "GND" H 6150 5050 50  0000 C CNN
+F 2 "" H 6150 5200 50  0001 C CNN
+F 3 "" H 6150 5200 50  0001 C CNN
+	1    6150 5200
+	-1   0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR064
+U 1 1 5A659FD5
+P 6000 3200
+F 0 "#PWR064" H 6000 3050 50  0001 C CNN
+F 1 "+3.3V" H 6000 3340 50  0000 C CNN
+F 2 "" H 6000 3200 50  0001 C CNN
+F 3 "" H 6000 3200 50  0001 C CNN
+	1    6000 3200
+	-1   0    0    -1  
+$EndComp
+NoConn ~ 6250 3400
+NoConn ~ 6250 4000
+NoConn ~ 6250 4600
+NoConn ~ 6250 4900
+$Comp
+L +3.3V #PWR065
+U 1 1 5A66EF44
+P 6250 750
+F 0 "#PWR065" H 6250 600 50  0001 C CNN
+F 1 "+3.3V" H 6250 890 50  0000 C CNN
+F 2 "" H 6250 750 50  0001 C CNN
+F 3 "" H 6250 750 50  0001 C CNN
+	1    6250 750 
+	1    0    0    -1  
+$EndComp
+$Comp
+L MCP7940N U12
+U 1 1 5A74520B
+P 2250 7200
+F 0 "U12" H 2000 7550 50  0000 C CNN
+F 1 "MCP7940N" H 2500 6850 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 2250 7200 50  0001 C CNN
+F 3 "http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en553487" H 2250 7200 50  0001 C CNN
+F 4 "IC RTC CLK/CALENDAR I2C 8-SOIC" H 2250 7200 60  0001 C CNN "Description"
+F 5 "Microchip Technology" H 2250 7200 60  0001 C CNN "Manufacturer"
+F 6 "MCP7940N-I/SN" H 2250 7200 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2250 7200 60  0001 C CNN "Supplier"
+F 8 "MCP7940N-I/SN-ND" H 2250 7200 60  0001 C CNN "Supplier PN"
+	1    2250 7200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Crystal Y2
+U 1 1 5A7455EA
+P 2900 7200
+F 0 "Y2" H 2900 7350 50  0000 C CNN
+F 1 "32.768 kHz" H 2900 7050 50  0000 C CNN
+F 2 "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm" H 2900 7200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/AVX%20PDFs/USY1N-H1-13168-00_ST3215SB_Spec.pdf" H 2900 7200 50  0001 C CNN
+F 4 "CRYSTAL 32.7680KHZ 7PF SMD" H 2900 7200 60  0001 C CNN "Description"
+F 5 "Kyocera Corp" H 2900 7200 60  0001 C CNN "Manufacturer"
+F 6 "ST3215SB32768C0HPWBB" H 2900 7200 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2900 7200 60  0001 C CNN "Supplier"
+F 8 "1253-1113-1-ND" H 2900 7200 60  0001 C CNN "Supplier PN"
+	1    2900 7200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L C C25
+U 1 1 5A7457A4
+P 3300 6950
+F 0 "C25" H 3325 7050 50  0000 L CNN
+F 1 "10pF" H 3325 6850 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3338 6800 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C100JBANNNC.jsp" H 3300 6950 50  0001 C CNN
+F 4 "CAP CER 10PF 50V C0G/NP0 0805" H 3300 6950 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3300 6950 60  0001 C CNN "Manufacturer"
+F 6 "CL21C100JBANNNC" H 3300 6950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3300 6950 60  0001 C CNN "Supplier"
+F 8 "1276-1109-1-ND" H 3300 6950 60  0001 C CNN "Supplier PN"
+	1    3300 6950
+	0    1    1    0   
+$EndComp
+$Comp
+L C C26
+U 1 1 5A745818
+P 3300 7450
+F 0 "C26" H 3325 7550 50  0000 L CNN
+F 1 "12pF" H 3325 7350 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3338 7300 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C120JBANNNC.jsp" H 3300 7450 50  0001 C CNN
+F 4 "CAP CER 12PF 50V C0G/NP0 0805" H 3300 7450 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3300 7450 60  0001 C CNN "Manufacturer"
+F 6 "CL21C120JBANNNC" H 3300 7450 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3300 7450 60  0001 C CNN "Supplier"
+F 8 "1276-1120-1-ND" H 3300 7450 60  0001 C CNN "Supplier PN"
+	1    3300 7450
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR066
+U 1 1 5A745E36
+P 2250 7600
+F 0 "#PWR066" H 2250 7350 50  0001 C CNN
+F 1 "GND" H 2250 7450 50  0000 C CNN
+F 2 "" H 2250 7600 50  0001 C CNN
+F 3 "" H 2250 7600 50  0001 C CNN
+	1    2250 7600
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C23
+U 1 1 5A747D4C
+P 2400 6650
+F 0 "C23" H 2425 6750 50  0000 L CNN
+F 1 "0.1uF" H 2425 6550 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 2438 6500 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 2400 6650 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 2425 6850 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 2425 6850 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 2425 6850 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 2425 6850 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 2425 6850 50  0001 C CNN "Supplier"
+	1    2400 6650
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +3.3V #PWR067
+U 1 1 5A747DDD
+P 2250 6500
+F 0 "#PWR067" H 2250 6350 50  0001 C CNN
+F 1 "+3.3V" H 2250 6640 50  0000 C CNN
+F 2 "" H 2250 6500 50  0001 C CNN
+F 3 "" H 2250 6500 50  0001 C CNN
+	1    2250 6500
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR068
+U 1 1 5A747E81
+P 2550 6650
+F 0 "#PWR068" H 2550 6400 50  0001 C CNN
+F 1 "GND" H 2550 6500 50  0000 C CNN
+F 2 "" H 2550 6650 50  0001 C CNN
+F 3 "" H 2550 6650 50  0001 C CNN
+	1    2550 6650
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Battery_Cell BT1
+U 1 1 5A748506
+P 4650 7100
+F 0 "BT1" H 4750 7200 50  0000 L CNN
+F 1 "Battery" H 4750 7100 50  0000 L CNN
+F 2 "lib_fp:BatteryHolder_BU2032SM-BT-GTR" V 4650 7160 50  0001 C CNN
+F 3 "http://www.memoryprotectiondevices.com/datasheets/BU2032SM-BT-GTR-datasheet.pdf" V 4650 7160 50  0001 C CNN
+F 4 "HOLDER CR2032 GOLD LEADS SMD" H 4650 7100 60  0001 C CNN "Description"
+F 5 "MPD" H 4650 7100 60  0001 C CNN "Manufacturer"
+F 6 "BU2032SM-BT-GTR" H 4650 7100 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4650 7100 60  0001 C CNN "Supplier"
+F 8 "BU2032SM-BT-GCT-ND" H 4650 7100 60  0001 C CNN "Supplier PN"
+	1    4650 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR069
+U 1 1 5A7485F4
+P 4650 7200
+F 0 "#PWR069" H 4650 6950 50  0001 C CNN
+F 1 "GND" H 4650 7050 50  0000 C CNN
+F 2 "" H 4650 7200 50  0001 C CNN
+F 3 "" H 4650 7200 50  0001 C CNN
+	1    4650 7200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Micro_SD_Card_Det_Hirose_DM3AT J6
+U 1 1 5A7628CC
+P 7200 1650
+F 0 "J6" H 6550 2350 50  0000 C CNN
+F 1 "microSD Socket" H 7850 2350 50  0000 R CNN
+F 2 "lib_fp:microSD_HC_Hirose_DM3AT-SF-PEJM5" H 9250 2350 50  0001 C CNN
+F 3 "https://www.hirose.com/product/en/download_file/key_name/DM3/category/Catalog/doc_file_id/49662/?file_category_id=4&item_id=195&is_series=1" H 7200 1750 50  0001 C CNN
+F 4 "CONN MICRO SD CARD PUSH-PUSH R/A" H 7200 1650 60  0001 C CNN "Description"
+F 5 "Hirose Electric Co Ltd" H 7200 1650 60  0001 C CNN "Manufacturer"
+F 6 "DM3AT-SF-PEJM5" H 7200 1650 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 7200 1650 60  0001 C CNN "Supplier"
+F 8 "HR1964CT-ND" H 7200 1650 60  0001 C CNN "Supplier PN"
+	1    7200 1650
+	1    0    0    -1  
+$EndComp
+Text Label 6050 3500 2    60   ~ 0
+DISP_D/~C
+Text Label 6050 3800 2    60   ~ 0
+VSPI_SCK
+Text Label 6050 3900 2    60   ~ 0
+VSPI_MOSI
+Text Label 6050 4700 2    60   ~ 0
+DISP_~RES
+Text Label 6050 4800 2    60   ~ 0
+DISP_~CS
+Text Label 3550 1300 0    60   ~ 0
+DISP_D/~C
+Text Label 3550 1900 0    60   ~ 0
+VSPI_SCK
+Text Label 3550 1200 0    60   ~ 0
+VSPI_MOSI
+Text Label 3550 1600 0    60   ~ 0
+DISP_~RES
+Text Label 3550 2000 0    60   ~ 0
+DISP_~CS
+$Comp
+L Test_Point TP1
+U 1 1 5A768A06
+P 900 2100
+F 0 "TP1" H 900 2370 50  0000 C CNN
+F 1 "V_REF" H 900 2300 50  0000 C CNN
+F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 1100 2100 50  0001 C CNN
+F 3 "" H 1100 2100 50  0001 C CNN
+	1    900  2100
+	1    0    0    -1  
+$EndComp
+Text Label 4700 1650 2    60   ~ 0
+SD_CLK
+Text Label 4700 1450 2    60   ~ 0
+SD_CMD
+Text Label 4700 1750 2    60   ~ 0
+SD_D0
+Text Label 4700 1850 2    60   ~ 0
+SD_D1
+Text Label 4700 1250 2    60   ~ 0
+SD_D2
+Text Label 4700 1350 2    60   ~ 0
+SD_D3
+Text Label 4700 2600 2    60   ~ 0
+SD_~CD
+Text Label 1400 2450 2    60   ~ 0
+SD_CLK
+Text Label 2850 3150 3    60   ~ 0
+SD_CMD
+Text Label 3050 3150 3    60   ~ 0
+SD_D0
+Text Label 3550 2300 0    60   ~ 0
+SD_D1
+Text Label 1400 2550 2    60   ~ 0
+SD_D2
+Text Label 2150 3150 3    60   ~ 0
+SD_D3
+Text Label 1400 1850 2    60   ~ 0
+SD_~CD
+$Comp
+L EClamp2410P U15
+U 1 1 5A7D2FE6
+P 5450 1450
+F 0 "U15" H 5450 2150 60  0000 C CNN
+F 1 "EClamp2410P" H 5450 750 60  0000 C CNN
+F 2 "lib_fp:SLP4016P16_1.6x4mm_P0.5mm" H 5450 1450 60  0001 C CNN
+F 3 "https://www.semtech.com/uploads/documents/eclamp2410p.pdf" H 5450 1450 60  0001 C CNN
+F 4 "FILTER RC(PI) 45 OHM/12PF SMD" H 5450 1450 60  0001 C CNN "Description"
+F 5 "Semtech Corporation" H 5450 1450 60  0001 C CNN "Manufacturer"
+F 6 "ECLAMP2410P.TCT" H 5450 1450 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5450 1450 60  0001 C CNN "Supplier"
+F 8 "ECLAMP2410P.TCT-ND" H 5450 1450 60  0001 C CNN "Supplier PN"
+	1    5450 1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR070
+U 1 1 5A7D7234
+P 4800 2050
+F 0 "#PWR070" H 4800 1800 50  0001 C CNN
+F 1 "GND" H 4800 1900 50  0000 C CNN
+F 2 "" H 4800 2050 50  0001 C CNN
+F 3 "" H 4800 2050 50  0001 C CNN
+	1    4800 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Jumper_NC_Small JP1
+U 1 1 5A7D7772
+P 4700 900
+F 0 "JP1" H 4700 1000 50  0000 C CNN
+F 1 "Jumper" H 4710 840 50  0001 C CNN
+F 2 "lib_fp:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm" H 4700 900 50  0001 C CNN
+F 3 "" H 4700 900 50  0001 C CNN
+	1    4700 900 
+	1    0    0    -1  
+$EndComp
+Text HLabel 1750 7000 0    60   BiDi ~ 0
+SCL0
+Text HLabel 1750 7100 0    60   BiDi ~ 0
+SDA0
+$Comp
+L R R16
+U 1 1 5A7EEA4A
+P 1350 7050
+F 0 "R16" V 1430 7050 50  0000 C CNN
+F 1 "10k" V 1350 7050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 1280 7050 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1350 7050 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/8W 0805" H 1350 7050 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1350 7050 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080510K0JNEA" H 1350 7050 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1430 7150 50  0001 C CNN "Supplier"
+F 8 "541-10KACT-ND" H 1350 7050 60  0001 C CNN "Supplier PN"
+	1    1350 7050
+	-1   0    0    1   
+$EndComp
+Text Label 3550 1800 0    60   ~ 0
+RTC_MFP
+Text Label 1000 7300 2    60   ~ 0
+RTC_MFP
+$Comp
+L +3.3V #PWR071
+U 1 1 5A7F034D
+P 1350 6900
+F 0 "#PWR071" H 1350 6750 50  0001 C CNN
+F 1 "+3.3V" H 1350 7040 50  0000 C CNN
+F 2 "" H 1350 6900 50  0001 C CNN
+F 3 "" H 1350 6900 50  0001 C CNN
+	1    1350 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR072
+U 1 1 5A7F0A20
+P 1950 3150
+F 0 "#PWR072" H 1950 2900 50  0001 C CNN
+F 1 "GND" H 1950 3000 50  0000 C CNN
+F 2 "" H 1950 3150 50  0001 C CNN
+F 3 "" H 1950 3150 50  0001 C CNN
+	1    1950 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L PWR_FLAG #FLG073
+U 1 1 5A7F138B
+P 3850 6800
+F 0 "#FLG073" H 3850 6875 50  0001 C CNN
+F 1 "PWR_FLAG" H 3850 6950 50  0001 C CNN
+F 2 "" H 3850 6800 50  0001 C CNN
+F 3 "" H 3850 6800 50  0001 C CNN
+	1    3850 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C28
+U 1 1 5A7F261B
+P 6450 850
+F 0 "C28" H 6475 950 50  0000 L CNN
+F 1 "10uF" H 6475 750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 6488 700 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A106KAFN3NE.jsp" H 6450 850 50  0001 C CNN
+F 4 "CAP CER 10UF 25V X5R 0805" H 6450 850 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 6450 850 60  0001 C CNN "Manufacturer"
+F 6 "CL21A106KAFN3NE" H 6450 850 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6450 850 60  0001 C CNN "Supplier"
+F 8 "1276-2890-1-ND" H 6450 850 60  0001 C CNN "Supplier PN"
+	1    6450 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR074
+U 1 1 5A7F27B5
+P 6600 850
+F 0 "#PWR074" H 6600 600 50  0001 C CNN
+F 1 "GND" H 6600 700 50  0000 C CNN
+F 2 "" H 6600 850 50  0001 C CNN
+F 3 "" H 6600 850 50  0001 C CNN
+	1    6600 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L S8050 Q1
+U 1 1 5A7F7824
+P 2150 4750
+F 0 "Q1" H 2350 4825 50  0000 L CNN
+F 1 "S8050" H 2350 4750 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2350 4675 50  0001 L CIN
+F 3 "http://www.mccsemi.com/up_pdf/MMSS8050(SOT-23).pdf" H 2150 4750 50  0001 L CNN
+F 4 "TRANS NPN 25V 1.5A SOT-23" H 2150 4750 60  0001 C CNN "Description"
+F 5 "Micro Commercial Co" H 2150 4750 60  0001 C CNN "Manufacturer"
+F 6 "MMSS8050-L-TP" H 2150 4750 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2150 4750 60  0001 C CNN "Supplier"
+F 8 "MMSS8050-L-TPMSCT-ND" H 2150 4750 60  0001 C CNN "Supplier PN"
+	1    2150 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L S8050 Q2
+U 1 1 5A7F7D3B
+P 2150 5300
+F 0 "Q2" H 2350 5375 50  0000 L CNN
+F 1 "S8050" H 2350 5300 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2350 5225 50  0001 L CIN
+F 3 "http://www.mccsemi.com/up_pdf/MMSS8050(SOT-23).pdf" H 2150 5300 50  0001 L CNN
+F 4 "TRANS NPN 25V 1.5A SOT-23" H 2150 5300 60  0001 C CNN "Description"
+F 5 "Micro Commercial Co" H 2150 5300 60  0001 C CNN "Manufacturer"
+F 6 "MMSS8050-L-TP" H 2150 5300 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2150 5300 60  0001 C CNN "Supplier"
+F 8 "MMSS8050-L-TPMSCT-ND" H 2150 5300 60  0001 C CNN "Supplier PN"
+	1    2150 5300
+	1    0    0    1   
+$EndComp
+$Comp
+L S8050 Q3
+U 1 1 5A7F7D98
+P 2150 5850
+F 0 "Q3" H 2350 5925 50  0000 L CNN
+F 1 "S8050" H 2350 5850 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2350 5775 50  0001 L CIN
+F 3 "http://www.mccsemi.com/up_pdf/MMSS8050(SOT-23).pdf" H 2150 5850 50  0001 L CNN
+F 4 "TRANS NPN 25V 1.5A SOT-23" H 2150 5850 60  0001 C CNN "Description"
+F 5 "Micro Commercial Co" H 2150 5850 60  0001 C CNN "Manufacturer"
+F 6 "MMSS8050-L-TP" H 2150 5850 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2150 5850 60  0001 C CNN "Supplier"
+F 8 "MMSS8050-L-TPMSCT-ND" H 2150 5850 60  0001 C CNN "Supplier PN"
+	1    2150 5850
+	1    0    0    1   
+$EndComp
+$Comp
+L R R18
+U 1 1 5A7F7F39
+P 1700 4750
+F 0 "R18" V 1780 4750 50  0000 C CNN
+F 1 "100k" V 1700 4750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 1630 4750 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1700 4750 50  0001 C CNN
+F 4 "RES SMD 100K OHM 1% 1/8W 0805" H 1700 4750 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1700 4750 60  0001 C CNN "Manufacturer"
+F 6 "CRCW0805100KFKEA" H 1700 4750 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1780 4850 50  0001 C CNN "Supplier"
+F 8 "541-100KCCT-ND" H 1700 4750 60  0001 C CNN "Supplier PN"
+	1    1700 4750
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R19
+U 1 1 5A7F86C6
+P 1700 5300
+F 0 "R19" V 1780 5300 50  0000 C CNN
+F 1 "100k" V 1700 5300 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 1630 5300 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1700 5300 50  0001 C CNN
+F 4 "RES SMD 100K OHM 1% 1/8W 0805" H 1700 5300 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1700 5300 60  0001 C CNN "Manufacturer"
+F 6 "CRCW0805100KFKEA" H 1700 5300 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1780 5400 50  0001 C CNN "Supplier"
+F 8 "541-100KCCT-ND" H 1700 5300 60  0001 C CNN "Supplier PN"
+	1    1700 5300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R20
+U 1 1 5A7F8736
+P 1700 5850
+F 0 "R20" V 1780 5850 50  0000 C CNN
+F 1 "100k" V 1700 5850 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 1630 5850 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1700 5850 50  0001 C CNN
+F 4 "RES SMD 100K OHM 1% 1/8W 0805" H 1700 5850 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1700 5850 60  0001 C CNN "Manufacturer"
+F 6 "CRCW0805100KFKEA" H 1700 5850 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1780 5950 50  0001 C CNN "Supplier"
+F 8 "541-100KCCT-ND" H 1700 5850 60  0001 C CNN "Supplier PN"
+	1    1700 5850
+	0    -1   -1   0   
+$EndComp
+Text Label 2500 4550 0    60   ~ 0
+EN
+Text Label 2500 5500 0    60   ~ 0
+IO0
+Text Label 2500 6050 0    60   ~ 0
+IO2
+Text Label 1350 4750 2    60   ~ 0
+DTR
+Text Label 1350 5300 2    60   ~ 0
+RTS
+Text Label 1400 1450 2    60   ~ 0
+EN
+Text Label 3550 2400 0    60   ~ 0
+IO0
+Text Label 2950 3150 3    60   ~ 0
+IO2
+Wire Wire Line
+	3400 2500 3600 2500
+Wire Wire Line
+	3600 2500 3600 2600
+Wire Wire Line
+	6150 3200 6250 3200
+Wire Wire Line
+	6000 3300 6250 3300
+Wire Wire Line
+	6150 3600 6250 3600
+Connection ~ 6150 3200
+Wire Wire Line
+	6150 3700 6250 3700
+Connection ~ 6150 3600
+Wire Wire Line
+	6150 4100 6250 4100
+Connection ~ 6150 3700
+Wire Wire Line
+	6150 4200 6250 4200
+Connection ~ 6150 4100
+Wire Wire Line
+	6150 4300 6250 4300
+Connection ~ 6150 4200
+Wire Wire Line
+	6150 4400 6250 4400
+Connection ~ 6150 4300
+Wire Wire Line
+	6150 4500 6250 4500
+Connection ~ 6150 4400
+Wire Wire Line
+	6150 5000 6250 5000
+Connection ~ 6150 4500
+Wire Wire Line
+	6150 5100 6250 5100
+Connection ~ 6150 5000
+Wire Wire Line
+	6150 3200 6150 5200
+Connection ~ 6150 5100
+Wire Wire Line
+	6000 3300 6000 3200
+Wire Wire Line
+	3550 2100 3400 2100
+Wire Wire Line
+	3550 2200 3400 2200
+Wire Wire Line
+	2650 7100 2650 6950
+Wire Wire Line
+	2650 6950 3150 6950
+Wire Wire Line
+	2650 7300 2650 7450
+Wire Wire Line
+	2650 7450 3150 7450
+Wire Wire Line
+	2900 7050 2900 6950
+Connection ~ 2900 6950
+Wire Wire Line
+	2900 7350 2900 7450
+Connection ~ 2900 7450
+Wire Wire Line
+	3450 6950 3550 6950
+Wire Wire Line
+	3550 6950 3550 7550
+Wire Wire Line
+	3450 7450 3550 7450
+Connection ~ 3550 7450
+Wire Wire Line
+	2250 6500 2250 6800
+Connection ~ 2250 6650
+Wire Wire Line
+	6250 3500 6050 3500
+Wire Wire Line
+	6250 3800 6050 3800
+Wire Wire Line
+	6250 3900 6050 3900
+Wire Wire Line
+	6050 4700 6250 4700
+Wire Wire Line
+	6050 4800 6250 4800
+Wire Wire Line
+	3400 1300 3550 1300
+Wire Wire Line
+	3400 1900 3550 1900
+Wire Wire Line
+	3400 1200 3550 1200
+Wire Wire Line
+	3400 1600 3550 1600
+Wire Wire Line
+	3400 2000 3550 2000
+Wire Wire Line
+	1550 2450 1400 2450
+Wire Wire Line
+	2850 3150 2850 3000
+Wire Wire Line
+	2950 3000 2950 3150
+Wire Wire Line
+	3400 2300 3550 2300
+Wire Wire Line
+	1550 2550 1400 2550
+Wire Wire Line
+	2150 3000 2150 3150
+Wire Wire Line
+	1400 1850 1550 1850
+Wire Wire Line
+	6300 1250 6050 1250
+Wire Wire Line
+	6300 1350 6050 1350
+Wire Wire Line
+	6300 1450 6050 1450
+Wire Wire Line
+	6050 1550 6300 1550
+Wire Wire Line
+	6250 750  6250 1550
+Connection ~ 6250 1550
+Wire Wire Line
+	6300 1650 6050 1650
+Wire Wire Line
+	6050 1850 6050 1950
+Wire Wire Line
+	6050 1950 6300 1950
+Wire Wire Line
+	6050 1750 6100 1750
+Wire Wire Line
+	6100 1750 6100 1850
+Wire Wire Line
+	6100 1850 6300 1850
+Wire Wire Line
+	6150 1750 6300 1750
+Wire Wire Line
+	6150 1750 6150 2250
+Wire Wire Line
+	6300 2050 6150 2050
+Connection ~ 6150 2050
+Wire Wire Line
+	6300 2600 6300 2150
+Wire Wire Line
+	4700 2600 6300 2600
+Wire Wire Line
+	4850 1250 4700 1250
+Wire Wire Line
+	4850 1350 4700 1350
+Wire Wire Line
+	4850 1450 4700 1450
+Wire Wire Line
+	4850 1650 4700 1650
+Wire Wire Line
+	4850 1750 4700 1750
+Wire Wire Line
+	4850 1850 4700 1850
+Wire Wire Line
+	4850 900  4800 900 
+Wire Wire Line
+	4600 900  4400 900 
+Wire Wire Line
+	4400 850  4400 1100
+Wire Wire Line
+	4400 1000 4850 1000
+Connection ~ 4400 900 
+Wire Wire Line
+	4400 1100 4850 1100
+Connection ~ 4400 1000
+Wire Wire Line
+	4850 2000 4800 2000
+Wire Wire Line
+	4800 2000 4800 2050
+Wire Wire Line
+	6000 2550 6000 2600
+Connection ~ 6000 2600
+Wire Wire Line
+	1750 7000 1850 7000
+Wire Wire Line
+	1750 7100 1850 7100
+Wire Wire Line
+	3400 1800 3550 1800
+Wire Wire Line
+	1000 7300 1850 7300
+Wire Wire Line
+	1350 7200 1350 7300
+Connection ~ 1350 7300
+Wire Wire Line
+	2050 3000 1950 3000
+Wire Wire Line
+	1950 3000 1950 3150
+Wire Wire Line
+	6300 850  6250 850 
+Connection ~ 6250 850 
+Wire Wire Line
+	1850 4750 1950 4750
+Wire Wire Line
+	1850 5300 1950 5300
+Wire Wire Line
+	1850 5850 1950 5850
+Wire Wire Line
+	2500 4550 2250 4550
+Wire Wire Line
+	2500 5500 2250 5500
+Wire Wire Line
+	2500 6050 2250 6050
+Wire Wire Line
+	1350 4750 1550 4750
+Wire Wire Line
+	1350 5300 1550 5300
+Wire Wire Line
+	2250 4950 2250 5000
+Wire Wire Line
+	2250 5000 1450 5000
+Wire Wire Line
+	1450 5000 1450 5850
+Connection ~ 1450 5300
+Wire Wire Line
+	2250 5050 2250 5100
+Wire Wire Line
+	1500 5050 2250 5050
+Wire Wire Line
+	1500 5050 1500 4750
+Connection ~ 1500 4750
+Wire Wire Line
+	1450 5850 1550 5850
+Wire Wire Line
+	2250 5650 2250 5550
+Wire Wire Line
+	2250 5550 1900 5550
+Wire Wire Line
+	1900 5550 1900 5050
+Connection ~ 1900 5050
+Wire Wire Line
+	1400 1450 1550 1450
+Wire Wire Line
+	3550 2400 3400 2400
+Wire Wire Line
+	3050 3150 3050 3050
+Wire Wire Line
+	3050 3050 2950 3050
+Connection ~ 2950 3050
+$Comp
+L C C22
+U 1 1 5A7FE6B7
+P 1050 1150
+F 0 "C22" H 1075 1250 50  0000 L CNN
+F 1 "100uF" H 1075 1050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 1088 1000 50  0001 C CNN
+F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GRM31CR60J107KE39-01.pdf" H 1050 1150 50  0001 C CNN
+F 4 "CAP CER 100UF 6.3V X5R 1206" H 1050 1150 60  0001 C CNN "Description"
+F 5 "Murata Electronics" H 1050 1150 60  0001 C CNN "Manufacturer"
+F 6 "GRM31CR60J107KE39L" H 1050 1150 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1050 1150 60  0001 C CNN "Supplier"
+F 8 "490-13982-1-ND" H 1050 1150 60  0001 C CNN "Supplier PN"
+	1    1050 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C20
+U 1 1 5A7FE8FB
+P 750 1150
+F 0 "C20" H 775 1250 50  0000 L CNN
+F 1 "1uF" H 775 1050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 788 1000 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21B105KPFNNNE.jsp" H 750 1150 50  0001 C CNN
+F 4 "CAP CER 1UF 10V X7R 0805" H 750 1150 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 750 1150 60  0001 C CNN "Manufacturer"
+F 6 "CL21B105KPFNNNE" H 750 1150 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 750 1150 60  0001 C CNN "Supplier"
+F 8 "1276-1275-1-ND" H 750 1150 60  0001 C CNN "Supplier PN"
+	1    750  1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR075
+U 1 1 5A7FF459
+P 1050 1400
+F 0 "#PWR075" H 1050 1150 50  0001 C CNN
+F 1 "GND" H 1050 1250 50  0000 C CNN
+F 2 "" H 1050 1400 50  0001 C CNN
+F 3 "" H 1050 1400 50  0001 C CNN
+	1    1050 1400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1050 900  1050 1000
+Wire Wire Line
+	750  1000 750  950 
+Wire Wire Line
+	750  950  1550 950 
+Connection ~ 1050 950 
+Wire Wire Line
+	1050 1300 1050 1400
+Wire Wire Line
+	750  1300 750  1350
+Wire Wire Line
+	750  1350 1050 1350
+Connection ~ 1050 1350
+Wire Wire Line
+	1550 950  1550 1350
+$Comp
+L POT RV1
+U 1 1 5A7F21A9
+P 4550 4950
+F 0 "RV1" V 4375 4950 50  0000 C CNN
+F 1 "POT" V 4450 4950 50  0000 C CNN
+F 2 "lib_fp:Potentiometer_TT_P090S_Single_Vertical" H 4550 4950 50  0001 C CNN
+F 3 "http://www.ttelectronics.com/sites/default/files/download-files/Datasheet_PanelPot_P090Series.pdf" H 4550 4950 50  0001 C CNN
+F 4 "POT 10K OHM 1/32W PLASTIC LINEAR" H 4550 4950 60  0001 C CNN "Description"
+F 5 "TT Electronics" H 4550 4950 60  0001 C CNN "Manufacturer"
+F 6 "P090S-04F20BR10K" H 4550 4950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4550 4950 60  0001 C CNN "Supplier"
+F 8 "987-1276-ND" H 4550 4950 60  0001 C CNN "Supplier PN"
+	1    4550 4950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR076
+U 1 1 5A7F2768
+P 4550 4750
+F 0 "#PWR076" H 4550 4600 50  0001 C CNN
+F 1 "+3.3V" H 4550 4890 50  0000 C CNN
+F 2 "" H 4550 4750 50  0001 C CNN
+F 3 "" H 4550 4750 50  0001 C CNN
+	1    4550 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR077
+U 1 1 5A7F27BB
+P 4550 5150
+F 0 "#PWR077" H 4550 4900 50  0001 C CNN
+F 1 "GND" H 4550 5000 50  0000 C CNN
+F 2 "" H 4550 5150 50  0001 C CNN
+F 3 "" H 4550 5150 50  0001 C CNN
+	1    4550 5150
+	1    0    0    -1  
+$EndComp
+Text Label 4850 4950 0    60   ~ 0
+VOL
+Text Label 1400 2050 2    60   ~ 0
+VOL
+Wire Wire Line
+	1400 2050 1550 2050
+Wire Wire Line
+	4700 4950 4850 4950
+Wire Wire Line
+	4550 4750 4550 4800
+Wire Wire Line
+	4550 5150 4550 5100
+Text HLabel 1400 2150 0    60   BiDi ~ 0
+SCL1
+Text HLabel 1400 2250 0    60   BiDi ~ 0
+SDA1
+Wire Wire Line
+	1400 2150 1550 2150
+Wire Wire Line
+	1550 2250 1400 2250
+Wire Wire Line
+	1450 2150 1450 2100
+Wire Wire Line
+	1450 2100 900  2100
+Connection ~ 1450 2150
+Text HLabel 1400 2350 0    60   Input ~ 0
+I/O_INT
+Wire Wire Line
+	1550 2350 1400 2350
+Text HLabel 1400 1950 0    60   Input ~ 0
+I/O_TP
+Wire Wire Line
+	1400 1950 1550 1950
+$Comp
+L Test_Point TP2
+U 1 1 5A800371
+P 1100 7200
+F 0 "TP2" H 1100 7470 50  0000 C CNN
+F 1 "C_REF" H 1100 7400 50  0000 C CNN
+F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 1300 7200 50  0001 C CNN
+F 3 "" H 1300 7200 50  0001 C CNN
+	1    1100 7200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1100 7200 1100 7300
+Connection ~ 1100 7300
+$Comp
+L Conn_01x06 J4
+U 1 1 5A80DFBD
+P 3700 5250
+F 0 "J4" H 3700 5550 50  0000 C CNN
+F 1 "Program" H 3700 4850 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal" H 3700 5250 50  0001 C CNN
+F 3 "http://katalog.we-online.de/em/datasheet/6130xx11021.pdf" H 3700 5250 50  0001 C CNN
+F 4 "CONN HEADER 6 POS RA 2.54" H 3700 5250 60  0001 C CNN "Description"
+F 5 "Wurth Electronics" H 3700 5250 60  0001 C CNN "Manufacturer"
+F 6 "61300611021" H 3700 5250 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3700 5250 60  0001 C CNN "Supplier"
+F 8 "732-5339-ND" H 3700 5250 60  0001 C CNN "Supplier PN"
+	1    3700 5250
+	1    0    0    -1  
+$EndComp
+Text Label 3450 5050 2    60   ~ 0
+DTR
+Wire Wire Line
+	3500 5050 3450 5050
+Text Label 3450 5450 2    60   ~ 0
+RTS
+Wire Wire Line
+	3500 5450 3450 5450
+$Comp
+L GND #PWR078
+U 1 1 5A80EBA6
+P 3150 5600
+F 0 "#PWR078" H 3150 5350 50  0001 C CNN
+F 1 "GND" H 3150 5450 50  0000 C CNN
+F 2 "" H 3150 5600 50  0001 C CNN
+F 3 "" H 3150 5600 50  0001 C CNN
+	1    3150 5600
+	-1   0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR079
+U 1 1 5A80ED04
+P 3150 5250
+F 0 "#PWR079" H 3150 5100 50  0001 C CNN
+F 1 "+3.3V" H 3150 5390 50  0000 C CNN
+F 2 "" H 3150 5250 50  0001 C CNN
+F 3 "" H 3150 5250 50  0001 C CNN
+	1    3150 5250
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3150 5250 3500 5250
+Text Label 3550 1400 0    60   ~ 0
+TXD
+Text Label 3550 1500 0    60   ~ 0
+RXD
+Wire Wire Line
+	3400 1400 3550 1400
+Wire Wire Line
+	3400 1500 3550 1500
+Text Label 3450 5150 2    60   ~ 0
+TXD
+Text Label 3450 5350 2    60   ~ 0
+RXD
+Wire Wire Line
+	3500 5150 3450 5150
+Wire Wire Line
+	3500 5350 3450 5350
+Wire Wire Line
+	3500 5550 3150 5550
+Wire Wire Line
+	3150 5550 3150 5600
+$Comp
+L SW_Push SW2
+U 1 1 5A813E58
+P 3250 3950
+F 0 "SW2" H 3300 4050 50  0000 L CNN
+F 1 "ESP Reset" H 3250 3890 50  0000 C CNN
+F 2 "Button_Switch_SMD:SW_SPST_FSMSM" H 3250 4150 50  0001 C CNN
+F 3 "http://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1437566-3&DocType=Customer+Drawing&DocLang=English" H 3250 4150 50  0001 C CNN
+F 4 "SWITCH TACTILE SPST-NO 0.05A 24V" H 3250 3950 60  0001 C CNN "Description"
+F 5 "TE Connectivity" H 3250 3950 60  0001 C CNN "Manufacturer"
+F 6 "FSMSM" H 3250 3950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3250 3950 60  0001 C CNN "Supplier"
+F 8 "450-1140-ND" H 3250 3950 60  0001 C CNN "Supplier PN"
+	1    3250 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C24
+U 1 1 5A8152E0
+P 3250 4250
+F 0 "C24" H 3275 4350 50  0000 L CNN
+F 1 "1nF" H 3275 4150 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3288 4100 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21B102KB6WPNC.jsp" H 3250 4250 50  0001 C CNN
+F 4 "CAP CER 1000PF 50V X7R 0805" H 3250 4250 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3250 4250 60  0001 C CNN "Manufacturer"
+F 6 "CL21B102KB6WPNC" H 3250 4250 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3250 4250 60  0001 C CNN "Supplier"
+F 8 "1276-6843-1-ND" H 3250 4250 60  0001 C CNN "Supplier PN"
+	1    3250 4250
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R21
+U 1 1 5A815341
+P 3700 3950
+F 0 "R21" V 3780 3950 50  0000 C CNN
+F 1 "470R" V 3700 3950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3630 3950 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3700 3950 50  0001 C CNN
+F 4 "RES SMD 470 OHM 1% 1/8W 0805" H 3700 3950 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3700 3950 60  0001 C CNN "Manufacturer"
+F 6 "CRCW08054R70FKEA" H 3700 3950 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3700 3950 60  0001 C CNN "Supplier"
+F 8 "541-4.70CCCT-ND" H 3700 3950 60  0001 C CNN "Supplier PN"
+	1    3700 3950
+	0    1    1    0   
+$EndComp
+Text Label 3950 3950 0    60   ~ 0
+EN
+$Comp
+L GND #PWR080
+U 1 1 5A815D6B
+P 2950 4300
+F 0 "#PWR080" H 2950 4050 50  0001 C CNN
+F 1 "GND" H 2950 4150 50  0000 C CNN
+F 2 "" H 2950 4300 50  0001 C CNN
+F 3 "" H 2950 4300 50  0001 C CNN
+	1    2950 4300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3050 3950 2950 3950
+Wire Wire Line
+	2950 3950 2950 4300
+Wire Wire Line
+	3100 4250 2950 4250
+Connection ~ 2950 4250
+Wire Wire Line
+	3450 3950 3550 3950
+Wire Wire Line
+	3400 4250 3500 4250
+Wire Wire Line
+	3500 4250 3500 3950
+Connection ~ 3500 3950
+Wire Wire Line
+	3850 3950 3950 3950
+$Comp
+L TSL251R U14
+U 1 1 5A81EA5F
+P 4550 3600
+F 0 "U14" H 4650 3900 60  0000 C CNN
+F 1 "TSL251R" H 4750 3300 60  0000 C CNN
+F 2 "lib_fp:S-3" H 4550 3600 60  0001 C CNN
+F 3 "http://ams.com/eng/content/download/250423/976437/142379" H 4550 3600 60  0001 C CNN
+F 4 "IC LIGHT TO VOLTAGE SENSOR 3PIN" H 4550 3600 60  0001 C CNN "Description"
+F 5 "ams" H 4550 3600 60  0001 C CNN "Manufacturer"
+F 6 "TSL251R-LF" H 4550 3600 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4550 3600 60  0001 C CNN "Supplier"
+F 8 "TSL251-R-LF-ND" H 4550 3600 60  0001 C CNN "Supplier PN"
+	1    4550 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR081
+U 1 1 5A81EF36
+P 4550 3150
+F 0 "#PWR081" H 4550 3000 50  0001 C CNN
+F 1 "+3.3V" H 4550 3290 50  0000 C CNN
+F 2 "" H 4550 3150 50  0001 C CNN
+F 3 "" H 4550 3150 50  0001 C CNN
+	1    4550 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR082
+U 1 1 5A81EF9B
+P 4550 4050
+F 0 "#PWR082" H 4550 3800 50  0001 C CNN
+F 1 "GND" H 4550 3900 50  0000 C CNN
+F 2 "" H 4550 4050 50  0001 C CNN
+F 3 "" H 4550 4050 50  0001 C CNN
+	1    4550 4050
+	1    0    0    -1  
+$EndComp
+Text Label 5100 3600 0    60   ~ 0
+LUM
+Wire Wire Line
+	5100 3600 4950 3600
+Text Label 1400 1750 2    60   ~ 0
+LUM
+Wire Wire Line
+	1400 1750 1550 1750
+Text Notes 600  7850 0    60   ~ 0
+Real-Time Clock
+$Comp
+L C C21
+U 1 1 5A83AA55
+P 800 4550
+F 0 "C21" H 825 4650 50  0000 L CNN
+F 1 "0.1uF" H 825 4450 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 838 4400 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/28548/vjw1bcbascomseries.pdf" H 800 4550 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0805" H 825 4750 50  0001 C CNN "Description"
+F 5 "VJ0805Y104KXXCW1BC" H 825 4750 50  0001 C CNN "Manufacturer PN"
+F 6 "Vishay Vitramon" H 825 4750 50  0001 C CNN "Manufacturer"
+F 7 "720-1537-1-ND" H 825 4750 50  0001 C CNN "Supplier PN"
+F 8 "Digi-Key" H 825 4750 50  0001 C CNN "Supplier"
+	1    800  4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R15
+U 1 1 5A83ABB9
+P 800 4150
+F 0 "R15" V 880 4150 50  0000 C CNN
+F 1 "12k" V 800 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 730 4150 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 800 4150 50  0001 C CNN
+F 4 "RES SMD 12K OHM 1% 1/8W 0805" H 800 4150 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 800 4150 60  0001 C CNN "Manufacturer"
+F 6 "CRCW080512K0FKEA" H 800 4150 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 880 4250 50  0001 C CNN "Supplier"
+F 8 "541-12.0KCCT-ND" H 800 4150 60  0001 C CNN "Supplier PN"
+	1    800  4150
+	-1   0    0    1   
+$EndComp
+$Comp
+L +3.3V #PWR083
+U 1 1 5A83B6E8
+P 800 4000
+F 0 "#PWR083" H 800 3850 50  0001 C CNN
+F 1 "+3.3V" H 800 4140 50  0000 C CNN
+F 2 "" H 800 4000 50  0001 C CNN
+F 3 "" H 800 4000 50  0001 C CNN
+	1    800  4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR084
+U 1 1 5A83B753
+P 800 4700
+F 0 "#PWR084" H 800 4450 50  0001 C CNN
+F 1 "GND" H 800 4550 50  0000 C CNN
+F 2 "" H 800 4700 50  0001 C CNN
+F 3 "" H 800 4700 50  0001 C CNN
+	1    800  4700
+	1    0    0    -1  
+$EndComp
+Text Label 1000 4350 0    60   ~ 0
+EN
+Wire Wire Line
+	800  4300 800  4400
+Wire Wire Line
+	1000 4350 800  4350
+Connection ~ 800  4350
+$Comp
+L C C27
+U 1 1 5A844D18
+P 3850 7050
+F 0 "C27" H 3875 7150 50  0000 L CNN
+F 1 "100pF" H 3875 6950 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3888 6900 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21C101JBANNNC.jsp" H 3850 7050 50  0001 C CNN
+F 4 "CAP CER 100PF 50V C0G/NP0 0805" H 3850 7050 60  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3850 7050 60  0001 C CNN "Manufacturer"
+F 6 "CL21C101JBANNNC" H 3850 7050 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3850 7050 60  0001 C CNN "Supplier"
+F 8 "1276-1014-1-ND" H 3850 7050 60  0001 C CNN "Supplier PN"
+	1    3850 7050
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R22
+U 1 1 5A847A26
+P 4100 6800
+F 0 "R22" V 4180 6800 50  0000 C CNN
+F 1 "1k" V 4100 6800 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4030 6800 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/20037/rcae3.pdf" H 4100 6800 50  0001 C CNN
+F 4 "RES SMD 1K OHM 5% 1/8W 0805" H 4100 6800 60  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4100 6800 60  0001 C CNN "Manufacturer"
+F 6 "RCA08051K00JNEA" H 4100 6800 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4180 6900 50  0001 C CNN "Supplier"
+F 8 "541-2235-1-ND" H 4100 6800 60  0001 C CNN "Supplier PN"
+	1    4100 6800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L D_Schottky D2
+U 1 1 5A84842A
+P 4400 6800
+F 0 "D2" H 4400 6900 50  0000 C CNN
+F 1 "D_Schottky" H 4400 6700 50  0000 C CNN
+F 2 "Diode_SMD:D_SOD-123F" H 4400 6800 50  0001 C CNN
+F 3 "http://www.onsemi.com/pub/Collateral/MBR120VLSFT1-D.PDF" H 4400 6800 50  0001 C CNN
+F 4 "DIODE SCHOTTKY 20V 1A SOD123FL" H 4400 6800 60  0001 C CNN "Description"
+F 5 "ON Semiconductor" H 4400 6800 60  0001 C CNN "Manufacturer"
+F 6 "MBR120VLSFT3G" H 4400 6800 60  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4400 6800 60  0001 C CNN "Supplier"
+F 8 "MBR120VLSFT3GOSCT-ND" H 4400 6800 60  0001 C CNN "Supplier PN"
+	1    4400 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR086
+U 1 1 5A8489CF
+P 3850 7200
+F 0 "#PWR086" H 3850 6950 50  0001 C CNN
+F 1 "GND" H 3850 7050 50  0000 C CNN
+F 2 "" H 3850 7200 50  0001 C CNN
+F 3 "" H 3850 7200 50  0001 C CNN
+	1    3850 7200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3850 6900 3850 6800
+Connection ~ 3850 6800
+Wire Wire Line
+	4650 6900 4650 6800
+Wire Wire Line
+	4650 6800 4550 6800
+Wire Wire Line
+	2350 6800 3950 6800
+Wire Notes Line
+	550  7900 550  6250
+Wire Notes Line
+	550  6250 5200 6250
+Wire Notes Line
+	5200 6250 5200 7900
+Wire Notes Line
+	5200 7900 550  7900
+Text Notes 600  6100 0    60   ~ 0
+Bootstrapping
+Wire Notes Line
+	550  6150 550  3750
+Wire Notes Line
+	550  3750 2750 3750
+Wire Notes Line
+	2750 3750 2750 6150
+Wire Notes Line
+	2750 6150 550  6150
+Text Notes 600  3600 0    60   ~ 0
+ESP32 Microcontroller
+Wire Notes Line
+	550  3650 550  550 
+Wire Notes Line
+	550  550  4100 550 
+Wire Notes Line
+	4100 550  4100 3650
+Wire Notes Line
+	4100 3650 550  3650
+Text Notes 4250 2800 0    60   ~ 0
+SD Card Interface
+Wire Notes Line
+	4200 550  4200 2850
+Wire Notes Line
+	4200 2850 8150 2850
+Wire Notes Line
+	8150 2850 8150 550 
+Wire Notes Line
+	8150 550  4200 550 
+Text Notes 4250 5550 0    60   ~ 0
+Volume Control
+Text Notes 2900 4600 0    60   ~ 0
+Reset Button
+Text Notes 4250 4350 0    60   ~ 0
+Ambient Light Sensor
+Wire Notes Line
+	2850 3750 2850 4650
+Wire Notes Line
+	2850 4650 4100 4650
+Wire Notes Line
+	4100 4650 4100 3750
+Wire Notes Line
+	4100 3750 2850 3750
+Wire Notes Line
+	4200 4500 4200 5600
+Wire Notes Line
+	4200 5600 5300 5600
+Wire Notes Line
+	5300 5600 5300 4500
+Wire Notes Line
+	5300 4500 4200 4500
+Wire Notes Line
+	4200 2950 4200 4400
+Wire Notes Line
+	4200 4400 5300 4400
+Wire Notes Line
+	5300 4400 5300 2950
+Wire Notes Line
+	5300 2950 4200 2950
+Text Notes 2900 6100 0    60   ~ 0
+Programming Connector
+Wire Notes Line
+	2850 4750 2850 6150
+Wire Notes Line
+	2850 6150 4100 6150
+Wire Notes Line
+	4100 6150 4100 4750
+Wire Notes Line
+	4100 4750 2850 4750
+Text Notes 5450 5550 0    60   ~ 0
+Display Module Connector
+Wire Notes Line
+	5400 2950 5400 5600
+Wire Notes Line
+	5400 5600 7100 5600
+Wire Notes Line
+	7100 5600 7100 2950
+Wire Notes Line
+	7100 2950 5400 2950
+$EndSCHEMATC

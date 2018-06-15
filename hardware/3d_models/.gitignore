@@ -1,0 +1,10 @@
+# Artifact files we do not want to check in
+*.fcstd1
+*.stl
+
+# Files marked as not redistributable
+B2B-PH-SM4-TB.*
+BM06B-SRSS-TB.*
+DM3AT-SF-PEJM5.*
+SM06B-SRSS-TB.*
+

@@ -2007,17 +2007,6 @@ F 8 "Digi-Key" H 7025 3750 50  0001 C CNN "Supplier"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L +3.3V #PWR051
-U 1 1 5A64F776
-P 6800 3500
-F 0 "#PWR051" H 6800 3350 50  0001 C CNN
-F 1 "+3.3V" H 6800 3640 50  0000 C CNN
-F 2 "" H 6800 3500 50  0001 C CNN
-F 3 "" H 6800 3500 50  0001 C CNN
-	1    6800 3500
-	1    0    0    -1  
-$EndComp
-$Comp
 L GND #PWR052
 U 1 1 5A65083D
 P 7150 3550
@@ -2143,4 +2132,15 @@ Wire Wire Line
 Connection ~ 6000 3950
 Text Notes 600  1850 0    60   ~ 0
 Reset Button
+$Comp
+L +5V #PWR?
+U 1 1 5B2AA23C
+P 6800 3500
+F 0 "#PWR?" H 6800 3350 50  0001 C CNN
+F 1 "+5V" H 6800 3640 50  0000 C CNN
+F 2 "" H 6800 3500 50  0001 C CNN
+F 3 "" H 6800 3500 50  0001 C CNN
+	1    6800 3500
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

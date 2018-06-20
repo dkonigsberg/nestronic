@@ -314,12 +314,7 @@ F1 "Conn_01x02" 0 -200 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
- Connector*:*_??x*mm*
- Connector*:*1x??x*mm*
- Pin?Header?Straight?1X*
- Pin?Header?Angled?1X*
- Socket?Strip?Straight?1X*
- Socket?Strip?Angled?1X*
+ Connector*:*_1x??_*
 $ENDFPLIST
 DRAW
 S -50 -95 0 -105 1 1 6 N
@@ -338,12 +333,7 @@ F1 "Conn_01x06" 0 -400 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
- Connector*:*_??x*mm*
- Connector*:*1x??x*mm*
- Pin?Header?Straight?1X*
- Pin?Header?Angled?1X*
- Socket?Strip?Straight?1X*
- Socket?Strip?Angled?1X*
+ Connector*:*_1x??_*
 $ENDFPLIST
 DRAW
 S -50 -295 0 -305 1 1 6 N
@@ -370,12 +360,7 @@ F1 "Conn_01x20" 0 -1100 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
- Connector*:*_??x*mm*
- Connector*:*1x??x*mm*
- Pin?Header?Straight?1X*
- Pin?Header?Angled?1X*
- Socket?Strip?Straight?1X*
- Socket?Strip?Angled?1X*
+ Connector*:*_1x??_*
 $ENDFPLIST
 DRAW
 S -50 -995 0 -1005 1 1 6 N
@@ -452,7 +437,6 @@ F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
  TO-???*
- *SingleDiode
  *_Diode_*
  *SingleDiode*
  D_*
@@ -475,7 +459,6 @@ F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
  TO-???*
- *SingleDiode
  *_Diode_*
  *SingleDiode*
  D_*
@@ -679,7 +662,7 @@ F2 "" 2050 700 50 H I C CNN
 F3 "" 0 100 50 H I C CNN
 ALIAS Micro_SD_Card_Det_Hirose_DM3AT
 $FPLIST
- microSD*Card*Receptable*
+ microSD*
 $ENDFPLIST
 DRAW
 S -300 -275 -200 -325 0 1 0 F
@@ -782,7 +765,6 @@ F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
  R_*
- R_*
 $ENDFPLIST
 DRAW
 S -40 -100 40 100 0 1 10 N
@@ -796,11 +778,11 @@ ENDDEF
 DEF R-78E5.0-0.5 U 0 10 Y Y 1 F N
 F0 "U" -150 125 50 H V C CNN
 F1 "R-78E5.0-0.5" 0 125 50 H V L CNN
-F2 "Converters_DCDC_ACDC:DCDC-Conv_RECOM_R-78E-0.5" 50 -250 50 H I L CIN
+F2 "Converter_DCDC:Converter_DCDC_RECOM_R-78E-0.5_THT" 50 -250 50 H I L CIN
 F3 "" 0 0 50 H I C CNN
 ALIAS R-78E3.3-0.5 R-78E9.0-0.5 R-78E12-0.5 R-78E15-0.5 R-78E5.0-1.0 R-78E3.3-1.0 R-78C1.8-1.0 R-78C5.0-1.0 R-78C3.3-1.0 R-78C9.0-1.0 R-78C12-1.0 R-78C15-1.0 R-781.8-1.0 R-782.5-1.0 R-783.3-1.0 R-785.0-1.0 R-781.5-0.5 R-781.8-0.5 R-782.5-0.5 R-783.3-0.5 R-785.0-0.5 R-786.5-0.5 R-7812-0.5 R-7815-0.5
 $FPLIST
- DCDC*Conv*RECOM*R*78E*0.5*
+ Converter*DCDC*RECOM*R*78E*0.5*
 $ENDFPLIST
 DRAW
 S -200 75 200 -200 0 1 10 f
@@ -871,7 +853,7 @@ ENDDEF
 DEF S8050 Q 0 0 Y N 1 F N
 F0 "Q" 200 75 50 H V L CNN
 F1 "S8050" 200 0 50 H V L CNN
-F2 "TO_SOT_Packages_THT:TO-92_Molded_Narrow" 200 -75 50 H I L CIN
+F2 "Package_TO_SOT_THT:TO-92_Inline" 200 -75 50 H I L CIN
 F3 "" 0 0 50 H I L CNN
 $FPLIST
  TO?92*
@@ -929,21 +911,6 @@ P 2 0 1 0 0 50 0 120 N
 P 2 0 1 0 100 50 -100 50 N
 X 1 1 -200 0 100 R 50 50 0 1 P
 X 2 2 200 0 100 L 50 50 0 1 P
-ENDDRAW
-ENDDEF
-#
-# TSL251R
-#
-DEF TSL251R U 0 40 Y Y 1 F N
-F0 "U" 100 300 60 H V C CNN
-F1 "TSL251R" 200 -300 60 H V C CNN
-F2 "" 0 0 60 H I C CNN
-F3 "" 0 0 60 H I C CNN
-DRAW
-S 200 250 -200 -250 1 1 0 f
-X GND 1 0 -450 200 U 50 50 1 1 W
-X VDD 2 0 450 200 D 50 50 1 1 W
-X OUT 3 400 0 200 L 50 50 1 1 O
 ENDDRAW
 ENDDEF
 #

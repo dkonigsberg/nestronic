@@ -1183,11 +1183,6 @@ Wire Wire Line
 	1400 2150 1550 2150
 Wire Wire Line
 	1550 2250 1400 2250
-Wire Wire Line
-	1450 2150 1450 2100
-Wire Wire Line
-	1450 2100 900  2100
-Connection ~ 1450 2150
 Text HLabel 1400 2350 0    60   Input ~ 0
 I/O_INT
 Wire Wire Line
@@ -1565,4 +1560,11 @@ Wire Notes Line
 Wire Notes Line
 	7100 2950 5400 2950
 NoConn ~ 1550 1750
+Wire Wire Line
+	900  2100 900  2300
+Wire Wire Line
+	900  2300 1450 2300
+Wire Wire Line
+	1450 2300 1450 2350
+Connection ~ 1450 2350
 $EndSCHEMATC

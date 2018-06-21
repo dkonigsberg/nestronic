@@ -42,6 +42,12 @@ $CMP SN74LVC1404
 D Oscillator Driver for Crystal Oscillator or Ceramic Resonator
 $ENDCMP
 #
+$CMP SS8050
+D 1.5A Ic, 40V Vce, Low Voltage High Current NPN Transistor, SOT-23
+K SS8050 NPN Low Voltage High Current Transistor
+F http://www.mccsemi.com/up_pdf/MMSS8050(SOT-23).pdf
+$ENDCMP
+#
 $CMP TC7SU04F
 D High speed Unbuffered CMOS Inverter
 $ENDCMP

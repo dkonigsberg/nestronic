@@ -78,3 +78,7 @@ models for components that are no longer part of the actual board design.
 ### TSL251R
 * Status: Included (Same license as project)
 * Source: Created for project using FreeCAD
+
+### SOIC-28W_8.636x18.491mm_P1.27mm
+* Status: Included (Same license as project)
+* Source: Created for project using modified KiCad model scripts

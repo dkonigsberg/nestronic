@@ -369,7 +369,7 @@ U 1 1 5A42FB92
 P 6250 1950
 F 0 "U7" H 6250 2150 60  0000 C CNN
 F 1 "AS6C6264" H 6250 1950 60  0000 C CNN
-F 2 "Package_SO:SOIC-28W_7.5x17.9mm_P1.27mm" H 6250 1950 60  0001 C CNN
+F 2 "lib_fp:SOIC-28W_8.636x18.491mm_P1.27mm" H 6250 1950 60  0001 C CNN
 F 3 "https://www.alliancememory.com/wp-content/uploads/pdf/Alliance%20Memory_64K_AS6C6264v2.0July2017.pdf" H 6250 1950 60  0001 C CNN
 F 4 "IC SRAM 64KBIT 55NS 28SOP" H 6250 1950 60  0001 C CNN "Description"
 F 5 "Alliance Memory, Inc." H 6250 1950 60  0001 C CNN "Manufacturer"

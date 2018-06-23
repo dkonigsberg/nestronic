@@ -646,25 +646,14 @@ F 3 "" H 5000 850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L +5V #PWR030
-U 1 1 5A482A40
-P 5750 3050
-F 0 "#PWR030" H 5750 2900 50  0001 C CNN
-F 1 "+5V" H 5750 3190 50  0000 C CNN
-F 2 "" H 5750 3050 50  0001 C CNN
-F 3 "" H 5750 3050 50  0001 C CNN
-	1    5750 3050
-	1    0    0    -1  
-$EndComp
-$Comp
 L GND #PWR031
 U 1 1 5A482A78
-P 5450 2700
-F 0 "#PWR031" H 5450 2450 50  0001 C CNN
-F 1 "GND" H 5450 2550 50  0000 C CNN
-F 2 "" H 5450 2700 50  0001 C CNN
-F 3 "" H 5450 2700 50  0001 C CNN
-	1    5450 2700
+P 5500 2700
+F 0 "#PWR031" H 5500 2450 50  0001 C CNN
+F 1 "GND" H 5500 2550 50  0000 C CNN
+F 2 "" H 5500 2700 50  0001 C CNN
+F 3 "" H 5500 2700 50  0001 C CNN
+	1    5500 2700
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1355,7 +1344,7 @@ Text Label 10150 1850 0    60   ~ 0
 D7
 Text Label 5200 1150 0    60   ~ 0
 Y0
-Text Label 5500 2600 0    60   ~ 0
+Text Label 5300 2500 2    60   ~ 0
 Y0
 Text Label 5200 1450 0    60   ~ 0
 Y3
@@ -1568,13 +1557,7 @@ Wire Wire Line
 Wire Wire Line
 	4650 850  4700 850 
 Wire Wire Line
-	5650 2700 5450 2700
-Wire Wire Line
 	7350 2750 7350 2850
-Wire Wire Line
-	5650 2800 5650 3050
-Wire Wire Line
-	5650 3050 5750 3050
 Wire Wire Line
 	3650 2900 3700 2900
 Wire Wire Line
@@ -1659,8 +1642,6 @@ Wire Wire Line
 	10200 6100 9850 6100
 Wire Wire Line
 	9550 3300 9550 3500
-Wire Wire Line
-	5500 2600 5650 2600
 Wire Wire Line
 	5300 1150 5150 1150
 Wire Wire Line
@@ -1894,8 +1875,6 @@ Entry Wire Line
 Entry Wire Line
 	10300 1850 10400 1750
 Entry Wire Line
-	5400 2500 5500 2600
-Entry Wire Line
 	5300 1150 5400 1050
 Entry Wire Line
 	5300 1450 5400 1350
@@ -1930,42 +1909,22 @@ NoConn ~ 5150 1250
 NoConn ~ 5150 1350
 NoConn ~ 5150 1550
 NoConn ~ 5150 1650
-NoConn ~ 5150 1750
 $Comp
 L 74HCT00 U10
 U 4 1 5A5C869E
-P 9850 4000
-F 0 "U10" H 9850 4050 50  0000 C CNN
-F 1 "74HCT00" H 9850 3950 50  0001 C CNN
-F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9850 4000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 9850 4000 50  0001 C CNN
-F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 9850 4150 50  0001 C CNN "Description"
-F 5 "Texas Instruments" H 9850 4150 50  0001 C CNN "Manufacturer"
-F 6 "SN74HCT00DR" H 9850 4150 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 9850 4150 50  0001 C CNN "Supplier"
-F 8 "296-14860-1-ND" H 9850 4150 50  0001 C CNN "Supplier PN"
-	4    9850 4000
+P 5350 3100
+F 0 "U10" H 5350 3150 50  0000 C CNN
+F 1 "74HCT00" H 5350 3050 50  0001 C CNN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5350 3100 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hct00.pdf" H 5350 3100 50  0001 C CNN
+F 4 "IC GATE NAND 4CH 2-INP 14-SOIC" H 5350 3250 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 5350 3250 50  0001 C CNN "Manufacturer"
+F 6 "SN74HCT00DR" H 5350 3250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5350 3250 50  0001 C CNN "Supplier"
+F 8 "296-14860-1-ND" H 5350 3250 50  0001 C CNN "Supplier PN"
+	4    5350 3100
 	1    0    0    -1  
 $EndComp
-$Comp
-L GND #PWR050
-U 1 1 5A5C8B93
-P 9500 4150
-F 0 "#PWR050" H 9500 3900 50  0001 C CNN
-F 1 "GND" H 9500 4000 50  0000 C CNN
-F 2 "" H 9500 4150 50  0001 C CNN
-F 3 "" H 9500 4150 50  0001 C CNN
-	1    9500 4150
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9550 3900 9550 4100
-Wire Wire Line
-	9550 4000 9500 4000
-Wire Wire Line
-	9500 4000 9500 4150
-Connection ~ 9550 4000
-NoConn ~ 10150 4000
 Text HLabel 10250 2150 2    60   BiDi ~ 0
 SDA
 Text HLabel 10250 2250 2    60   BiDi ~ 0
@@ -2143,4 +2102,34 @@ F 3 "" H 6800 3500 50  0001 C CNN
 	1    6800 3500
 	1    0    0    -1  
 $EndComp
+Entry Wire Line
+	5300 1750 5400 1650
+Wire Wire Line
+	5300 1750 5150 1750
+Text Label 5200 1750 0    60   ~ 0
+Y6
+Wire Wire Line
+	5650 2700 5500 2700
+Wire Wire Line
+	5650 2600 5500 2600
+Wire Wire Line
+	5500 2600 5500 2700
+Wire Wire Line
+	5650 3100 5650 2800
+Entry Wire Line
+	5300 2500 5400 2400
+Entry Wire Line
+	5300 2600 5400 2500
+Text Label 5300 2600 2    60   ~ 0
+Y6
+Wire Wire Line
+	5300 2600 5050 2600
+Wire Wire Line
+	5050 2600 5050 3000
+Wire Wire Line
+	5300 2500 4950 2500
+Wire Wire Line
+	4950 2500 4950 3200
+Wire Wire Line
+	4950 3200 5050 3200
 $EndSCHEMATC

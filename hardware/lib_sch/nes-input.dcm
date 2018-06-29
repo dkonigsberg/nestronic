@@ -6,4 +6,10 @@ K Keypad I2C
 F http://www.ti.com/lit/ds/symlink/tca8418.pdf
 $ENDCMP
 #
+$CMP TSL2591
+D Light-to-Digital Converter with I2C interface
+K opto ambient light sensor
+F http://ams.com/documents/20143/36005/TSL2591_DS000338_5-00.pdf
+$ENDCMP
+#
 #End Doc Library

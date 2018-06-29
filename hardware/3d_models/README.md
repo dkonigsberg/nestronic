@@ -82,3 +82,8 @@ models for components that are no longer part of the actual board design.
 ### SOIC-28W_8.636x18.491mm_P1.27mm
 * Status: Included (Same license as project)
 * Source: Created for project using modified KiCad model scripts
+
+### AMS_TSL2591
+* Status: Included (Same license as project)
+* Source: Created for project using modified KiCad model scripts
+* Notes: Matches general dimensions of component, but not appearance

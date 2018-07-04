@@ -28,7 +28,7 @@
   (pad 1 thru_hole rect (at 0 0) (size 1.5 2.5) (drill 1) (layers *.Cu *.Mask))
   (pad 2 thru_hole oval (at 2.54 0) (size 1.5 2.5) (drill 1) (layers *.Cu *.Mask))
   (pad 3 thru_hole oval (at 5.08 0) (size 1.5 2.5) (drill 1) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/3d_models/R-78E-0-5.wrl
+  (model ${KIPRJMOD}/../3d_models/R-78E-0-5.wrl
     (at (xyz 0.1 -0.08400000000000001 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 180))

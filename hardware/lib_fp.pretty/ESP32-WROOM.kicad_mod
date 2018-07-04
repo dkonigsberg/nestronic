@@ -65,7 +65,7 @@
   (pad "" smd rect (at -1.575 -0.575) (size 1.5 1.5) (layers F.Paste))
   (pad "" smd rect (at 0.3 -0.575) (size 1.5 1.5) (layers F.Paste))
   (pad "" smd rect (at 2.175 -0.575) (size 1.5 1.5) (layers F.Paste))
-  (model ${KIPRJMOD}/3d_models/KiCAD-ESP-WROOM-32.wrl
+  (model ${KIPRJMOD}/../3d_models/KiCAD-ESP-WROOM-32.wrl
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

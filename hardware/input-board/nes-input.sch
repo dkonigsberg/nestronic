@@ -187,8 +187,8 @@ $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Nestronic Input Board"
-Date "2018-04-14"
-Rev "A"
+Date "2018-07-04"
+Rev "B"
 Comp "LogicProbe.org"
 Comment1 "Derek Konigsberg"
 Comment2 ""

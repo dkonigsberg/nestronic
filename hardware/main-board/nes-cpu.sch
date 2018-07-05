@@ -188,8 +188,8 @@ $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 2 3
 Title "Nestronic Game Music Synthesizer"
-Date "2018-03-13"
-Rev "A"
+Date "2018-07-04"
+Rev "B"
 Comp "LogicProbe.org"
 Comment1 "Derek Konigsberg"
 Comment2 "NES CPU Schematic"

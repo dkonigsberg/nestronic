@@ -15,8 +15,8 @@
   (page USLetter)
   (title_block
     (title "Nestronic Game Music Synthesizer")
-    (date 2018-03-13)
-    (rev A)
+    (date 2018-07-04)
+    (rev B)
     (company LogicProbe.org)
     (comment 1 "Derek Konigsberg")
   )
@@ -45,7 +45,7 @@
   )
 
   (setup
-    (last_trace_width 0.381)
+    (last_trace_width 0.1524)
     (user_trace_width 0.254)
     (user_trace_width 0.381)
     (user_trace_width 0.635)
@@ -5539,7 +5539,7 @@
   (gr_line (start 137.16 144.145) (end 137.16 140.335) (angle 90) (layer F.SilkS) (width 0.2))
   (gr_line (start 125.73 144.145) (end 137.16 144.145) (angle 90) (layer F.SilkS) (width 0.2))
   (gr_line (start 125.73 140.335) (end 125.73 144.145) (angle 90) (layer F.SilkS) (width 0.2))
-  (gr_text "Rev: A\n2018-03-18" (at 126.365 142.24) (layer F.SilkS)
+  (gr_text "Rev: B\n2018-07-04" (at 126.365 142.24) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.15)) (justify left))
   )
   (gr_text + (at 76.2 44.45) (layer F.SilkS)

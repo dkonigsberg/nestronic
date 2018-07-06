@@ -1378,9 +1378,9 @@ F 2 "Resistor_SMD:R_0805_2012Metric" V 730 4150 50  0001 C CNN
 F 3 "http://www.vishay.com/docs/20035/dcrcwe3.pdf" H 800 4150 50  0001 C CNN
 F 4 "RES SMD 12K OHM 1% 1/8W 0805" H 800 4150 60  0001 C CNN "Description"
 F 5 "Vishay Dale" H 800 4150 60  0001 C CNN "Manufacturer"
-F 6 "CRCW080512K0FKEA" H 800 4150 60  0001 C CNN "Manufacturer PN"
+F 6 "CRCW080512K0JNEA" H 800 4150 60  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 880 4250 50  0001 C CNN "Supplier"
-F 8 "541-12.0KCCT-ND" H 800 4150 60  0001 C CNN "Supplier PN"
+F 8 "541-12KACT-ND" H 800 4150 60  0001 C CNN "Supplier PN"
 	1    800  4150
 	-1   0    0    1   
 $EndComp

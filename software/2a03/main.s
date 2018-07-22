@@ -66,6 +66,10 @@ start:
     ; Initialize the APU
     jsr init_apu
 
+    ; Enable the I2C controller
+    lda #$02
+    sta APU_PAD1
+
     ; Wait a little bit
     ldy #20
     jsr delay_y_frames
@@ -277,6 +281,7 @@ forever:
     lda cmd_value       ; Load the value into A
     sta output_value    ; Store the value so it is readable
     and #$07            ; Mask so only the lower 3 bits are used
+    eor #$02            ; Make sure we don't reset the I2C controller
     sta APU_PAD1        ; Store in the output control register
     jmp @done
 

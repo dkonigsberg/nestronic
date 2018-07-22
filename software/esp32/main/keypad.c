@@ -20,6 +20,7 @@
 static const char *TAG = "keypad";
 
 static xQueueHandle keypad_event_queue = NULL;
+static bool keypad_initialized = false;
 
 static void IRAM_ATTR keypad_touch_isr_handler(void *arg);
 
@@ -90,10 +91,16 @@ esp_err_t keypad_init()
     i2c_mutex_unlock(I2C_P1_NUM);
 
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Keypad setup error: %s", esp_err_to_name(ret));
-    } else {
-        ESP_LOGI(TAG, "Keypad controller configured");
+    	ESP_LOGE(TAG, "Keypad setup error: %s", esp_err_to_name(ret));
+    	// Disable interrupt GPIO if setup fails
+    	config.mode = GPIO_MODE_DISABLE;
+    	config.intr_type = GPIO_PIN_INTR_DISABLE;
+    	gpio_config(&config);
+    	return ret;
     }
+
+    keypad_initialized = true;
+    ESP_LOGI(TAG, "Keypad controller configured");
 
     // Initialize the capacitive touch pad
     do {
@@ -128,9 +135,11 @@ esp_err_t keypad_init()
 
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Touch pad setup error: %s", esp_err_to_name(ret));
-    } else {
-        ESP_LOGI(TAG, "Touch pad configured");
+        touch_pad_intr_disable();
+        return ret;
     }
+
+    ESP_LOGI(TAG, "Touch pad configured");
 
     return ret;
 }
@@ -208,6 +217,10 @@ static void IRAM_ATTR keypad_touch_isr_handler(void *arg)
 esp_err_t keypad_int_event_handler()
 {
     esp_err_t ret = ESP_OK;
+
+    if (!keypad_initialized) {
+    	return ret;
+    }
 
     i2c_mutex_lock(I2C_P1_NUM);
 

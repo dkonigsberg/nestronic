@@ -32,6 +32,7 @@
 #include "board_rtc.h"
 #include "keypad.h"
 #include "mcp40d17.h"
+#include "tsl2591.h"
 #include "vgm_player.h"
 #include "main_menu.h"
 
@@ -114,7 +115,6 @@ static void adc_input_init(void)
 {
     ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
     ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_VOL_PIN, ADC_ATTEN_DB_11));
-    ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_LUM_PIN, ADC_ATTEN_DB_2_5));
 }
 
 static void gpio_isr_init(void)
@@ -137,6 +137,22 @@ static void keypad_init_helper(void)
     } else {
         ESP_LOGE(TAG, "Unable to initialize keypad");
     }
+}
+
+static void light_sensor_init_helper(void)
+{
+    i2c_mutex_lock(I2C_P1_NUM);
+    do {
+        if (tsl2591_init(I2C_P1_NUM) != ESP_OK) {
+            ESP_LOGE(TAG, "Unable to initialize light sensor");
+            break;
+        }
+        if (tsl2591_enable(I2C_P1_NUM) != ESP_OK) {
+            ESP_LOGE(TAG, "Unable to enable light sensor");
+            break;
+        }
+    } while(0);
+    i2c_mutex_unlock(I2C_P1_NUM);
 }
 
 void app_main(void)
@@ -201,6 +217,9 @@ void app_main(void)
 
     // Initialize the keypad controller, don't fail on errors
     keypad_init_helper();
+
+    // Initialize the light sensor, don't fail on errors
+    light_sensor_init_helper();
 
     // Start the task that polls certain input pins
     xTaskCreate(gpio_poll_task, "gpio_poll_task", 4096, NULL, 5, NULL);

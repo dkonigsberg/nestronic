@@ -55,9 +55,6 @@
 /* ADC1 Volume Control Pin */
 #define ADC1_VOL_PIN               ADC1_CHANNEL_5 /* GPIO33 */
 
-/* ADC1 Ambient Light Sensor Pin */
-#define ADC1_LUM_PIN               ADC1_CHANNEL_6 /* GPIO34 */
-
 /* Input Board Touch Sensor Pin */
 #define TOUCH_PAD_PIN              TOUCH_PAD_NUM9 /* GPIO32 */
 

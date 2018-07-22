@@ -59,66 +59,11 @@ static const char *TAG = "mcp7940";
  */
 #define MCP7940_SRAM       0x20
 
-static esp_err_t mcp7940_write(i2c_port_t i2c_num, uint8_t *data, size_t data_len);
-static esp_err_t mcp7940_read(i2c_port_t i2c_num, uint8_t *data, size_t data_len);
 static esp_err_t mcp7940_set_bits(i2c_port_t i2c_num, uint8_t reg, uint8_t mask, uint8_t value);
 
 #define UINT_TO_BCD(v) ((((v) / 10) << 4) | ((v) % 10))
 
 static bool is_leap_year(int year);
-
-esp_err_t mcp7940_write(i2c_port_t i2c_num, uint8_t *data, size_t data_len)
-{
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    if (!cmd) {
-        ESP_LOGE(TAG, "i2c_cmd_link_create error");
-        return ESP_ERR_NO_MEM;
-    }
-
-    ESP_ERROR_CHECK(i2c_master_start(cmd));
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MCP7940_ADDRESS << 1 | I2C_MASTER_WRITE, true));
-    ESP_ERROR_CHECK(i2c_master_write(cmd, data, data_len, true));
-    ESP_ERROR_CHECK(i2c_master_stop(cmd));
-
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "i2c_master_cmd_begin error: %d", ret);
-    }
-
-    i2c_cmd_link_delete(cmd);
-
-    return ret;
-}
-
-esp_err_t mcp7940_read(i2c_port_t i2c_num, uint8_t *data, size_t data_len)
-{
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    if (!cmd) {
-        ESP_LOGE(TAG, "i2c_cmd_link_create error");
-        return ESP_ERR_NO_MEM;
-    }
-
-    ESP_ERROR_CHECK(i2c_master_start(cmd));
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MCP7940_ADDRESS << 1 | I2C_MASTER_READ, true));
-
-    if (data_len > 1) {
-        ESP_ERROR_CHECK(i2c_master_read(cmd, data, data_len - 1, false));
-    }
-    if (data_len > 0) {
-        ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data + (data_len - 1), true));
-    }
-
-    ESP_ERROR_CHECK(i2c_master_stop(cmd));
-
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "i2c_master_cmd_begin error: %d", ret);
-    }
-
-    i2c_cmd_link_delete(cmd);
-
-    return ret;
-}
 
 esp_err_t mcp7940_set_bits(i2c_port_t i2c_num, uint8_t reg, uint8_t mask, uint8_t value)
 {
@@ -144,7 +89,7 @@ esp_err_t mcp7940_set_bits(i2c_port_t i2c_num, uint8_t reg, uint8_t mask, uint8_
     }
 
     /* Set the new value of the register */
-    ret = mcp7940_write(i2c_num, data, sizeof(data));
+    ret = i2c_write_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_write error: %d", ret);
         return ret;
@@ -252,7 +197,7 @@ esp_err_t mcp7940_set_time(i2c_port_t i2c_num, const struct tm *tm)
     }
 
     /* Read all 7 relevant registers in one operation */
-    ret = mcp7940_read(i2c_num, &data[1], sizeof(data) - 1);
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, &data[1], sizeof(data) - 1);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_read error: %d", ret);
         return ret;
@@ -315,7 +260,7 @@ esp_err_t mcp7940_set_time(i2c_port_t i2c_num, const struct tm *tm)
     /* Year - 1900 */
     data[7] |= UINT_TO_BCD(tm->tm_year - 100);
 
-    ret = mcp7940_write(i2c_num, data, sizeof(data));
+    ret = i2c_write_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_write error: %d", ret);
         return ret;
@@ -341,7 +286,7 @@ esp_err_t mcp7940_get_time(i2c_port_t i2c_num, struct tm *tm)
     }
 
     /* Read all 7 relevant registers in one operation */
-    ret = mcp7940_read(i2c_num, data, sizeof(data));
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_read error: %d", ret);
         return ret;
@@ -449,7 +394,7 @@ esp_err_t mcp7940_set_alarm_time(i2c_port_t i2c_num, mcp7940_alarm_t alarm, cons
     }
 
     /* Read all 6 relevant registers in one operation */
-    ret = mcp7940_read(i2c_num, &data[1], sizeof(data) - 1);
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, &data[1], sizeof(data) - 1);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_read error: %d", ret);
         return ret;
@@ -484,7 +429,7 @@ esp_err_t mcp7940_set_alarm_time(i2c_port_t i2c_num, mcp7940_alarm_t alarm, cons
     /* Month (0-11) */
     data[6] |= UINT_TO_BCD(tm->tm_mon + 1) & 0x1F;
 
-    ret = mcp7940_write(i2c_num, data, sizeof(data));
+    ret = i2c_write_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_write error: %d", ret);
         return ret;
@@ -512,7 +457,7 @@ esp_err_t mcp7940_get_alarm_time(i2c_port_t i2c_num, mcp7940_alarm_t alarm, stru
     }
 
     /* Read all 6 relevant registers in one operation */
-    ret = mcp7940_read(i2c_num, data, sizeof(data));
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "mcp7940_read error: %d", ret);
         return ret;

@@ -30,6 +30,8 @@
 #include "vgm_player.h"
 #include "zoneinfo.h"
 #include "bsdlib.h"
+#include "tsl2591.h"
+#include "i2c_util.h"
 
 static const char *TAG = "main_menu";
 
@@ -358,32 +360,24 @@ static void diagnostics_touch()
 
 static void diagnostics_ambient_light()
 {
-    //TODO disable LUM polling from the main ADC task
+    //TODO disable non-diagnostic ambient light polling
+    //TODO add support for adjusting sensor parameters
 
     char buf[128];
     int msec_elapsed = 0;
     while (1) {
-        int adc_val1 = 0;
-        int adc_val2 = 0;
-        int i;
+        uint16_t ch0_val = 0;
+        uint16_t ch1_val = 0;
 
-        adc1_config_channel_atten(ADC1_LUM_PIN, ADC_ATTEN_DB_0);
-        for(i = 0; i < 10; i++) {
-            vTaskDelay(1 / portTICK_PERIOD_MS);
-            adc_val1 += adc1_get_raw(ADC1_LUM_PIN);
-        }
-
-        adc1_config_channel_atten(ADC1_LUM_PIN, ADC_ATTEN_DB_2_5);
-        for(i = 0; i < 10; i++) {
-            vTaskDelay(1 / portTICK_PERIOD_MS);
-            adc_val2 += adc1_get_raw(ADC1_LUM_PIN);
-        }
+        i2c_mutex_lock(I2C_P1_NUM);
+        tsl2591_get_full_channel_data(I2C_P1_NUM, &ch0_val, &ch1_val);
+        i2c_mutex_unlock(I2C_P1_NUM);
 
         sprintf(buf,
-                "  0 dB: %4d (%5d)\n"
-                "2.5 dB: %4d (%5d)",
-                adc_val1 / 10, adc_val1,
-                adc_val2 / 10, adc_val2);
+                "Channel 0: %5d\n"
+                "Channel 1: %5d",
+                ch0_val,
+                ch1_val);
 
         display_static_list("Ambient Light Sensor", buf);
 
@@ -391,20 +385,18 @@ static void diagnostics_ambient_light()
         esp_err_t ret = keypad_wait_for_event(&keypad_event, 200);
         if (ret == ESP_OK) {
             msec_elapsed = 0;
-            if (keypad_event.pressed) {
+            if (keypad_event.pressed && keypad_event.key != KEYPAD_TOUCH) {
                 break;
             }
         }
         else if (ret == ESP_ERR_TIMEOUT) {
             msec_elapsed += 200;
-            if (msec_elapsed >= MENU_TIMEOUT_MS) {
+            if (msec_elapsed >= (MENU_TIMEOUT_MS * 2)) {
                 menu_timeout = true;
                 break;
             }
         }
     }
-
-    adc1_config_channel_atten(ADC1_LUM_PIN, ADC_ATTEN_DB_2_5);
 }
 
 static void diagnostics_volume()

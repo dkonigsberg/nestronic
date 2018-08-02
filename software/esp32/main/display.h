@@ -19,6 +19,8 @@ esp_err_t display_init();
 void display_clear();
 void display_set_contrast(uint8_t value);
 uint8_t display_get_contrast();
+void display_set_brightness(uint8_t value);
+uint8_t display_get_brightness();
 
 void display_draw_test_pattern(bool mode);
 void display_draw_logo();

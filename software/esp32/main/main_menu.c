@@ -289,7 +289,9 @@ static void diagnostics_display()
 {
     uint8_t option = 0;
     uint8_t initial_contrast = display_get_contrast();
+    uint8_t initial_brightness = display_get_brightness();
     uint8_t contrast = initial_contrast;
+    uint8_t brightness = initial_brightness;
     keypad_clear_events();
 
     while (1) {
@@ -316,6 +318,14 @@ static void diagnostics_display()
                 } else if (keypad_event.key == KEYPAD_BUTTON_RIGHT) {
                     if (option == 2) { option = 0; }
                     else { option++; }
+                } else if (keypad_event.key == KEYPAD_BUTTON_SELECT) {
+                    if (brightness == 0) { brightness = 15; }
+                    else { brightness--; }
+                    display_set_brightness(brightness);
+                } else if (keypad_event.key == KEYPAD_BUTTON_START) {
+                    if (brightness >= 15) { brightness = 0; }
+                    else { brightness++; }
+                    display_set_brightness(brightness);
                 } else if (keypad_event.key == KEYPAD_BUTTON_B) {
                     break;
                 }

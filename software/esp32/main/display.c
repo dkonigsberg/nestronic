@@ -21,6 +21,7 @@ static const char *TAG = "display";
 
 static u8g2_t u8g2;
 static uint8_t display_contrast = 0x9F;
+static uint8_t display_brightness = 0x0F;
 static bool menu_event_timeout = false;
 
 /* Library function declarations */
@@ -81,6 +82,24 @@ void display_set_contrast(uint8_t value)
 uint8_t display_get_contrast()
 {
     return display_contrast;
+}
+
+void display_set_brightness(uint8_t value)
+{
+    uint8_t arg = value & 0x0F;
+
+    u8x8_t *u8x8 = &(u8g2.u8x8);
+    u8x8_cad_StartTransfer(u8x8);
+    u8x8_cad_SendCmd(u8x8, 0x0C7);
+    u8x8_cad_SendArg(u8x8, arg);
+    u8x8_cad_EndTransfer(u8x8);
+
+    display_brightness = arg;
+}
+
+uint8_t display_get_brightness()
+{
+    return display_brightness;
 }
 
 void display_draw_test_pattern(bool mode)

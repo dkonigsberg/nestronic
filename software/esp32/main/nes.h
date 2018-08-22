@@ -44,4 +44,7 @@ esp_err_t nes_get_amplifier_enabled(i2c_port_t i2c_num, bool *enabled);
 esp_err_t nes_apu_init(i2c_port_t i2c_num);
 esp_err_t nes_apu_write(i2c_port_t i2c_num, nes_apu_register_t reg, uint8_t dat);
 
+esp_err_t nes_data_write(i2c_port_t i2c_num, uint8_t block, uint8_t *data, size_t data_len);
+esp_err_t nes_data_read(i2c_port_t i2c_num, uint8_t block, uint8_t *data, size_t data_len);
+
 #endif /* NES_H */

@@ -34,17 +34,36 @@ Send the 8-bit data byte, followed by an ack and a stop condition.
 
 Register map
 ------------
+
     +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
     | Addr | Register Name |Bit 7|Bit 6|Bit 5|Bit 4|Bit 3|Bit 2|Bit 1|Bit 0|
     +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
-    |  $80 | CONFIG  (R/W) | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A |
+    |  $00 |               |                                               |
+    |  ... | NES APU   (W) | See below                                     |
+    |  $15 |               |                                               |
     +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
     |  $16 | OUTPUT  (R/W) |APUI | N/A | N/A | N/A | N/A |OUT2 |OUT1 |OUT0 |
     +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    |  $17 | NES APU   (W) | See below                                     |
+    +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    |  $7F | CONFIG  (R/W) | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A |
+    +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    |  $88 |               |                                               |
+    |  ... | DATA    (R/W) | See below                                     |
+    |  $FF |               |                                               |
+    +------+---------------+-----+-----+-----+-----+-----+-----+-----+-----+
+
+Note: Unsupported registers are simply ignored by the firmware.
+
+
+### OUTPUT Register ($16)
 
 OUTPUT Register Bits:
     APUI: APU Initialize; 1 to reinitialize the APU (W)
     OUT0: Audio amplifier control; 0 to disable, 1 to enable (R/W)
+
+
+### NES CPU Registers ($00-$15, $17)
 
 The following APU registers are directly mapped to addresses corresponding to
 the lower byte of the APU register address: (e.g. $4010 -> $10)
@@ -72,4 +91,16 @@ the lower byte of the APU register address: (e.g. $4010 -> $10)
     APU_CHANCTRL    = $4015         ; Sound/Vertical Clock Signal Register (R/W)
     APU_PAD2        = $4017         ; Joypad #2/SOFTCLK (W)
 
-Note: Unsupported registers are simply ignored by the firmware.
+### CONFIG Register
+
+This register is currently an unused region of memory that can be both
+read from and written to. It can be used to implement a basic interface test.
+
+### Data Registers ($88-$FF)
+
+These registers are used to write bulk data to a region of RAM that
+corresponds to the address range $C200-$DFFF. Each value corresponds to the
+start of a 64-byte block within that range.
+To write bulk data, first send the start address, then start sending data
+bytes. Each byte will increment the address offset, up to a maximum of 256
+bytes.

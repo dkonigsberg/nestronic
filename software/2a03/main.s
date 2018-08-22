@@ -36,9 +36,16 @@ PCA_CON_STO     = $10 ; Stop
 PCA_CON_SI      = $08 ; Serial Interrupt
 PCA_CON_CR      = $07 ; Clock Rate (MASK)
 
+; I2C Receive States
+RECV_STATE_REG  = 0
+RECV_STATE_VAL  = 1
+RECV_STATE_DATA = 2
+
 ; I2C Registers
+REG_CONFIG      = $7F ; Device configuration register
 REG_OUTPUT      = $16 ; Output control register
-REG_CONFIG      = $80 ; Device configuration register
+REG_DATA_START  = $88 ; Data write start block register ($C200)
+REG_DATA_END    = $FF ; Data write end block register ($DFC0)
 
 .segment "ZEROPAGE"
 ; Variables go here
@@ -47,6 +54,7 @@ cmd_value:      .res 1
 cmd_recv_state: .res 1 ; I2C receive state
 output_value:   .res 1 ; Value of the OUTPUT register
 config_value:   .res 1 ; Value of the CONFIG register
+data_offset:    .res 2 ; Location for DATA loading
 
 .segment "STARTUP"
 
@@ -81,6 +89,8 @@ start:
     sta cmd_recv_state
     sta output_value
     sta config_value
+    sta data_offset
+    sta data_offset+1
 
     ; Initialize the I2C controller
     jsr i2c_init
@@ -164,7 +174,7 @@ forever:
 ; Wait as an I2C slave for the next command
 ;
 .proc i2c_slave_cmd
-    lda #$00
+    lda #RECV_STATE_REG
     sta cmd_recv_state  ; Reset the receive state
 
     jsr i2c_wait_busy   ; Wait for SI
@@ -186,21 +196,63 @@ forever:
     cmp #$80            ; Data has been received
     bne @receiver_done
 
-    lda cmd_recv_state ; Check if we are in the register or value state
-    cmp #$01
+    lda cmd_recv_state  ; Load our current state
+    
+    cmp #RECV_STATE_DATA ; Check if we are in the data load state
     beq @receiver_data
+
+    cmp #RECV_STATE_VAL  ; Check if we are in the value state
+    beq @receiver_value
 
 @receiver_register:
     lda PCA_DAT
     sta cmd_register    ; Store the register byte
-    lda #$01
+    cmp #REG_DATA_START ; Check if we received a data load register
+    bcs @receiver_register_data
+
+@receiver_register_value:
+    lda #RECV_STATE_VAL
     sta cmd_recv_state  ; Register received, switch to value state
     jmp @receiver
 
-@receiver_data:
-    lda PCA_DAT
+@receiver_register_data:
+    lda #RECV_STATE_DATA
+    sta cmd_recv_state  ; Register received, switch to data load state
+    
+    ; Populate the upper byte of the data block
+    lda cmd_register
+    and #$7F
+    lsr
+    lsr
+    eor #$C0
+    sta data_offset+1
+
+    ; Populate the lower byte of the data block
+    lda cmd_register
+    ror
+    ror
+    ror
+    and #$C0
+    sta data_offset
+
+    ; Initialize the block offset
+    lda #$00
+    sta cmd_value
+
+    jmp @receiver
+
+@receiver_value:
+    lda PCA_DAT          ; Load the received byte
     sta cmd_value        ; Store the value byte
     jsr register_write   ; Handle the register write
+    jmp @receiver
+
+@receiver_data:
+    lda PCA_DAT          ; Load the received byte
+    ldy cmd_value        ; Load the block offset
+    sta (data_offset),Y  ; Write the data
+    iny                  ; Increment the block offset
+    sty cmd_value        ; Store the block offset
     jmp @receiver
 
 @receiver_done:
@@ -210,10 +262,25 @@ forever:
     jmp @done
 
 @transmitter:
+    ; Check if we are reading from a data block
+    lda cmd_register
+    cmp #REG_DATA_START
+    bcs @transmitter_register_data
+
+@transmitter_register_value:
     jsr register_read   ; Handle the register read
     lda cmd_value
     sta PCA_DAT
+    jmp @transmitter_done
 
+@transmitter_register_data:
+    ldy cmd_value       ; Load the block offset
+    lda (data_offset),Y ; Load the data
+    sta PCA_DAT         ; Store the byte to transmit
+    iny                 ; Increment the block offset
+    sty cmd_value       ; Store the block offset
+
+@transmitter_done:
     lda #(PCA_CON_AA | PCA_CON_ENSIO | PCA_CON_330kHz)
     sta PCA_CON         ; Reset SI bit
 
@@ -225,7 +292,6 @@ forever:
     cmp #$C0            ; Data byte in I2CDAT has been transmitted (NACK)
     bne @fault
 
-@transmitter_done:
     jmp @done
 
 @fault:
@@ -300,7 +366,6 @@ forever:
 ; Read from the selected register
 ;
 .proc register_read
-    ; TODO: Read from location pointed to by cmd_register and store in cmd_value
     lda cmd_register
 
     ; Check if the command register maps to a readable NES APU register
@@ -325,12 +390,12 @@ forever:
 
 @output_read:
     lda output_value    ; Load the OUTPUT value into A
+    and #$07            ; Mask the readable bits
     sta cmd_value       ; Store the value
     jmp @done
 
 @config_read:
     lda config_value    ; Load the CONFIG value into A
-    and #$07            ; Mask the readable bits
     sta cmd_value       ; Store the value
     jmp @done
 

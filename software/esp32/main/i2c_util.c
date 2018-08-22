@@ -51,7 +51,7 @@ esp_err_t i2c_init_master_port0()
 
     // Need to use a longer timeout due to the low clock speed
     // and in-line command processing of the NES CPU.
-    ret = i2c_set_timeout(port, 6400);
+    ret = i2c_set_timeout(port, 12800 /*XXX 6400*/);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "i2c_set_timeout error: %d", ret);
         return ret;

@@ -451,7 +451,8 @@ static void main_menu_diagnostics()
                 "Display Test\n"
                 "Capacitive Touch\n"
                 "Ambient Light Sensor\n"
-                "Volume Adjustment");
+                "Volume Adjustment\n"
+                "NES Test");
 
         if (option == 1) {
             diagnostics_display();
@@ -461,6 +462,8 @@ static void main_menu_diagnostics()
             diagnostics_ambient_light();
         } else if (option == 4) {
             diagnostics_volume();
+        } else if (option == 5) {
+            vgm_player_benchmark_data();
         } else if (option == UINT8_MAX) {
             menu_timeout = true;
         }

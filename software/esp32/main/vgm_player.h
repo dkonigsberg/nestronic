@@ -24,5 +24,6 @@ esp_err_t vgm_player_play_chime();
 esp_err_t vgm_player_play_blip();
 esp_err_t vgm_player_play_credit();
 esp_err_t vgm_player_stop();
+esp_err_t vgm_player_benchmark_data();
 
 #endif /* VGM_PLAYER_H */

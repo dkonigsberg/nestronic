@@ -152,3 +152,24 @@ esp_err_t nes_data_read(i2c_port_t i2c_num, uint8_t block, uint8_t *data, size_t
 
     return ret;
 }
+
+uint16_t nes_addr_to_apu_block(uint16_t addr)
+{
+    if (addr >= 0xC000) {
+        return (addr >> 6) & 0xFF;
+    } else if (addr >= 0x8000) {
+        return (((addr - 0xC000) >> 6) & 0xFF) + 256;
+    } else {
+        ESP_LOGE(TAG, "Invalid block address: $%04X", addr);
+        return 0; // consider a better magic value, or simply validate beforehand
+    }
+}
+
+uint16_t nes_len_to_apu_blocks(uint32_t len)
+{
+    if ((len & 0x3F) == 0) {
+        return len >> 6;
+    } else {
+        return ((len | 0x3F) + 1) >> 6;
+    }
+}

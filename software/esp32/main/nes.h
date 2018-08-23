@@ -47,4 +47,21 @@ esp_err_t nes_apu_write(i2c_port_t i2c_num, nes_apu_register_t reg, uint8_t dat)
 esp_err_t nes_data_write(i2c_port_t i2c_num, uint8_t block, uint8_t *data, size_t data_len);
 esp_err_t nes_data_read(i2c_port_t i2c_num, uint8_t block, uint8_t *data, size_t data_len);
 
+/**
+ * Convert a 16-bit NES memory address into an APU sample block
+ *
+ * @param addr An address value within the APU range ($8000-$FFFF)
+ * @return A block identifier (0-511)
+ */
+uint16_t nes_addr_to_apu_block(uint16_t addr);
+
+/**
+ * Convert a byte length into an equivalent number of NES APU sample
+ * blocks, rounded up.
+ *
+ * @param len Data length value in bytes
+ * @return A block count
+ */
+uint16_t nes_len_to_apu_blocks(uint32_t len);
+
 #endif /* NES_H */

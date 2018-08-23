@@ -43,10 +43,32 @@ typedef enum {
 } vgm_command_type_t;
 
 typedef struct {
-    vgm_command_type_t type;
-    uint16_t wait;
+    uint16_t samples;
+} vgm_command_wait_t;
+
+typedef struct {
     nes_apu_register_t reg;
     uint8_t dat;
+} vgm_command_nes_apu_t;
+
+typedef struct {
+    uint16_t addr;
+    uint32_t len;
+    uint8_t *data;
+} vgm_command_data_block_t;
+
+typedef struct {
+    union {
+        vgm_command_wait_t wait;
+        vgm_command_nes_apu_t nes_apu;
+        vgm_command_data_block_t data_block;
+    };
+} vgm_command_info_t;
+
+typedef struct {
+    uint32_t sample_index;
+    vgm_command_type_t type;
+    vgm_command_info_t info;
 } vgm_command_t;
 
 typedef struct vgm_file_t vgm_file_t;
@@ -61,8 +83,9 @@ esp_err_t vgm_read_gd3_tags(vgm_gd3_tags_t **tags, vgm_file_t *vgm_file);
 void vgm_free_gd3_tags(vgm_gd3_tags_t *tags);
 
 esp_err_t vgm_seek_start(vgm_file_t *vgm_file);
+esp_err_t vgm_seek_restart(vgm_file_t *vgm_file);
 esp_err_t vgm_seek_loop(vgm_file_t *vgm_file);
-esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command);
+esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command, bool load_data);
 
 void vgm_free(vgm_file_t *vgm_file);
 

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <sys/unistd.h>
 #include <errno.h>
 
@@ -22,6 +23,7 @@ struct vgm_file_t {
     gzFile file;
     vgm_header_t header;
     bool at_vgm_data;
+    uint32_t sample_index;
 };
 
 static int bcd_to_decimal(unsigned char x);
@@ -344,8 +346,15 @@ esp_err_t vgm_seek_start(vgm_file_t *vgm_file)
             return ESP_FAIL;
         }
         vgm_file->at_vgm_data = true;
+        vgm_file->sample_index = 0;
     }
     return ESP_OK;
+}
+
+esp_err_t vgm_seek_restart(vgm_file_t *vgm_file)
+{
+    vgm_file->at_vgm_data = false;
+    return vgm_seek_start(vgm_file);
 }
 
 esp_err_t vgm_seek_loop(vgm_file_t *vgm_file)
@@ -365,7 +374,7 @@ esp_err_t vgm_seek_loop(vgm_file_t *vgm_file)
     return ESP_OK;
 }
 
-esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
+esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command, bool load_data)
 {
     uint8_t cmd;
 
@@ -374,6 +383,7 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
     }
 
     memset(command, 0, sizeof(vgm_command_t));
+    command->sample_index = vgm_file->sample_index;
 
     if(gzread(vgm_file->file, &cmd, sizeof(cmd)) != sizeof(cmd)) {
         int errnum;
@@ -392,17 +402,20 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
             return ESP_FAIL;
         }
         command->type = VGM_CMD_WAIT;
-        command->wait = UINT16_FROM_BYTES(buf, 0);
+        command->info.wait.samples = UINT16_FROM_BYTES(buf, 0);
+        vgm_file->sample_index += command->info.wait.samples;
     }
     else if (cmd == 0x62) {
         /* Wait 735 samples */
         command->type = VGM_CMD_WAIT;
-        command->wait = 735;
+        command->info.wait.samples = 735;
+        vgm_file->sample_index += command->info.wait.samples;
     }
     else if (cmd == 0x63) {
         /* Wait 882 samples */
         command->type = VGM_CMD_WAIT;
-        command->wait = 882;
+        command->info.wait.samples = 882;
+        vgm_file->sample_index += command->info.wait.samples;
     }
     else if (cmd == 0x66) {
         /* End of sound data */
@@ -410,8 +423,6 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
     }
     else if (cmd == 0x67) {
         /* Data block */
-        ESP_LOGI(TAG, "--> Data block");
-
         uint8_t header[6];
         if(gzread(vgm_file->file, &header, sizeof(header)) != sizeof(header)) {
             int errnum;
@@ -426,7 +437,7 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
             return -1;
         }
 
-        ESP_LOGE(TAG, "--> Data block type: %02X", header[1]);
+#if 0
         if (header[1] < 0x3F) {
             ESP_LOGI(TAG, "Data of recorded streams (uncompressed)");
         }
@@ -445,42 +456,72 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
         else {
             ESP_LOGI(TAG, "RAM writes (for RAM with more than 64 KB)");
         }
+#endif
 
         uint32_t data_size = UINT32_FROM_BYTES(header, 2);
-        ESP_LOGI(TAG, "--> Size of data block: %d", data_size - 2);
+        uint16_t start_addr = 0;
+        uint8_t *data_buf = 0;
 
         if (header[1] >= 0xC0 && header[1] <= 0xDF) {
             /* RAM writes (for RAM with up to 64 KB) */
-            uint8_t *buf = malloc(data_size);
-            if (!buf) {
-                return ESP_ERR_NO_MEM;
-            }
+            uint8_t addr_buf[2];
 
-            if(gzread(vgm_file->file, buf, data_size) != data_size) {
-                free(buf);
+            if(gzread(vgm_file->file, addr_buf, 2) != 2) {
                 int errnum;
                 const char *msg = gzerror(vgm_file->file, &errnum);
                 ESP_LOGE(TAG, "gzread: %s [%d]", msg, errnum);
                 return ESP_FAIL;
             }
 
-            uint16_t start_addr = UINT16_FROM_BYTES(buf, 0);
+            data_size -= 2;
+            start_addr = UINT16_FROM_BYTES(addr_buf, 0);
 
             ESP_LOGI(TAG, "Data start address: $%04X", start_addr);
 
-            free(buf);
+            if (load_data) {
+                data_buf = malloc(data_size);
+                if (!data_buf) {
+                    return ESP_ERR_NO_MEM;
+                }
+
+                if(gzread(vgm_file->file, data_buf, data_size) != data_size) {
+                    free(data_buf);
+                    int errnum;
+                    const char *msg = gzerror(vgm_file->file, &errnum);
+                    ESP_LOGE(TAG, "gzread: %s [%d]", msg, errnum);
+                    return ESP_FAIL;
+                }
+
+            } else {
+                if (gzseek(vgm_file->file, data_size, SEEK_CUR) < 0) {
+                    int errnum;
+                    const char *msg = gzerror(vgm_file->file, &errnum);
+                    ESP_LOGE(TAG, "gzseek: %s [%d]", msg, errnum);
+                    return ESP_FAIL;
+                }
+            }
+        }
+        else {
+            ESP_LOGE(TAG, "Unsupported data block type: %02X", header[1]);
         }
 
-        //TODO Decode and return the data block
-
-        ESP_LOGE(TAG, "Data block not supported");
-        command->type = VGM_CMD_DATA_BLOCK;
-        return -1;
+        if (start_addr > 0) {
+            command->type = VGM_CMD_DATA_BLOCK;
+            command->info.data_block.addr = start_addr;
+            command->info.data_block.len = data_size;
+            command->info.data_block.data = data_buf;
+        } else {
+            ESP_LOGE(TAG, "Unsupported data block");
+            command->type = VGM_CMD_UNKNOWN;
+            if (load_data) {
+                free(data_buf);
+            }
+        }
     }
     else if (cmd >= 0x70 && cmd <= 0x7F) {
         /* Wait n+1 samples, n can range from 0 to 15 */
         command->type = VGM_CMD_WAIT;
-        command->wait = (cmd & 0x0F) + 1;
+        command->info.wait.samples = (cmd & 0x0F) + 1;
     }
     else if (cmd == 0xB4) {
         /* NES APU, write value dd to register aa */
@@ -516,8 +557,8 @@ esp_err_t vgm_next_command(vgm_file_t *vgm_file, vgm_command_t *command)
         }
 
         command->type = VGM_CMD_NES_APU;
-        command->reg = 0x4000 + reg_l; /* Write to 0x4000 + reg_l */
-        command->dat = buf[1];
+        command->info.nes_apu.reg = 0x4000 + reg_l; /* Write to 0x4000 + reg_l */
+        command->info.nes_apu.dat = buf[1];
     }
     else {
         ESP_LOGE(TAG, "Unsupported command: %02X", cmd);

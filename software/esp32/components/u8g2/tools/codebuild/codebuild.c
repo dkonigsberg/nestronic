@@ -67,6 +67,9 @@ struct controller
   struct display display_list[10];	/* usually not used completly, but space does not matter much here */  
 };
 
+/* issue #649 */
+/* display_controller_list_start */
+
 struct controller controller_list[] =
 {
   {
@@ -229,6 +232,23 @@ struct controller controller_list[] =
       { NULL }
     }
   },
+
+   {
+    "sh1108", 	 20, 	20, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080|COM_8080,
+    "Not tested", /* is_generate_u8g2_class= */ 1,
+    {
+      { "160x160" },
+      { NULL }
+    }
+  },
+  {
+    "sh1108", 	 20, 	20, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "Not tested", /* is_generate_u8g2_class= */ 1,
+    {
+      { "160x160" },
+      { NULL }
+    }
+  },
   
    {
     "sh1122", 	 32, 	8, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080|COM_8080,
@@ -370,6 +390,23 @@ struct controller controller_list[] =
       { NULL }
     }
   },
+
+  {
+    "ssd1317", 	12, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "96x96" },
+      { NULL }
+    }
+  },
+  {
+    "ssd1317", 	12, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "96x96" },
+      { NULL }
+    }
+  },
   
   {
     "ssd1325", 	16, 	8, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
@@ -427,6 +464,7 @@ struct controller controller_list[] =
     "ssd1327", 	16, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
     "", /* is_generate_u8g2_class= */ 1,
     {
+      { "ea_w128128" },
       { "midas_128x128" },
       { NULL }
     }
@@ -435,6 +473,7 @@ struct controller controller_list[] =
     "ssd1327", 	16, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
     "", /* is_generate_u8g2_class= */ 1,
     {
+      { "ea_w128128" },
       { "midas_128x128" },
       { NULL }
     }
@@ -519,6 +558,14 @@ struct controller controller_list[] =
     "", /* is_generate_u8g2_class= */ 1,
     {
       { "128x128" },
+      { NULL }
+    }
+  },
+  {
+    "ls027b7dh01", 	50, 	30, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_001", "", COM_4WSPI,		/* cad procedure is not required (no DC for this display) so it could be a dummy procedure here */
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "400x240" },
       { NULL }
     }
   },
@@ -737,6 +784,7 @@ struct controller controller_list[] =
       { "64128n" },       
       { "zolen_128x64" },
       { "lm6059" },
+      { "lx12864" },
       { "erc12864" },
       { "nhd_c12864" },
       { "jlx12864" },
@@ -791,10 +839,49 @@ struct controller controller_list[] =
     "", /* is_generate_u8g2_class= */ 1,
     {
       { "jlx12864" },
+      { "enh_dg128064" },
+      { "enh_dg128064i" },
       { NULL }
     }
   },
   
+  {
+    "st7567", 		8, 	4, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "64x32" },
+      { NULL }
+    }
+  },
+  {
+    "st7567", 		8, 	4, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "64x32" },
+      { NULL }
+    }
+  },
+  
+  
+  
+  {
+    "st7586s", 		48, 	17, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_011", "", COM_4WSPI,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "s028hn118a" },
+      { NULL }
+    },
+  },
+  
+  {
+    "st7586s", 		30, 	20, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_011", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "erc240160" },
+      { NULL }
+    },
+  },
+    
   {
     "st7588", 		16, 	8, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
     "", /* is_generate_u8g2_class= */ 1,
@@ -979,6 +1066,14 @@ struct controller controller_list[] =
       { NULL }
     }
   },
+  {
+    "lc7981", 	30, 	8, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_100", "", COM_6800,
+    "U8x8 not supported, no powerdown, no HW flip, no constrast", /* is_generate_u8g2_class= */ 1,
+    {
+      { "240x64" },
+      { NULL }
+    }
+  },
   
   {
     "t6963", 	30, 	16, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_100", "", COM_8080,
@@ -1009,6 +1104,14 @@ struct controller controller_list[] =
     "Not tested", /* is_generate_u8g2_class= */ 1,
     {
       { "128x64" },
+      { NULL }
+    }
+  },
+  {
+    "t6963", 	20, 	10, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_100", "", COM_8080,
+    "Not tested", /* is_generate_u8g2_class= */ 1,
+    {
+      { "160x80" },
       { NULL }
     }
   },
@@ -1088,6 +1191,14 @@ struct controller controller_list[] =
     }
   },
   {
+    "max7219", 	1, 	1, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_empty", "", COM_4WSPI,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "8x8" },
+      { NULL }
+    }
+  },
+  {
     "a2printer", 	48, 	30, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_empty", "", COM_UART,
     "", /* is_generate_u8g2_class= */ 0,
     {
@@ -1096,6 +1207,9 @@ struct controller controller_list[] =
     }
   }
 };
+
+/* display_controller_list_end */
+
 
 struct interface interface_list[] = 
 {
@@ -1147,7 +1261,7 @@ struct interface interface_list[] =
   {
     "3W_SW_SPI",
     "u8x8_SetPin_3Wire_SW_SPI",
-    "u8x8_byte_3wire_sw_spi",
+    "u8x8_byte_arduino_3wire_sw_spi",
     "u8x8_gpio_and_delay_arduino",
     "uint8_t clock, uint8_t data, uint8_t cs, uint8_t reset = U8X8_PIN_NONE",
     "clock, data, cs, reset",
@@ -1169,12 +1283,12 @@ struct interface interface_list[] =
   {
     "SW_I2C",
     "u8x8_SetPin_SW_I2C",
-    "u8x8_byte_sw_i2c" /* "u8x8_byte_ssd13xx_sw_i2c" */,
+    "u8x8_byte_arduino_sw_i2c" /* u8x8_byte_sw_i2c */,
     "u8x8_gpio_and_delay_arduino",
     "uint8_t clock, uint8_t data, uint8_t reset = U8X8_PIN_NONE",
     "clock,  data,  reset",
     "clock,  data [,  reset]",
-    "u8x8_byte_sw_i2c" /* "u8x8_byte_ssd13xx_sw_i2c" */
+    "u8x8_byte_sw_i2c" /* u8x8_byte_sw_i2c */
   },
   /* 7 */
   {

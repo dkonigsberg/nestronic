@@ -15,6 +15,18 @@ rm ./../../../../U8g2_Arduino/src/clib/u8x8_d_stdio.c
 
 # page buffer
 
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/StateBufferLoop
+cp ../../../sys/arduino/u8g2_page_buffer/StateBufferLoop/*.ino ../../../../U8g2_Arduino/examples/page_buffer/StateBufferLoop/.
+
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/Serial
+cp ../../../sys/arduino/u8g2_page_buffer/Serial/*.ino ../../../../U8g2_Arduino/examples/page_buffer/Serial/.
+
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/DrawLog
+cp ../../../sys/arduino/u8g2_page_buffer/DrawLog/*.ino ../../../../U8g2_Arduino/examples/page_buffer/DrawLog/.
+
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/Terminal
+cp ../../../sys/arduino/u8g2_page_buffer/Terminal/*.ino ../../../../U8g2_Arduino/examples/page_buffer/Terminal/.
+
 mkdir ../../../../U8g2_Arduino/examples/page_buffer/IconMenu
 cp ../../../sys/arduino/u8g2_page_buffer/IconMenu/*.ino ../../../../U8g2_Arduino/examples/page_buffer/IconMenu/.
 
@@ -96,6 +108,10 @@ cp ../../../sys/arduino/u8g2_page_buffer/PowerSaveTest/*.ino ../../../../U8g2_Ar
 mkdir ../../../../U8g2_Arduino/examples/games/LittleRookChess
 cp ../../../sys/arduino/u8g2_page_buffer/LittleRookChess/*.ino ../../../../U8g2_Arduino/examples/games/LittleRookChess/.
 
+mkdir ../../../../U8g2_Arduino/examples/games/SpaceTrash
+cp ../../../sys/arduino/u8g2_page_buffer/SpaceTrash/*.ino ../../../../U8g2_Arduino/examples/games/SpaceTrash/.
+
+
 # full buffer
 
 mkdir ../../../../U8g2_Arduino/examples/full_buffer/IconMenu
@@ -126,6 +142,9 @@ mkdir ../../../../U8g2_Arduino/examples/full_buffer/FPS
 cp ../../../sys/arduino/u8g2_full_buffer/FPS/*.ino ../../../../U8g2_Arduino/examples/full_buffer/FPS/.
 
 # u8x8
+
+mkdir ../../../../U8g2_Arduino/examples/u8x8/Terminal
+cp ../../../sys/arduino/u8x8/Terminal/*.ino ../../../../U8g2_Arduino/examples/u8x8/Terminal/.
 
 mkdir ../../../../U8g2_Arduino/examples/u8x8/HelloWorld
 cp ../../../sys/arduino/u8x8/HelloWorld/*.ino ../../../../U8g2_Arduino/examples/u8x8/HelloWorld/.

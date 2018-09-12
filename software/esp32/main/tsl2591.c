@@ -85,7 +85,7 @@ esp_err_t tsl2591_init(i2c_port_t i2c_num)
     }
 
     // Set default integration and gain
-    ret = tsl2591_set_config(i2c_num, TSL2591_GAIN_MEDIUM, TSL2591_TIME_300MS);
+    ret = tsl2591_set_config(i2c_num, TSL2591_GAIN_HIGH, TSL2591_TIME_300MS);
     if (ret != ESP_OK) {
         return ret;
     }

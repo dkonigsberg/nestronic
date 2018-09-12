@@ -41,6 +41,7 @@ static bool menu_visible = false;
 static bool alarm_set = false;
 static bool time_twentyfour = false;
 static bool menu_timeout = false;
+static uint8_t contrast_value = 0x9F;
 
 static esp_err_t main_menu_keypad_wait(keypad_event_t *event)
 {
@@ -1002,6 +1003,16 @@ static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
     return ESP_OK;
 }
 
+void main_menu_brightness_update(uint8_t value)
+{
+    xSemaphoreTake(clock_mutex, portMAX_DELAY);
+    contrast_value = value;
+    if (!menu_visible) {
+        display_set_contrast(contrast_value);
+    }
+    xSemaphoreGive(clock_mutex);
+}
+
 static void main_menu_task(void *pvParameters)
 {
     ESP_LOGD(TAG, "main_menu_task");
@@ -1009,6 +1020,7 @@ static void main_menu_task(void *pvParameters)
     while (1) {
         // Show the current time on the display
         xSemaphoreTake(clock_mutex, portMAX_DELAY);
+        display_set_contrast(contrast_value);
         menu_visible = false;
         display_clear();
         time_t time;
@@ -1033,6 +1045,7 @@ static void main_menu_task(void *pvParameters)
                     }
                     else if (keypad_event.key == KEYPAD_BUTTON_A || keypad_event.key == KEYPAD_BUTTON_B) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
+                        display_set_contrast(0x9F);
                         menu_visible = true;
                         xSemaphoreGive(clock_mutex);
                     }

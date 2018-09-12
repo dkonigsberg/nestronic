@@ -35,6 +35,4 @@ esp_err_t tsl2591_get_status_valid(i2c_port_t i2c_num, bool *valid);
 
 esp_err_t tsl2591_get_full_channel_data(i2c_port_t i2c_num, uint16_t *ch0_val, uint16_t *ch1_val);
 
-esp_err_t tsl2591_test_poll(i2c_port_t i2c_num);
-
 #endif /* TSL2591_H */

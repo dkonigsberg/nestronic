@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "board_config.h"
 #include "settings.h"
@@ -44,46 +45,94 @@ static const char *TAG = "main";
 
 static xQueueHandle gpio_event_queue = NULL;
 
+static float brightness_pct_from_reading(uint16_t reading)
+{
+    float result;
+    if (reading > 1600) {
+        result = 1.0F;
+    } else {
+        result = (9.9323F * logf(reading) + 27.059F) / 100.0F;
+    }
+
+    result = (MAX(result, 0.6F) - 0.6F) / 0.4F;
+    return result;
+}
+
 static void gpio_poll_task(void *pvParameters)
 {
     int last_rheo_val = -1;
     int last_cd_level = -1;
     int last_cd_count = 0;
 
-    while (1) {
-        // Check the volume control and adjust the amplifier volume
-        int val = adc1_get_raw(ADC1_VOL_PIN);
-        int rheo_val = val >> 5;
-        if (last_rheo_val < 0 || abs(rheo_val - last_rheo_val) > 1) {
-            i2c_mutex_lock(I2C_P0_NUM);
-            mcp40d17_set_wiper(I2C_P0_NUM, 0x7F & rheo_val);
-            i2c_mutex_unlock(I2C_P0_NUM);
-            ESP_LOGI(TAG, "Set volume: %d", rheo_val);
-            last_rheo_val = rheo_val;
-        }
+    int index = 0;
 
-        // Check the SD card detect pin
-        int level = gpio_get_level(SDMMC_CD);
-        if (last_cd_level < 0 || last_cd_level != level) {
-            last_cd_level = level;
-            last_cd_count = 0;
-        } else if (last_cd_count < 3) {
-            last_cd_count++;
-        }
-        if (last_cd_count == 3) {
-            last_cd_count++;
-            if (last_cd_level == 0) {
-                ESP_LOGI(TAG, "SD/MMC Card Inserted");
-                if (sdcard_mount("/sdcard") != ESP_OK) {
-                    display_message("Error", "Could not read SD card", NULL, " OK ");
+    uint8_t brightness_value = 0x9F;
+    uint8_t brightness_target = 0x9F;
+
+    while (1) {
+        if (index == 0) {
+            // Check the volume control and adjust the amplifier volume
+            int val = adc1_get_raw(ADC1_VOL_PIN);
+            int rheo_val = val >> 5;
+            if (last_rheo_val < 0 || abs(rheo_val - last_rheo_val) > 1) {
+                i2c_mutex_lock(I2C_P0_NUM);
+                mcp40d17_set_wiper(I2C_P0_NUM, 0x7F & rheo_val);
+                i2c_mutex_unlock(I2C_P0_NUM);
+                ESP_LOGI(TAG, "Set volume: %d", rheo_val);
+                last_rheo_val = rheo_val;
+            }
+
+            // Check the ambient light level and adjust the display brightness
+            uint16_t ch0_val = 0;
+            uint16_t ch1_val = 0;
+            i2c_mutex_lock(I2C_P1_NUM);
+            bool ch_valid = (tsl2591_get_full_channel_data(I2C_P1_NUM, &ch0_val, &ch1_val) == ESP_OK);
+            i2c_mutex_unlock(I2C_P1_NUM);
+            if (ch_valid) {
+                float pct = brightness_pct_from_reading(ch1_val);
+                brightness_target = (uint8_t)(roundf(UINT8_MAX * pct));
+            }
+
+            // Check the SD card detect pin
+            int level = gpio_get_level(SDMMC_CD);
+            if (last_cd_level < 0 || last_cd_level != level) {
+                last_cd_level = level;
+                last_cd_count = 0;
+            } else if (last_cd_count < 3) {
+                last_cd_count++;
+            }
+            if (last_cd_count == 3) {
+                last_cd_count++;
+                if (last_cd_level == 0) {
+                    ESP_LOGI(TAG, "SD/MMC Card Inserted");
+                    if (sdcard_mount("/sdcard") != ESP_OK) {
+                        display_message("Error", "Could not read SD card", NULL, " OK ");
+                    }
+                } else if (sdcard_is_mounted()) {
+                    ESP_LOGI(TAG, "SD/MMC Card Ejected");
+                    sdcard_unmount();
                 }
-            } else if (sdcard_is_mounted()) {
-                ESP_LOGI(TAG, "SD/MMC Card Ejected");
-                sdcard_unmount();
             }
         }
 
-        vTaskDelay(100 / portTICK_RATE_MS);
+        if (brightness_value != brightness_target) {
+            if (brightness_value < brightness_target) {
+                brightness_value++;
+            } else if (brightness_value > brightness_target) {
+                brightness_value--;
+            }
+            main_menu_brightness_update(brightness_value);
+
+            vTaskDelay(10 / portTICK_RATE_MS);
+
+            index++;
+            if (index >= 10) {
+                index = 0;
+            }
+        } else {
+            vTaskDelay(100 / portTICK_RATE_MS);
+            index = 0;
+        }
     }
 }
 
@@ -221,13 +270,13 @@ void app_main(void)
     // Initialize the light sensor, don't fail on errors
     light_sensor_init_helper();
 
-    // Start the task that polls certain input pins
-    xTaskCreate(gpio_poll_task, "gpio_poll_task", 4096, NULL, 5, NULL);
-
     // Initialize the VGM player task
     ESP_ERROR_CHECK(vgm_player_init());
 
     // Show the menu system
     vTaskDelay(1000 / portTICK_RATE_MS);
     main_menu_start();
+
+    // Start the task that polls certain input pins
+    xTaskCreate(gpio_poll_task, "gpio_poll_task", 4096, NULL, 5, NULL);
 }

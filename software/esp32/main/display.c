@@ -27,6 +27,8 @@ static bool menu_event_timeout = false;
 /* Library function declarations */
 void u8g2_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s);
 
+static void display_set_freq(uint8_t value);
+
 typedef enum {
     seg_a,
     seg_b,
@@ -65,7 +67,19 @@ esp_err_t display_init()
     u8g2_InitDisplay(&u8g2);
     u8g2_SetPowerSave(&u8g2, 0);
 
+    // Slightly increase the display refresh frequency
+    display_set_freq(0xC1);
+
     return ESP_OK;
+}
+
+void display_set_freq(uint8_t value)
+{
+    u8x8_t *u8x8 = &(u8g2.u8x8);
+    u8x8_cad_StartTransfer(u8x8);
+    u8x8_cad_SendCmd(u8x8, 0x0B3);
+    u8x8_cad_SendArg(u8x8, value);
+    u8x8_cad_EndTransfer(u8x8);
 }
 
 void display_clear()

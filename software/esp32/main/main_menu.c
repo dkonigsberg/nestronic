@@ -479,7 +479,7 @@ static void main_menu_set_alarm_time()
         return;
     }
 
-    if (display_set_time(&hh, &mm, false)) {
+    if (display_set_time(&hh, &mm, time_twentyfour)) {
         settings_set_alarm_time(hh, mm);
         ESP_LOGI(TAG, "Alarm time set: %02d:%02d", hh, mm);
     }

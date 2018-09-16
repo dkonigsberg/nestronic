@@ -28,6 +28,7 @@
 #include "keypad.h"
 #include "sdcard_util.h"
 #include "vgm_player.h"
+#include "vgm.h"
 #include "zoneinfo.h"
 #include "bsdlib.h"
 #include "tsl2591.h"
@@ -38,10 +39,16 @@ static const char *TAG = "main_menu";
 static TaskHandle_t main_menu_task_handle;
 static SemaphoreHandle_t clock_mutex = NULL;
 static bool menu_visible = false;
-static bool alarm_set = false;
 static bool time_twentyfour = false;
 static bool menu_timeout = false;
 static uint8_t contrast_value = 0x9F;
+static bool alarm_set = false;
+static uint8_t alarm_hh;
+static uint8_t alarm_mm;
+static bool alarm_triggered = false;
+static bool alarm_running = false;
+static TimerHandle_t alarm_complete_timer = 0;
+static TimerHandle_t alarm_snooze_timer = 0;
 
 static esp_err_t main_menu_keypad_wait(keypad_event_t *event)
 {
@@ -91,9 +98,8 @@ static const char* find_list_option(const char *list, int option, size_t *length
 
 typedef bool (*file_picker_cb_t)(const char *filename);
 
-static const char* show_file_picker_impl(const char *title, const char *path, file_picker_cb_t cb)
+static bool show_file_picker_impl(const char *title, const char *path, file_picker_cb_t cb)
 {
-    const char *filename_result = NULL;
     struct vpool vp;
     struct dirent **namelist;
     int n;
@@ -107,7 +113,7 @@ static const char* show_file_picker_impl(const char *title, const char *path, fi
         } else {
             display_message("Error", "Could not open the directory", NULL, " OK ");
         }
-        return NULL;
+        return false;
     }
 
     vpool_init(&vp, 1024, 0);
@@ -134,7 +140,7 @@ static const char* show_file_picker_impl(const char *title, const char *path, fi
     if (vpool_is_empty(&vp)) {
         display_message("Error", "No files found", NULL, " OK ");
         vpool_final(&vp);
-        return NULL;
+        return true;
     }
 
     char *list = (char *) vpool_get_buf(&vp);
@@ -142,6 +148,7 @@ static const char* show_file_picker_impl(const char *title, const char *path, fi
     list[len - 1] = '\0';
 
     uint8_t option = 1;
+    bool selected = false;
     do {
         option = display_selection_list(
                 title, option,
@@ -171,18 +178,16 @@ static const char* show_file_picker_impl(const char *title, const char *path, fi
                     break;
                 }
                 filename[pre_len + file_len] = '\0';
-                filename_result = show_file_picker_impl(dir_title, filename, cb);
-                if (filename_result) {
-                    break;
+                if (show_file_picker_impl(dir_title, filename, cb)) {
+                    selected = true;
                 }
             } else if (cb) {
-                bool cb_result = cb(filename);
-                free(filename);
-                if (cb_result) {
-                    break;
-                }
+                selected = cb(filename);
             } else {
-                filename_result = filename;
+                selected = true;
+            }
+            free(filename);
+            if (selected) {
                 break;
             }
         }
@@ -190,12 +195,12 @@ static const char* show_file_picker_impl(const char *title, const char *path, fi
 
     vpool_final(&vp);
 
-    return filename_result;
+    return selected;
 }
 
-static const char* show_file_picker(const char *title, file_picker_cb_t cb)
+static void show_file_picker(const char *title, file_picker_cb_t cb)
 {
-    return show_file_picker_impl(title, "/sdcard", cb);
+    show_file_picker_impl(title, "/sdcard", cb);
 }
 
 static void main_menu_demo_playback_cb(vgm_playback_state_t state)
@@ -215,7 +220,7 @@ static bool main_menu_file_picker_cb(const char *filename)
     // The player currently has code to parse the GD3 tags and
     // show them on the display.
     vgm_gd3_tags_t *tags = NULL;
-    if (vgm_player_play_file(filename, false, main_menu_demo_playback_cb, &tags) == ESP_OK) {
+    if (vgm_player_play_file(filename, VGM_REPEAT_NONE, main_menu_demo_playback_cb, &tags) == ESP_OK) {
         struct vpool vp;
         vpool_init(&vp, 1024, 0);
         if (tags->game_name) {
@@ -275,11 +280,11 @@ static void main_menu_demo_sound_effects()
                 "Credit");
 
         if (option == 1) {
-            vgm_player_play_chime();
+            vgm_player_play_effect(VGM_PLAYER_EFFECT_CHIME, VGM_REPEAT_NONE);
         } else if (option == 2) {
-            vgm_player_play_blip();
+            vgm_player_play_effect(VGM_PLAYER_EFFECT_BLIP, VGM_REPEAT_NONE);
         } else if (option == 3) {
-            vgm_player_play_credit();
+            vgm_player_play_effect(VGM_PLAYER_EFFECT_CREDIT, VGM_REPEAT_NONE);
         } else if (option == UINT8_MAX) {
             menu_timeout = true;
         }
@@ -482,7 +487,123 @@ static void main_menu_set_alarm_time()
     if (display_set_time(&hh, &mm, time_twentyfour)) {
         settings_set_alarm_time(hh, mm);
         ESP_LOGI(TAG, "Alarm time set: %02d:%02d", hh, mm);
+        alarm_hh = hh;
+        alarm_mm = mm;
     }
+}
+
+static bool alarm_tune_file_picker_cb(const char *filename)
+{
+    esp_err_t ret;
+    vgm_file_t *vgm_file;
+    vgm_gd3_tags_t *tags_result = 0;
+
+    ESP_LOGI(TAG, "File: \"%s\"", filename);
+
+    ret = vgm_open(&vgm_file, filename);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open VGM file");
+        display_message("Error", "File could not be opened", NULL, " OK ");
+        return false;
+    }
+
+    if (vgm_get_header(vgm_file)->nes_apu_fds) {
+        ESP_LOGE(TAG, "FDS Add-on is not supported");
+        vgm_free(vgm_file);
+        display_message("Error", "File is not supported", NULL, " OK ");
+        return false;
+    }
+
+    if (vgm_read_gd3_tags(&tags_result, vgm_file) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to read GD3 tags");
+        vgm_free(vgm_file);
+        display_message("Error", "File could not be read", NULL, " OK ");
+        return false;
+    }
+
+    vgm_free(vgm_file);
+
+    bool selected = false;
+    do {
+        uint8_t option = display_message(
+                tags_result->game_name ? tags_result->game_name : "Unknown",
+                tags_result->track_name ? tags_result->track_name : "Unknown",
+                "",
+                " Select \n Play ");
+        if (option == 1) {
+            if (settings_set_alarm_tune(filename, tags_result->game_name, tags_result->track_name) == ESP_OK) {
+                selected = true;
+            }
+            break;
+        } else if (option == 2) {
+            main_menu_file_picker_cb(filename);
+        } else if (option == UINT8_MAX) {
+            menu_timeout = true;
+            break;
+        } else if (option  == 0) {
+            break;
+        }
+    } while (true);
+
+    vgm_free_gd3_tags(tags_result);
+
+    return selected;
+}
+
+static void main_menu_set_alarm()
+{
+    char buf_time[128];
+    char buf_tune[128];
+
+    do {
+        uint8_t hh;
+        uint8_t mm;
+        if (settings_get_alarm_time(&hh, &mm) != ESP_OK) {
+            return;
+        }
+
+        if (time_twentyfour) {
+            sprintf(buf_time, "%02d:%02d", hh, mm);
+        } else {
+            int8_t hour = hh;
+            int8_t minute = mm;
+            int ampm = display_convert_from_twentyfour(&hour, &minute);
+            sprintf(buf_time, "%d:%02d %s", hour, minute, (ampm == 1) ? "AM" : "PM");
+        }
+
+        char *filename = 0;
+        char *title = 0;
+        char *subtitle = 0;
+        esp_err_t ret = settings_get_alarm_tune(&filename, &title, &subtitle);
+        if (ret != ESP_OK || !filename || strlen(filename) == 0) {
+            snprintf(buf_tune, 128, "\n%s\n%s", "[Unset]", "");
+        } else if (title && strlen(title) > 0) {
+            snprintf(buf_tune, 128, "\n%s\n%s",
+                    title,
+                    (subtitle && strlen(subtitle) > 0) ? subtitle : "");
+        } else {
+            snprintf(buf_tune, 128, "\n%s\n%s", filename, "");
+        }
+        free(filename);
+        free(title);
+        free(subtitle);
+
+        uint8_t option = display_message(
+                "Set Alarm\n",
+                buf_time, buf_tune,
+                " Set Time \n Select Tune ");
+
+        if (option == 1) {
+            main_menu_set_alarm_time();
+        } else if (option == 2) {
+            show_file_picker("Select Alarm Tune", alarm_tune_file_picker_cb);
+        } else if (option == UINT8_MAX) {
+            menu_timeout = true;
+            break;
+        } else if (option  == 0) {
+            break;
+        }
+    } while (true);
 }
 
 static bool wifi_scan_connect(const wifi_ap_record_t *record)
@@ -966,9 +1087,9 @@ static void main_menu()
                 "Main Menu", option,
                 "Demo Playback\n"
                 "Demo Sound Effects\n"
-                "Diagnostics\n"
-                "Set Alarm Time\n"
+                "Set Alarm\n"
                 "Setup\n"
+                "Diagnostics\n"
                 "About");
 
         if (option == 1) {
@@ -976,11 +1097,11 @@ static void main_menu()
         } else if (option == 2) {
             main_menu_demo_sound_effects();
         } else if (option == 3) {
-            main_menu_diagnostics();
+            main_menu_set_alarm();
         } else if (option == 4) {
-            main_menu_set_alarm_time();
-        } else if (option == 5) {
             main_menu_setup();
+        } else if (option == 5) {
+            main_menu_diagnostics();
         } else if (option == 6) {
             main_menu_about();
         } else if (option == UINT8_MAX) {
@@ -997,17 +1118,95 @@ static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
         if (!menu_visible) {
             display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, alarm_set);
         }
+        if (alarm_set
+                && xTimerIsTimerActive(alarm_snooze_timer) == pdFALSE
+                && timeinfo.tm_hour == alarm_hh && timeinfo.tm_min == alarm_mm) {
+            alarm_triggered = true;
+            if (!menu_visible) {
+                keypad_event_t keypad_event = {
+                        .key = 0,
+                        .pressed = true
+                };
+                keypad_inject_event(&keypad_event);
+            }
+        }
         xSemaphoreGive(clock_mutex);
     }
 
     return ESP_OK;
 }
 
+static void start_alarm_sequence()
+{
+    esp_err_t ret;
+
+    ESP_LOGI(TAG, "Starting alarm sequence");
+
+    display_set_contrast(0xFF);
+
+    char *filename = 0;
+    ret = settings_get_alarm_tune(&filename, NULL, NULL);
+    if (ret != ESP_OK || !filename || strlen(filename) == 0) {
+        // No valid filename
+        ret = ESP_FAIL;
+    }
+
+    if (ret == ESP_OK) {
+        ret = vgm_player_play_file(filename, VGM_REPEAT_CONTINUOUS, NULL, NULL);
+    }
+    free(filename);
+
+    // If a VGM file could not be played, then do a fallback chime
+    if (ret != ESP_OK) {
+        vgm_player_play_effect(VGM_PLAYER_EFFECT_CHIME, VGM_REPEAT_CONTINUOUS);
+    }
+
+    xTimerStart(alarm_complete_timer, portMAX_DELAY);
+}
+
+static void stop_alarm_sequence()
+{
+    ESP_LOGI(TAG, "Stopping alarm sequence");
+    xTimerStop(alarm_complete_timer, portMAX_DELAY);
+    vgm_player_stop();
+    display_set_contrast(contrast_value);
+}
+
+static void alarm_complete_timer_callback(TimerHandle_t xTimer)
+{
+    ESP_LOGI(TAG, "Alarm running too long, stopping");
+    xSemaphoreTake(clock_mutex, portMAX_DELAY);
+    alarm_triggered = false;
+    keypad_event_t keypad_event = {
+            .key = 0,
+            .pressed = true
+    };
+    keypad_inject_event(&keypad_event);
+    xSemaphoreGive(clock_mutex);
+}
+
+static void alarm_snooze_timer_callback(TimerHandle_t xTimer)
+{
+    ESP_LOGI(TAG, "Alarm snooze expired, restarting");
+    xSemaphoreTake(clock_mutex, portMAX_DELAY);
+    if (alarm_set && !alarm_triggered) {
+        alarm_triggered = true;
+        if (!menu_visible) {
+            keypad_event_t keypad_event = {
+                    .key = 0,
+                    .pressed = true
+            };
+            keypad_inject_event(&keypad_event);
+        }
+    }
+    xSemaphoreGive(clock_mutex);
+}
+
 void main_menu_brightness_update(uint8_t value)
 {
     xSemaphoreTake(clock_mutex, portMAX_DELAY);
     contrast_value = value;
-    if (!menu_visible) {
+    if (!menu_visible && !alarm_triggered) {
         display_set_contrast(contrast_value);
     }
     xSemaphoreGive(clock_mutex);
@@ -1017,10 +1216,20 @@ static void main_menu_task(void *pvParameters)
 {
     ESP_LOGD(TAG, "main_menu_task");
 
+    // Prepare a timer for a maximum alarm duration of 5 minutes
+    alarm_complete_timer = xTimerCreate("alarm_complete_timer", 300000 / portTICK_RATE_MS,
+            pdFALSE, NULL, alarm_complete_timer_callback);
+
+    // Prepare a timer for a maximum alarm snooze duration of 9 minutes
+    alarm_snooze_timer = xTimerCreate("alarm_snooze_timer", 540000 / portTICK_RATE_MS,
+            pdFALSE, NULL, alarm_snooze_timer_callback);
+
     while (1) {
         // Show the current time on the display
         xSemaphoreTake(clock_mutex, portMAX_DELAY);
-        display_set_contrast(contrast_value);
+        if (!alarm_triggered) {
+            display_set_contrast(contrast_value);
+        }
         menu_visible = false;
         display_clear();
         time_t time;
@@ -1038,15 +1247,40 @@ static void main_menu_task(void *pvParameters)
             if (keypad_wait_for_event(&keypad_event, -1) == ESP_OK) {
                 if (keypad_event.pressed) {
                     if (keypad_event.key == KEYPAD_BUTTON_START) {
+                        xSemaphoreTake(clock_mutex, portMAX_DELAY);
                         alarm_set = true;
+                        alarm_triggered = false;
+                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        }
+                        xSemaphoreGive(clock_mutex);
                     }
                     else if (keypad_event.key == KEYPAD_BUTTON_SELECT) {
+                        xSemaphoreTake(clock_mutex, portMAX_DELAY);
                         alarm_set = false;
+                        alarm_triggered = false;
+                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        }
+                        xSemaphoreGive(clock_mutex);
                     }
                     else if (keypad_event.key == KEYPAD_BUTTON_A || keypad_event.key == KEYPAD_BUTTON_B) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
                         display_set_contrast(0x9F);
                         menu_visible = true;
+                        alarm_triggered = false;
+                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        }
+                        xSemaphoreGive(clock_mutex);
+                    }
+                    else if (keypad_event.key == KEYPAD_TOUCH) {
+                        xSemaphoreTake(clock_mutex, portMAX_DELAY);
+                        if (alarm_triggered && xTimerIsTimerActive(alarm_snooze_timer) == pdFALSE) {
+                            ESP_LOGI(TAG, "Snooze button pressed");
+                            xTimerStart(alarm_snooze_timer, portMAX_DELAY);
+                            alarm_triggered = false;
+                        }
                         xSemaphoreGive(clock_mutex);
                     }
                     break;
@@ -1058,6 +1292,16 @@ static void main_menu_task(void *pvParameters)
             menu_timeout = false;
             main_menu();
         }
+
+        xSemaphoreTake(clock_mutex, portMAX_DELAY);
+        if (alarm_triggered && !alarm_running) {
+            start_alarm_sequence();
+            alarm_running = true;
+        } else if (!alarm_triggered && alarm_running) {
+            stop_alarm_sequence();
+            alarm_running = false;
+        }
+        xSemaphoreGive(clock_mutex);
     };
 
     vTaskDelete(NULL);
@@ -1075,6 +1319,11 @@ esp_err_t main_menu_start()
 
     if (settings_get_time_format(&time_twentyfour) != ESP_OK) {
         time_twentyfour = false;
+    }
+
+    if (settings_get_alarm_time(&alarm_hh, &alarm_mm) != ESP_OK) {
+        alarm_hh = UINT8_MAX;
+        alarm_mm = UINT8_MAX;
     }
 
     board_rtc_set_alarm_cb(board_rtc_alarm_func);

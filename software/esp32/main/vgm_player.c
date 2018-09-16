@@ -34,12 +34,6 @@ typedef enum {
     VGM_PLAYER_BENCHMARK_DATA
 } vgm_player_command_t;
 
-typedef enum {
-    VGM_PLAYER_EFFECT_CHIME = 0,
-    VGM_PLAYER_EFFECT_BLIP,
-    VGM_PLAYER_EFFECT_CREDIT
-} vgm_player_effect_t;
-
 typedef struct {
     vgm_player_command_t command;
     vgm_playback_cb_t playback_cb;
@@ -47,13 +41,13 @@ typedef struct {
         vgm_player_effect_t effect;
         vgm_file_t *vgm_file;
     };
-    bool enable_looping;
+    vgm_playback_repeat_t repeat;
 } vgm_player_event_t;
 
 typedef struct {
     vgm_file_t *vgm_file;
     vgm_playback_cb_t playback_cb;
-    bool looping_enabled;
+    vgm_playback_repeat_t repeat;
     bool has_data_block;
     vgm_data_state_t *data_state;
 } vgm_player_state_t;
@@ -67,6 +61,7 @@ typedef struct {
 UT_icd vgm_data_block_segment_icd = {sizeof(vgm_data_block_segment_t), NULL, NULL, NULL};
 UT_icd uint8_icd = {sizeof(uint8_t), NULL, NULL, NULL};
 
+static void vgm_player_play_effect_impl(vgm_player_effect_t effect);
 static void vgm_player_play_effect_chime();
 static void vgm_player_play_effect_blip();
 static void vgm_player_play_effect_credit();
@@ -126,12 +121,16 @@ static void vgm_player_task(void *pvParameters)
         if(xQueueReceive(vgm_player_event_queue, &event, portMAX_DELAY)) {
             if (event.command == VGM_PLAYER_PLAY_EFFECT) {
                 vgm_player_prepare();
-                if (event.effect == VGM_PLAYER_EFFECT_CHIME) {
-                    vgm_player_play_effect_chime();
-                } else if (event.effect == VGM_PLAYER_EFFECT_BLIP) {
-                    vgm_player_play_effect_blip();
-                } else if (event.effect == VGM_PLAYER_EFFECT_CREDIT) {
-                    vgm_player_play_effect_credit();
+                if (event.repeat == VGM_REPEAT_CONTINUOUS) {
+                    while(true) {
+                        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
+                            break;
+                        }
+                        vgm_player_play_effect_impl(event.effect);
+                        vTaskDelay(500 / portTICK_RATE_MS);
+                    }
+                } else {
+                    vgm_player_play_effect_impl(event.effect);
                 }
                 vgm_player_cleanup();
             }
@@ -139,7 +138,7 @@ static void vgm_player_task(void *pvParameters)
                 vgm_player_state_t state = {
                         .vgm_file = event.vgm_file,
                         .playback_cb = event.playback_cb,
-                        .looping_enabled = event.enable_looping,
+                        .repeat = event.repeat,
                         .data_state = NULL
                 };
 
@@ -592,9 +591,22 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
         }
         else if (command.type == VGM_CMD_DONE) {
             ESP_LOGI(TAG, "At end of data tag");
-            if (state->looping_enabled && vgm_has_loop(state->vgm_file)) {
+            if (state->repeat == VGM_REPEAT_LOOP && vgm_has_loop(state->vgm_file)) {
                 ESP_LOGI(TAG, "Seeking to start of loop");
                 vgm_seek_loop(state->vgm_file);
+            } else if (state->repeat == VGM_REPEAT_CONTINUOUS) {
+                ESP_LOGI(TAG, "Seeking to start of file");
+
+                // Reset APU for a clean state
+                i2c_mutex_lock(I2C_P0_NUM);
+                nes_apu_init(I2C_P0_NUM);
+                i2c_mutex_unlock(I2C_P0_NUM);
+
+                // Small delay
+                vTaskDelay(500 / portTICK_RATE_MS);
+
+                // Seek to start of file
+                vgm_seek_restart(state->vgm_file);
             } else {
                 break;
             }
@@ -739,7 +751,7 @@ UT_array* vgm_player_find_eviction_candiates(
     return evict;
 }
 
-esp_err_t vgm_player_play_file(const char *filename, bool enable_looping, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags)
+esp_err_t vgm_player_play_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags)
 {
     esp_err_t ret;
     vgm_player_event_t event;
@@ -781,7 +793,7 @@ esp_err_t vgm_player_play_file(const char *filename, bool enable_looping, vgm_pl
     bzero(&event, sizeof(vgm_player_event_t));
     event.command = VGM_PLAYER_PLAY_VGM;
     event.vgm_file = vgm_file;
-    event.enable_looping = enable_looping;
+    event.repeat = repeat;
     event.playback_cb = cb;
     if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
         vgm_free_gd3_tags(tags_result);
@@ -796,7 +808,7 @@ esp_err_t vgm_player_play_file(const char *filename, bool enable_looping, vgm_pl
     return ESP_OK;
 }
 
-esp_err_t vgm_player_enqueue_effect(vgm_player_effect_t effect)
+esp_err_t vgm_player_play_effect(vgm_player_effect_t effect, vgm_playback_repeat_t repeat)
 {
     vgm_player_event_t event;
 
@@ -804,26 +816,12 @@ esp_err_t vgm_player_enqueue_effect(vgm_player_effect_t effect)
     bzero(&event, sizeof(vgm_player_event_t));
     event.command = VGM_PLAYER_PLAY_EFFECT;
     event.effect = effect;
+    event.repeat = repeat;
     if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
         return ESP_FAIL;
     }
 
     return ESP_OK;
-}
-
-esp_err_t vgm_player_play_chime()
-{
-    return vgm_player_enqueue_effect(VGM_PLAYER_EFFECT_CHIME);
-}
-
-esp_err_t vgm_player_play_blip()
-{
-    return vgm_player_enqueue_effect(VGM_PLAYER_EFFECT_BLIP);
-}
-
-esp_err_t vgm_player_play_credit()
-{
-    return vgm_player_enqueue_effect(VGM_PLAYER_EFFECT_CREDIT);
 }
 
 esp_err_t vgm_player_stop()
@@ -843,6 +841,17 @@ esp_err_t vgm_player_benchmark_data()
     }
 
     return ESP_OK;
+}
+
+void vgm_player_play_effect_impl(vgm_player_effect_t effect)
+{
+    if (effect == VGM_PLAYER_EFFECT_CHIME) {
+        vgm_player_play_effect_chime();
+    } else if (effect == VGM_PLAYER_EFFECT_BLIP) {
+        vgm_player_play_effect_blip();
+    } else if (effect == VGM_PLAYER_EFFECT_CREDIT) {
+        vgm_player_play_effect_credit();
+    }
 }
 
 void vgm_player_play_effect_chime()

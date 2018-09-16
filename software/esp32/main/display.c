@@ -336,7 +336,7 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
     }
 }
 
-static int display_convert_from_twentyfour(int8_t *hh, int8_t *mm)
+int display_convert_from_twentyfour(int8_t *hh, int8_t *mm)
 {
     int am_pm;
     if (*hh == 0) {

@@ -9,6 +9,9 @@ static const char *TAG = "settings";
 
 #define NVS_NAMESPACE "nestronic"
 
+static esp_err_t settings_set_string(const char *key, const char *value);
+static esp_err_t settings_get_string(const char *key, char **value);
+
 esp_err_t settings_set_rtc_trim(bool coarse, uint8_t value)
 {
     esp_err_t err;
@@ -59,7 +62,7 @@ esp_err_t settings_get_rtc_trim(bool *coarse, uint8_t *value)
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "nvs_open: %d", err);
         return err;
@@ -82,110 +85,12 @@ esp_err_t settings_get_rtc_trim(bool *coarse, uint8_t *value)
 
 esp_err_t settings_set_time_zone(const char *zone_name)
 {
-    esp_err_t err;
-    nvs_handle handle;
-    bool value_changed;
-
-    if (!zone_name || strlen(zone_name) == 0) {
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
-
-    size_t required_size = 0;
-    err = nvs_get_str(handle, "time_zone", NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        nvs_close(handle);
-        return err;
-    }
-
-    if (required_size > 0) {
-        char *existing_value = malloc(required_size);
-        if (!existing_value) {
-            nvs_close(handle);
-            return ESP_ERR_NO_MEM;
-        }
-
-        err = nvs_get_str(handle, "time_zone", existing_value, &required_size);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_get_str: %d", err);
-            nvs_close(handle);
-            free(existing_value);
-            return err;
-        }
-
-        value_changed = (strcmp(existing_value, zone_name) != 0);
-        free(existing_value);
-    } else {
-        value_changed = true;
-    }
-
-    if (value_changed) {
-        err = nvs_set_str(handle, "time_zone", zone_name);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_set_str: %d", err);
-            nvs_close(handle);
-            return err;
-        }
-
-        err = nvs_commit(handle);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_commit: %d", err);
-            nvs_close(handle);
-            return err;
-        }
-    }
-
-    nvs_close(handle);
-    return ESP_OK;
+    return settings_set_string("time_zone", zone_name);
 }
 
 esp_err_t settings_get_time_zone(char **zone_name)
 {
-    esp_err_t err;
-    nvs_handle handle;
-
-    if (!zone_name) {
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
-
-    size_t required_size = 0;
-    err = nvs_get_str(handle, "time_zone", NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        nvs_close(handle);
-        return err;
-    }
-
-    char *existing_value = malloc(required_size);
-    if (!existing_value) {
-        nvs_close(handle);
-        return ESP_ERR_NO_MEM;
-    }
-
-    err = nvs_get_str(handle, "time_zone", existing_value, &required_size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        free(existing_value);
-        nvs_close(handle);
-        return err;
-    }
-
-    *zone_name = existing_value;
-
-    nvs_close(handle);
-    return ESP_OK;
+    return settings_get_string("time_zone", zone_name);
 }
 
 esp_err_t settings_set_time_format(bool twentyfour)
@@ -238,7 +143,7 @@ esp_err_t settings_get_time_format(bool *twentyfour)
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "nvs_open: %d", err);
         return err;
@@ -260,110 +165,12 @@ esp_err_t settings_get_time_format(bool *twentyfour)
 
 esp_err_t settings_set_ntp_server(const char *hostname)
 {
-    esp_err_t err;
-    nvs_handle handle;
-    bool value_changed;
-
-    if (!hostname || strlen(hostname) == 0) {
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
-
-    size_t required_size = 0;
-    err = nvs_get_str(handle, "ntp_server", NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        nvs_close(handle);
-        return err;
-    }
-
-    if (required_size > 0) {
-        char *existing_value = malloc(required_size);
-        if (!existing_value) {
-            nvs_close(handle);
-            return ESP_ERR_NO_MEM;
-        }
-
-        err = nvs_get_str(handle, "ntp_server", existing_value, &required_size);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_get_str: %d", err);
-            nvs_close(handle);
-            free(existing_value);
-            return err;
-        }
-
-        value_changed = (strcmp(existing_value, hostname) != 0);
-        free(existing_value);
-    } else {
-        value_changed = true;
-    }
-
-    if (value_changed) {
-        err = nvs_set_str(handle, "ntp_server", hostname);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_set_str: %d", err);
-            nvs_close(handle);
-            return err;
-        }
-
-        err = nvs_commit(handle);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_commit: %d", err);
-            nvs_close(handle);
-            return err;
-        }
-    }
-
-    nvs_close(handle);
-    return ESP_OK;
+    return settings_set_string("ntp_server", hostname);
 }
 
 esp_err_t settings_get_ntp_server(char **hostname)
 {
-    esp_err_t err;
-    nvs_handle handle;
-
-    if (!hostname) {
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
-
-    size_t required_size = 0;
-    err = nvs_get_str(handle, "ntp_server", NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        nvs_close(handle);
-        return err;
-    }
-
-    char *existing_value = malloc(required_size);
-    if (!existing_value) {
-        nvs_close(handle);
-        return ESP_ERR_NO_MEM;
-    }
-
-    err = nvs_get_str(handle, "ntp_server", existing_value, &required_size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_get_str: %d", err);
-        free(existing_value);
-        nvs_close(handle);
-        return err;
-    }
-
-    *hostname = existing_value;
-
-    nvs_close(handle);
-    return ESP_OK;
+    return settings_get_string("ntp_server", hostname);
 }
 
 esp_err_t settings_set_alarm_time(uint8_t hh, uint8_t mm)
@@ -420,7 +227,7 @@ esp_err_t settings_get_alarm_time(uint8_t *hh, uint8_t *mm)
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "nvs_open: %d", err);
         return err;
@@ -444,6 +251,144 @@ esp_err_t settings_get_alarm_time(uint8_t *hh, uint8_t *mm)
         *hh = hh_value;
         *mm = mm_value;
     }
+
+    nvs_close(handle);
+    return ESP_OK;
+}
+
+esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle)
+{
+    if (!filename || strlen(filename) == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    esp_err_t err = settings_set_string("alarm_tune", filename);
+    settings_set_string("alarm_tune_tt", (title && strlen(title) > 0) ? title : "");
+    settings_set_string("alarm_tune_st", (subtitle && strlen(subtitle) > 0) ? subtitle : "");
+
+    return err;
+}
+
+esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle)
+{
+    if (filename) {
+        esp_err_t err = settings_get_string("alarm_tune", filename);
+        if (err != ESP_OK) {
+            return err;
+        }
+    }
+    if (title) {
+        settings_get_string("alarm_tune_tt", title);
+    }
+    if (subtitle) {
+        settings_get_string("alarm_tune_st", subtitle);
+    }
+    return ESP_OK;
+}
+
+static esp_err_t settings_set_string(const char *key, const char *value)
+{
+    esp_err_t err;
+    nvs_handle handle;
+    bool value_changed;
+
+    if (!value || strlen(value) == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+        return err;
+    }
+
+    size_t required_size = 0;
+    err = nvs_get_str(handle, key, NULL, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+        nvs_close(handle);
+        return err;
+    }
+
+    if (required_size > 0) {
+        char *existing_value = malloc(required_size);
+        if (!existing_value) {
+            nvs_close(handle);
+            return ESP_ERR_NO_MEM;
+        }
+
+        err = nvs_get_str(handle, key, existing_value, &required_size);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+            nvs_close(handle);
+            free(existing_value);
+            return err;
+        }
+
+        value_changed = (strcmp(existing_value, value) != 0);
+        free(existing_value);
+    } else {
+        value_changed = true;
+    }
+
+    if (value_changed) {
+        err = nvs_set_str(handle, key, value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_set_str: %s (%d)", esp_err_to_name(err), err);
+            nvs_close(handle);
+            return err;
+        }
+
+        err = nvs_commit(handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_commit: %s (%d)", esp_err_to_name(err), err);
+            nvs_close(handle);
+            return err;
+        }
+    }
+
+    nvs_close(handle);
+    return ESP_OK;
+}
+
+static esp_err_t settings_get_string(const char *key, char **value)
+{
+    esp_err_t err;
+    nvs_handle handle;
+
+    if (!value) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+        return err;
+    }
+
+    size_t required_size = 0;
+    err = nvs_get_str(handle, key, NULL, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+        nvs_close(handle);
+        return err;
+    }
+
+    char *existing_value = malloc(required_size);
+    if (!existing_value) {
+        nvs_close(handle);
+        return ESP_ERR_NO_MEM;
+    }
+
+    err = nvs_get_str(handle, key, existing_value, &required_size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+        free(existing_value);
+        nvs_close(handle);
+        return err;
+    }
+
+    *value = existing_value;
 
     nvs_close(handle);
     return ESP_OK;

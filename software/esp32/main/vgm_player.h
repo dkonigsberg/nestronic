@@ -15,14 +15,24 @@ typedef enum {
     VGM_PLAYER_FINISHED
 } vgm_playback_state_t;
 
+typedef enum {
+    VGM_REPEAT_NONE,
+    VGM_REPEAT_LOOP,
+    VGM_REPEAT_CONTINUOUS,
+} vgm_playback_repeat_t;
+
+typedef enum {
+    VGM_PLAYER_EFFECT_CHIME = 0,
+    VGM_PLAYER_EFFECT_BLIP,
+    VGM_PLAYER_EFFECT_CREDIT
+} vgm_player_effect_t;
+
 typedef void (*vgm_playback_cb_t)(vgm_playback_state_t state);
 
 esp_err_t vgm_player_init();
 
-esp_err_t vgm_player_play_file(const char *filename, bool enable_looping, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags);
-esp_err_t vgm_player_play_chime();
-esp_err_t vgm_player_play_blip();
-esp_err_t vgm_player_play_credit();
+esp_err_t vgm_player_play_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags);
+esp_err_t vgm_player_play_effect(vgm_player_effect_t effect, vgm_playback_repeat_t repeat);
 esp_err_t vgm_player_stop();
 esp_err_t vgm_player_benchmark_data();
 

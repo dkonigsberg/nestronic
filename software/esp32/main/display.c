@@ -285,6 +285,8 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
 
     if (elements->hh >= 10) {
         display_draw_digit(offset, 0, elements->hh / 10);
+    } else if (elements->hh >= 0 && elements->am_pm == UINT8_MAX) {
+        display_draw_digit(offset, 0, 0);
     }
     offset += 36 + 8;
 
@@ -358,7 +360,7 @@ void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, bool clock)
     int8_t minute = mm;
 
     if (twentyfour) {
-        show_ampm = 0;
+        show_ampm = UINT8_MAX;
     } else {
         show_ampm = display_convert_from_twentyfour(&hour, &minute);
     }
@@ -385,7 +387,7 @@ bool display_set_time(uint8_t *hh, uint8_t *mm, bool twentyfour)
     int8_t minute = *mm;
 
     if (twentyfour) {
-        am_pm = 0;
+        am_pm = UINT8_MAX;
     } else {
         am_pm = display_convert_from_twentyfour(&hour, &minute);
     }

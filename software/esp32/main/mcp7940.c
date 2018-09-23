@@ -49,6 +49,10 @@ static const char *TAG = "mcp7940";
 /*
  * Power-Fail Timestamp registers
  */
+#define MCP7940_PWRDNMIN   0x18
+#define MCP7940_PWRDNHOUR  0x19
+#define MCP7940_PWRDNDATE  0x1A
+#define MCP7940_PWRDNMTH   0x1B
 #define MCP7940_PWRUPMIN   0x1C
 #define MCP7940_PWRUPHOUR  0x1D
 #define MCP7940_PWRUPDATE  0x1E
@@ -60,6 +64,7 @@ static const char *TAG = "mcp7940";
 #define MCP7940_SRAM       0x20
 
 static esp_err_t mcp7940_set_bits(i2c_port_t i2c_num, uint8_t reg, uint8_t mask, uint8_t value);
+static esp_err_t mcp7940_get_power_failure_time(i2c_port_t i2c_num, struct tm *tm_down, struct tm *tm_up);
 
 #define UINT_TO_BCD(v) ((((v) / 10) << 4) | ((v) % 10))
 
@@ -77,7 +82,6 @@ esp_err_t mcp7940_set_bits(i2c_port_t i2c_num, uint8_t reg, uint8_t mask, uint8_
         ESP_LOGE(TAG, "i2c_read_register error: %d", ret);
         return ret;
     }
-
 
     /* Update the value based on the parameters */
     data[0] = reg;
@@ -108,11 +112,6 @@ esp_err_t mcp7940_init(i2c_port_t i2c_num)
     }
 
     ret = mcp7940_set_external_oscillator_enabled(i2c_num, false);
-    if (ret != ESP_OK) {
-        return ret;
-    }
-
-    ret = mcp7940_set_battery_enabled(i2c_num, true);
     if (ret != ESP_OK) {
         return ret;
     }
@@ -154,14 +153,12 @@ esp_err_t mcp7940_is_oscillator_running(i2c_port_t i2c_num, bool *running)
 
     return ret;
 }
-esp_err_t mcp7940_has_power_failed(i2c_port_t i2c_num, bool *failed)
+
+esp_err_t mcp7940_read_power_failure(i2c_port_t i2c_num, bool *failed, struct tm *tm_down, struct tm *tm_up)
 {
     esp_err_t ret = ESP_OK;
     uint8_t data;
-
-    if (!failed) {
-        return ESP_ERR_INVALID_ARG;
-    }
+    bool power_failed;
 
     ret = i2c_read_register(i2c_num, MCP7940_ADDRESS, MCP7940_RTCWKDAY, &data);
     if (ret != ESP_OK) {
@@ -169,14 +166,28 @@ esp_err_t mcp7940_has_power_failed(i2c_port_t i2c_num, bool *failed)
         return ret;
     }
 
-    *failed = (data & 0x10) == 0x10;
+    power_failed = (data & 0x10) == 0x10;
+
+    if (failed) {
+        *failed = power_failed;
+    }
+
+    if (power_failed && tm_down && tm_up) {
+        ret = mcp7940_get_power_failure_time(i2c_num, tm_down, tm_up);
+        if (ret != ESP_OK) {
+            return ret;
+        }
+    }
+
+    if (power_failed) {
+        data = (data & ~0x10);
+        ret = i2c_write_register(i2c_num, MCP7940_ADDRESS, MCP7940_RTCWKDAY, data);
+        if (ret != ESP_OK) {
+            return ret;
+        }
+    }
 
     return ret;
-}
-
-esp_err_t mcp7940_clear_power_failed(i2c_port_t i2c_num)
-{
-    return mcp7940_set_bits(i2c_num, MCP7940_RTCWKDAY, 0x10, 0);
 }
 
 esp_err_t mcp7940_set_time(i2c_port_t i2c_num, const struct tm *tm)
@@ -672,6 +683,90 @@ esp_err_t mcp7940_get_trim_value(i2c_port_t i2c_num, bool *sign, uint8_t *value)
 
     *sign = (data & 0x80) == 0x80;
     *value = data & 0x7F;
+
+    return ret;
+}
+
+esp_err_t mcp7940_get_power_failure_time(i2c_port_t i2c_num, struct tm *tm_down, struct tm *tm_up)
+{
+    esp_err_t ret = ESP_OK;
+    uint8_t data[8];
+
+    if (!tm_down || !tm_up) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    /* Select the base of the timestamp registers */
+    ret = i2c_write_byte(i2c_num, MCP7940_ADDRESS, MCP7940_PWRDNMIN);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "mcp7940_write_byte error: %d", ret);
+        return ret;
+    }
+
+    /* Read all 8 relevant registers in one operation */
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, data, sizeof(data));
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "mcp7940_read error: %d", ret);
+        return ret;
+    }
+
+    /* Populate the time structures based on the results */
+    bzero(tm_down, sizeof(struct tm));
+    bzero(tm_up, sizeof(struct tm));
+
+    /* Minutes (0-59) */
+    tm_down->tm_min = (((data[0] & 0x70) >> 4) * 10) + (data[0] & 0x0F);
+    tm_up->tm_min   = (((data[4] & 0x70) >> 4) * 10) + (data[0] & 0x0F);
+
+    /* Hours (0-23) */
+    if ((data[1] & 0x40) == 0x40) {
+        /* 12 hour time */
+        tm_down->tm_hour = (((data[1] & 0x10) >> 4) * 10) + (data[1] & 0x0F);
+        if ((data[1] & 0x20) == 0x20) {
+            /* PM */
+            if (tm_down->tm_hour < 12) {
+                tm_down->tm_hour += 12;
+            }
+        } else {
+            /* AM */
+            if (tm_down->tm_hour == 12) {
+                tm_down->tm_hour = 0;
+            }
+        }
+    } else {
+        /* 24 hour time */
+        tm_down->tm_hour = (((data[1] & 0x30) >> 4) * 10) + (data[1] & 0x0F);
+    }
+    if ((data[5] & 0x40) == 0x40) {
+        /* 12 hour time */
+        tm_up->tm_hour = (((data[5] & 0x10) >> 4) * 10) + (data[5] & 0x0F);
+        if ((data[5] & 0x20) == 0x20) {
+            /* PM */
+            if (tm_up->tm_hour < 12) {
+                tm_up->tm_hour += 12;
+            }
+        } else {
+            /* AM */
+            if (tm_up->tm_hour == 12) {
+                tm_up->tm_hour = 0;
+            }
+        }
+    } else {
+        /* 24 hour time */
+        tm_up->tm_hour = (((data[5] & 0x30) >> 4) * 10) + (data[5] & 0x0F);
+    }
+
+    /* Day of the month (1-31) */
+    tm_down->tm_mday = (((data[2] & 0x30) >> 4) * 10) + (data[2] & 0x0F);
+    tm_up->tm_mday   = (((data[6] & 0x30) >> 4) * 10) + (data[6] & 0x0F);
+
+    /* Day of the week (0-6, Sunday = 0) */
+    tm_down->tm_wday = ((data[3] & 0xE0) >> 5) - 1;
+    tm_up->tm_wday   = ((data[7] & 0xE0) >> 5) - 1;
+
+    /* Month (0-11) */
+    tm_down->tm_mon = (((data[3] & 0x10) >> 4) * 10) + (data[3] & 0x0F) - 1;
+    tm_up->tm_mon   = (((data[7] & 0x10) >> 4) * 10) + (data[7] & 0x0F) - 1;
 
     return ret;
 }

@@ -40,8 +40,8 @@ esp_err_t mcp7940_set_oscillator_enabled(i2c_port_t i2c_num, bool enabled);
 esp_err_t mcp7940_set_external_oscillator_enabled(i2c_port_t i2c_num, bool enabled);
 esp_err_t mcp7940_set_battery_enabled(i2c_port_t i2c_num, bool enabled);
 esp_err_t mcp7940_is_oscillator_running(i2c_port_t i2c_num, bool *running);
-esp_err_t mcp7940_has_power_failed(i2c_port_t i2c_num, bool *failed);
-esp_err_t mcp7940_clear_power_failed(i2c_port_t i2c_num);
+
+esp_err_t mcp7940_read_power_failure(i2c_port_t i2c_num, bool *failed, struct tm *tm_down, struct tm *tm_up);
 
 esp_err_t mcp7940_set_time(i2c_port_t i2c_num, const struct tm *tm);
 esp_err_t mcp7940_get_time(i2c_port_t i2c_num, struct tm *tm);

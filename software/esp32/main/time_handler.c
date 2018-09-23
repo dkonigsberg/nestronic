@@ -76,6 +76,34 @@ static esp_err_t time_handler_init_rtc()
         ESP_LOGI(TAG, "The current date/time is: %s", strftime_buf);
     }
 
+    do {
+        if (board_rtc_has_power_failed()) {
+            time_t time_down;
+            time_t time_up;
+            struct tm timeinfo;
+
+            if (board_rtc_get_power_time_down(&time_down) != ESP_OK) {
+                break;
+            }
+            if (board_rtc_get_power_time_down(&time_up) != ESP_OK) {
+                break;
+            }
+
+            // Log the power fail timestamps.
+            // Note: These do not include the year or seconds.
+            if (localtime_r(&time_down, &timeinfo)) {
+                ESP_LOGI(TAG, "Power down: %d/%d %02d:%02d",
+                        timeinfo.tm_mon, timeinfo.tm_mday,
+                        timeinfo.tm_hour, timeinfo.tm_min);
+            }
+            if (localtime_r(&time_up, &timeinfo)) {
+                ESP_LOGI(TAG, "Power up: %d/%d %02d:%02d",
+                        timeinfo.tm_mon, timeinfo.tm_mday,
+                        timeinfo.tm_hour, timeinfo.tm_min);
+            }
+        }
+    } while (0);
+
     return ret;
 }
 

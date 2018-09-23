@@ -21,6 +21,9 @@ static const char *TAG = "board_rtc";
 #define RTC_TRIM_VALUE  0
 
 board_rtc_alarm_cb_t board_rtc_alarm_cb = NULL;
+static bool power_failed = false;
+static struct tm tm_power_down = {0};
+static struct tm tm_power_up = {0};
 
 static time_t board_rtc_timegm(struct tm *tm);
 
@@ -50,6 +53,12 @@ esp_err_t board_rtc_init()
 
     // Enable the oscillator
     mcp7940_init(I2C_P0_NUM);
+
+    // Check for power failure
+    mcp7940_read_power_failure(I2C_P0_NUM, &power_failed, &tm_power_down, &tm_power_up);
+
+    // Enable the battery
+    mcp7940_set_battery_enabled(I2C_P0_NUM, true);
 
     // Set trim value
     mcp7940_set_coarse_trim_enabled(I2C_P0_NUM, trim_coarse);
@@ -119,6 +128,51 @@ esp_err_t board_rtc_calibration()
 esp_err_t board_rtc_set_alarm_cb(board_rtc_alarm_cb_t cb)
 {
     board_rtc_alarm_cb = cb;
+    return ESP_OK;
+}
+
+bool board_rtc_has_power_failed()
+{
+    return power_failed;
+}
+
+esp_err_t board_rtc_get_power_time_down(time_t *time)
+{
+    if (!power_failed) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (!time) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    time_t result = board_rtc_timegm(&tm_power_down);
+    if (result < 0) {
+        ESP_LOGE(TAG, "timegm error");
+        return ESP_FAIL;
+    }
+
+    *time = result;
+
+    return ESP_OK;
+}
+
+esp_err_t board_rtc_get_power_time_up(time_t *time)
+{
+    if (!power_failed) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (!time) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    time_t result = board_rtc_timegm(&tm_power_up);
+    if (result < 0) {
+        ESP_LOGE(TAG, "timegm error");
+        return ESP_FAIL;
+    }
+
+    *time = result;
+
     return ESP_OK;
 }
 

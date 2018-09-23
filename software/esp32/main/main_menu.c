@@ -1249,6 +1249,7 @@ static void main_menu_task(void *pvParameters)
                     if (keypad_event.key == KEYPAD_BUTTON_START) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
                         alarm_set = true;
+                        board_rtc_set_alarm_enabled(alarm_set);
                         alarm_triggered = false;
                         if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
                             xTimerStop(alarm_snooze_timer, portMAX_DELAY);
@@ -1258,6 +1259,7 @@ static void main_menu_task(void *pvParameters)
                     else if (keypad_event.key == KEYPAD_BUTTON_SELECT) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
                         alarm_set = false;
+                        board_rtc_set_alarm_enabled(alarm_set);
                         alarm_triggered = false;
                         if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
                             xTimerStop(alarm_snooze_timer, portMAX_DELAY);
@@ -1325,6 +1327,8 @@ esp_err_t main_menu_start()
         alarm_hh = UINT8_MAX;
         alarm_mm = UINT8_MAX;
     }
+
+    board_rtc_get_alarm_enabled(&alarm_set);
 
     board_rtc_set_alarm_cb(board_rtc_alarm_func);
 

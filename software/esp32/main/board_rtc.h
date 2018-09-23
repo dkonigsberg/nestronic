@@ -19,6 +19,9 @@ esp_err_t board_rtc_get_power_time_up(time_t *time);
 esp_err_t board_rtc_get_time(time_t *time);
 esp_err_t board_rtc_set_time(const time_t *time);
 
+esp_err_t board_rtc_get_alarm_enabled(bool *enabled);
+esp_err_t board_rtc_set_alarm_enabled(bool enabled);
+
 esp_err_t board_rtc_int_event_handler();
 
 #endif /* BOARD_RTC_H */

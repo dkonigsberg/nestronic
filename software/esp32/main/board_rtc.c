@@ -4,6 +4,7 @@
 
 #include "board_rtc.h"
 
+#include <esp_system.h>
 #include <esp_err.h>
 #include <esp_log.h>
 #include <esp_types.h>
@@ -19,12 +20,14 @@ static const char *TAG = "board_rtc";
 
 #define RTC_TRIM_COARSE false
 #define RTC_TRIM_VALUE  0
+#define RTC_SRAM_OFFSET 6
 
 board_rtc_alarm_cb_t board_rtc_alarm_cb = NULL;
 static bool power_failed = false;
 static struct tm tm_power_down = {0};
 static struct tm tm_power_up = {0};
 
+static esp_err_t board_rtc_init_sram();
 static time_t board_rtc_timegm(struct tm *tm);
 
 esp_err_t board_rtc_init()
@@ -90,9 +93,45 @@ esp_err_t board_rtc_init()
     // Enable alarm 0
     mcp7940_set_alarm_enabled(I2C_P0_NUM, MCP7940_ALARM_0, true);
 
+    // Initialize the SRAM
+    board_rtc_init_sram();
+
     i2c_mutex_unlock(I2C_P0_NUM);
 
     return ESP_OK;
+}
+
+esp_err_t board_rtc_init_sram()
+{
+    esp_err_t ret;
+
+    // Get the factory MAC address, which is used to verify whether or not
+    // the RTC SRAM needs to be initialized
+    uint8_t sta_mac[6];
+    ret = esp_efuse_mac_get_default(sta_mac);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    uint8_t sram_mac[6];
+    ret = mcp7940_data_read(I2C_P0_NUM, 0, sram_mac, 6);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    if (memcmp(sta_mac, sram_mac, 6) != 0) {
+        uint8_t data[64] = {0};
+        ESP_LOGI(TAG, "Initializing RTC SRAM");
+        memcpy(data, sta_mac, 6);
+        ret = mcp7940_data_write(I2C_P0_NUM, 0, data, 64);
+        if (ret != ESP_OK) {
+            return ret;
+        }
+    } else {
+        ESP_LOGI(TAG, "RTC SRAM has been initialized");
+    }
+
+    return ret;
 }
 
 esp_err_t board_rtc_calibration()
@@ -223,6 +262,31 @@ esp_err_t board_rtc_set_time(const time_t *time)
     }
 
     return ret;
+}
+
+esp_err_t board_rtc_get_alarm_enabled(bool *enabled)
+{
+    esp_err_t ret;
+
+    if (!enabled) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint8_t data = 0;
+    ret = mcp7940_data_read(I2C_P0_NUM, RTC_SRAM_OFFSET, &data, 1);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    *enabled = (data == 1);
+
+    return ret;
+}
+
+esp_err_t board_rtc_set_alarm_enabled(bool enabled)
+{
+    uint8_t data = enabled ? 1 : 0;
+    return mcp7940_data_write(I2C_P0_NUM, RTC_SRAM_OFFSET, &data, 1);
 }
 
 esp_err_t board_rtc_int_event_handler()

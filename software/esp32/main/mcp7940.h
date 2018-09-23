@@ -70,4 +70,7 @@ esp_err_t mcp7940_get_coarse_trim_enabled(i2c_port_t i2c_num, bool *enabled);
 esp_err_t mcp7940_set_trim_value(i2c_port_t i2c_num, bool sign, uint8_t value);
 esp_err_t mcp7940_get_trim_value(i2c_port_t i2c_num, bool *sign, uint8_t *value);
 
+esp_err_t mcp7940_data_write(i2c_port_t i2c_num, uint8_t offset, uint8_t *data, size_t data_len);
+esp_err_t mcp7940_data_read(i2c_port_t i2c_num, uint8_t offset, uint8_t *data, size_t data_len);
+
 #endif /* MCP7940_H */

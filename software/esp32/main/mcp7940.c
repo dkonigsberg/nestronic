@@ -771,6 +771,63 @@ esp_err_t mcp7940_get_power_failure_time(i2c_port_t i2c_num, struct tm *tm_down,
     return ret;
 }
 
+esp_err_t mcp7940_data_write(i2c_port_t i2c_num, uint8_t offset, uint8_t *data, size_t data_len)
+{
+    if (offset >= 64) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!data || data_len == 0 || data_len > 64) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    if (!cmd) {
+        ESP_LOGE(TAG, "i2c_cmd_link_create error");
+        return ESP_ERR_NO_MEM;
+    }
+
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MCP7940_ADDRESS << 1 | I2C_MASTER_WRITE, true));
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MCP7940_SRAM + offset, true))
+    ESP_ERROR_CHECK(i2c_master_write(cmd, data, data_len, true));
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+
+    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "i2c_master_cmd_begin error: [%02X] %s (%d)",
+                MCP7940_ADDRESS, esp_err_to_name(ret), ret);
+    }
+
+    i2c_cmd_link_delete(cmd);
+
+    return ret;
+
+}
+esp_err_t mcp7940_data_read(i2c_port_t i2c_num, uint8_t offset, uint8_t *data, size_t data_len)
+{
+    esp_err_t ret;
+    if (offset >= 64) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!data || data_len == 0 || data_len > 64) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ret = i2c_write_byte(i2c_num, MCP7940_ADDRESS, MCP7940_SRAM + offset);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "mcp7940_data_read error: %d", ret);
+        return ret;
+    }
+
+    ret = i2c_read_buffer(i2c_num, MCP7940_ADDRESS, data, data_len);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "mcp7940_data_read error: %d", ret);
+        return ret;
+    }
+
+    return ret;
+}
+
 bool is_leap_year(int year)
 {
     if ((year % 400) == 0) {

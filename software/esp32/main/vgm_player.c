@@ -31,6 +31,7 @@ static TimerHandle_t vgm_player_idle_timer = 0;
 typedef enum {
     VGM_PLAYER_PLAY_EFFECT,
     VGM_PLAYER_PLAY_VGM,
+    VGM_PLAYER_PLAY_NSF,
     VGM_PLAYER_BENCHMARK_DATA
 } vgm_player_command_t;
 
@@ -40,6 +41,7 @@ typedef struct {
     union {
         vgm_player_effect_t effect;
         vgm_file_t *vgm_file;
+        nsf_file_t *nsf_file;
     };
     vgm_playback_repeat_t repeat;
 } vgm_player_event_t;
@@ -67,6 +69,7 @@ static void vgm_player_play_effect_blip();
 static void vgm_player_play_effect_credit();
 static void vgm_player_scan_vgm(vgm_player_state_t *state);
 static void vgm_player_play_vgm(vgm_player_state_t *state);
+static void vgm_player_play_nsf(nsf_file_t *nsf_file, vgm_playback_cb_t playback_cb);
 static void vgm_player_run_benchmark_data();
 
 static UT_array* vgm_player_build_segment_list(
@@ -151,6 +154,19 @@ static void vgm_player_task(void *pvParameters)
 
                 vgm_free(state.vgm_file);
                 vgm_data_state_free(state.data_state);
+
+                vgm_player_cleanup();
+
+                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
+            }
+            else if (event.command == VGM_PLAYER_PLAY_NSF) {
+                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
+
+                vgm_player_prepare();
+
+                vgm_player_play_nsf(event.nsf_file, event.playback_cb);
+
+                nsf_free(event.nsf_file);
 
                 vgm_player_cleanup();
 
@@ -751,7 +767,7 @@ UT_array* vgm_player_find_eviction_candiates(
     return evict;
 }
 
-esp_err_t vgm_player_play_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags)
+esp_err_t vgm_player_play_vgm_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags)
 {
     esp_err_t ret;
     vgm_player_event_t event;
@@ -803,6 +819,104 @@ esp_err_t vgm_player_play_file(const char *filename, vgm_playback_repeat_t repea
 
     if (tags_result) {
         *tags = tags_result;
+    }
+
+    return ESP_OK;
+}
+
+static void vgm_player_nsf_apu_write(nes_apu_register_t reg, uint8_t dat)
+{
+    if (reg == NES_APU_MODCTRL || reg == NES_APU_MODADDR || reg == NES_APU_MODLEN) {
+        // Skip DMC commands until we can handle them
+        //ESP_LOGI(TAG, "Unsupported DMC command: $%04X, $%02X", reg, dat);
+    } else {
+        i2c_mutex_lock(I2C_P0_NUM);
+        nes_apu_write(I2C_P0_NUM, reg, dat);
+        i2c_mutex_unlock(I2C_P0_NUM);
+    }
+}
+
+void vgm_player_play_nsf(nsf_file_t *nsf_file, vgm_playback_cb_t playback_cb)
+{
+    ESP_LOGI(TAG, "Starting playback");
+
+    const nsf_header_t *header = nsf_get_header(nsf_file);
+
+    if (nsf_playback_init(nsf_file, /*song*/0, vgm_player_nsf_apu_write) != ESP_OK) {
+        ESP_LOGE(TAG, "NSF initialization failed");
+        if (playback_cb) {
+            playback_cb(VGM_PLAYER_FINISHED);
+        }
+        return;
+    }
+
+    ESP_LOGI(TAG, "NSF playback initialized");
+
+    while(true) {
+        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
+            break;
+        }
+
+        int64_t time0 = esp_timer_get_time();
+        if (nsf_playback_frame(nsf_file) != ESP_OK) {
+            ESP_LOGE(TAG, "NSF frame playback failed");
+            break;
+        }
+        int64_t time1 = esp_timer_get_time();
+
+        int64_t time_remaining = header->play_speed_ntsc - (time1 - time0);
+
+        if (time_remaining > 0 && time_remaining <= header->play_speed_ntsc) {
+            usleep(time_remaining);
+        }
+    }
+
+    // Reset the APU
+    i2c_mutex_lock(I2C_P0_NUM);
+    nes_apu_init(I2C_P0_NUM);
+    i2c_mutex_unlock(I2C_P0_NUM);
+
+    ESP_LOGI(TAG, "Finished playback");
+
+    if (playback_cb) {
+        playback_cb(VGM_PLAYER_FINISHED);
+    }
+}
+
+esp_err_t vgm_player_play_nsf_file(const char *filename, vgm_playback_cb_t cb, nsf_header_t *header)
+{
+    esp_err_t ret;
+    vgm_player_event_t event;
+    nsf_file_t *nsf_file;
+    const nsf_header_t *file_header;
+
+    ESP_LOGI(TAG, "Opening file: %s", filename);
+    ret = nsf_open(&nsf_file, filename);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open NSF file");
+        return ESP_FAIL;
+    }
+
+    nsf_log_header_fields(nsf_file);
+
+    file_header = nsf_get_header(nsf_file);
+
+    //TODO check for bankswitch and FDS, fail if necessary
+
+    if (header) {
+        memcpy(header, file_header, sizeof(nsf_header_t));
+    }
+
+    ESP_LOGI(TAG, "At start of data\n");
+
+    // Start the playback
+    bzero(&event, sizeof(vgm_player_event_t));
+    event.command = VGM_PLAYER_PLAY_NSF;
+    event.nsf_file = nsf_file;
+    event.playback_cb = cb;
+    if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
+        nsf_free(nsf_file);
+        return ESP_FAIL;
     }
 
     return ESP_OK;

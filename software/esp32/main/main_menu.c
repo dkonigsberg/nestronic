@@ -29,6 +29,7 @@
 #include "sdcard_util.h"
 #include "vgm_player.h"
 #include "vgm.h"
+#include "nsf.h"
 #include "zoneinfo.h"
 #include "bsdlib.h"
 #include "tsl2591.h"
@@ -123,7 +124,7 @@ static bool show_file_picker_impl(const char *title, const char *path, file_pick
         if (count < UINT8_MAX - 2) {
             if (namelist[i]->d_type == DT_REG) {
                 char *dot = strrchr(namelist[i]->d_name, '.');
-                if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz"))) {
+                if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz") || !strcmp(dot, ".nsf"))) {
                     vpool_insert(&vp, vpool_get_length(&vp), namelist[i]->d_name, strlen(namelist[i]->d_name));
                     vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
                 }
@@ -210,17 +211,12 @@ static void main_menu_demo_playback_cb(vgm_playback_state_t state)
     }
 }
 
-static bool main_menu_file_picker_cb(const char *filename)
+static void main_menu_file_picker_play_vgm(const char *filename)
 {
-    ESP_LOGI(TAG, "File: \"%s\"", filename);
-
-    // Make this a little less synchronous at some point,
-    // and implement some sort of playback UI.
-
     // The player currently has code to parse the GD3 tags and
     // show them on the display.
     vgm_gd3_tags_t *tags = NULL;
-    if (vgm_player_play_file(filename, VGM_REPEAT_NONE, main_menu_demo_playback_cb, &tags) == ESP_OK) {
+    if (vgm_player_play_vgm_file(filename, VGM_REPEAT_NONE, main_menu_demo_playback_cb, &tags) == ESP_OK) {
         struct vpool vp;
         vpool_init(&vp, 1024, 0);
         if (tags->game_name) {
@@ -257,6 +253,55 @@ static bool main_menu_file_picker_cb(const char *filename)
                 }
             }
         }
+    }
+}
+
+static void main_menu_file_picker_play_nsf(const char *filename)
+{
+    nsf_header_t header = {0};
+    if (vgm_player_play_nsf_file(filename, main_menu_demo_playback_cb, &header) == ESP_OK) {
+        struct vpool vp;
+        vpool_init(&vp, 1024, 0);
+        if (header.name) {
+            vpool_insert(&vp, vpool_get_length(&vp), header.name, strlen(header.name));
+            vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+        }
+        if (header.artist) {
+            vpool_insert(&vp, vpool_get_length(&vp), header.artist, strlen(header.artist));
+            vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+        }
+        if (header.copyright) {
+            vpool_insert(&vp, vpool_get_length(&vp), header.copyright, strlen(header.copyright));
+        }
+        vpool_insert(&vp, vpool_get_length(&vp), "\0", 1);
+
+        display_clear();
+        display_static_list("NSF Player", (char *)vpool_get_buf(&vp));
+        vpool_final(&vp);
+
+        while (ulTaskNotifyTake(pdTRUE, 100 / portTICK_RATE_MS) == 0) {
+            keypad_event_t keypad_event;
+            if (keypad_wait_for_event(&keypad_event, 0) == ESP_OK) {
+                if (keypad_event.pressed && keypad_event.key == KEYPAD_BUTTON_B) {
+                    vgm_player_stop();
+                }
+            }
+        }
+    }
+}
+
+static bool main_menu_file_picker_cb(const char *filename)
+{
+    ESP_LOGI(TAG, "File: \"%s\"", filename);
+
+    // Make this a little less synchronous at some point,
+    // and implement some sort of playback UI.
+
+    char *dot = strrchr(filename, '.');
+    if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz"))) {
+        main_menu_file_picker_play_vgm(filename);
+    } else if (dot && !strcmp(dot, ".nsf")) {
+        main_menu_file_picker_play_nsf(filename);
     }
 
     // Remain in the picker
@@ -1152,7 +1197,7 @@ static void start_alarm_sequence()
     }
 
     if (ret == ESP_OK) {
-        ret = vgm_player_play_file(filename, VGM_REPEAT_CONTINUOUS, NULL, NULL);
+        ret = vgm_player_play_vgm_file(filename, VGM_REPEAT_CONTINUOUS, NULL, NULL);
     }
     free(filename);
 

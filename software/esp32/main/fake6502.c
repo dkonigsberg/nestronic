@@ -211,7 +211,6 @@ void reset6502() {
     status |= FLAG_CONSTANT;
 }
 
-
 static void (*addrtable[256])();
 static void (*optable[256])();
 uint8_t penaltyop, penaltyaddr;
@@ -307,9 +306,11 @@ static uint16_t getvalue() {
         else return((uint16_t)read6502(ea));
 }
 
+#if 0
 static uint16_t getvalue16() {
     return((uint16_t)read6502(ea) | ((uint16_t)read6502(ea+1) << 8));
 }
+#endif
 
 static void putvalue(uint16_t saveval) {
     if (addrtable[opcode] == acc) a = (uint8_t)(saveval & 0x00FF);
@@ -968,4 +969,12 @@ void hookexternal(void *funcptr) {
         loopexternal = funcptr;
         callexternal = 1;
     } else callexternal = 0;
+}
+
+uint32_t get6502_ticks() {
+    return clockticks6502;
+}
+
+uint32_t get6502_pc() {
+    return pc;
 }

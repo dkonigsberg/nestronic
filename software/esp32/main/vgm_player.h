@@ -9,6 +9,7 @@
 #include <esp_types.h>
 
 #include "vgm.h"
+#include "nsf.h"
 
 typedef enum {
     VGM_PLAYER_STARTED,
@@ -31,7 +32,8 @@ typedef void (*vgm_playback_cb_t)(vgm_playback_state_t state);
 
 esp_err_t vgm_player_init();
 
-esp_err_t vgm_player_play_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags);
+esp_err_t vgm_player_play_vgm_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags);
+esp_err_t vgm_player_play_nsf_file(const char *filename, vgm_playback_cb_t cb, nsf_header_t *header);
 esp_err_t vgm_player_play_effect(vgm_player_effect_t effect, vgm_playback_repeat_t repeat);
 esp_err_t vgm_player_stop();
 esp_err_t vgm_player_benchmark_data();

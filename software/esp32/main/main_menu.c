@@ -27,7 +27,7 @@
 #include "board_rtc.h"
 #include "keypad.h"
 #include "sdcard_util.h"
-#include "vgm_player.h"
+#include "nes_player.h"
 #include "vgm.h"
 #include "nsf.h"
 #include "zoneinfo.h"
@@ -204,9 +204,9 @@ static void show_file_picker(const char *title, file_picker_cb_t cb)
     show_file_picker_impl(title, "/sdcard", cb);
 }
 
-static void main_menu_demo_playback_cb(vgm_playback_state_t state)
+static void main_menu_demo_playback_cb(nes_playback_state_t state)
 {
-    if (state == VGM_PLAYER_FINISHED) {
+    if (state == NES_PLAYER_FINISHED) {
         xTaskNotifyGive(main_menu_task_handle);
     }
 }
@@ -215,8 +215,8 @@ static void main_menu_file_picker_play_vgm(const char *filename)
 {
     // The player currently has code to parse the GD3 tags and
     // show them on the display.
-    vgm_gd3_tags_t *tags = NULL;
-    if (vgm_player_play_vgm_file(filename, VGM_REPEAT_NONE, main_menu_demo_playback_cb, &tags) == ESP_OK) {
+    const vgm_gd3_tags_t *tags = NULL;
+    if (nes_player_play_vgm_file(filename, NES_REPEAT_NONE, main_menu_demo_playback_cb, &tags) == ESP_OK) {
         struct vpool vp;
         vpool_init(&vp, 1024, 0);
         if (tags->game_name) {
@@ -242,14 +242,13 @@ static void main_menu_file_picker_play_vgm(const char *filename)
 
         display_clear();
         display_static_list("VGM Player", (char *)vpool_get_buf(&vp));
-        vgm_free_gd3_tags(tags);
         vpool_final(&vp);
 
         while (ulTaskNotifyTake(pdTRUE, 100 / portTICK_RATE_MS) == 0) {
             keypad_event_t keypad_event;
             if (keypad_wait_for_event(&keypad_event, 0) == ESP_OK) {
                 if (keypad_event.pressed && keypad_event.key == KEYPAD_BUTTON_B) {
-                    vgm_player_stop();
+                    nes_player_stop();
                 }
             }
         }
@@ -258,20 +257,20 @@ static void main_menu_file_picker_play_vgm(const char *filename)
 
 static void main_menu_file_picker_play_nsf(const char *filename)
 {
-    nsf_header_t header = {0};
-    if (vgm_player_play_nsf_file(filename, main_menu_demo_playback_cb, &header) == ESP_OK) {
+    const nsf_header_t *header;
+    if (nes_player_play_nsf_file(filename, main_menu_demo_playback_cb, &header) == ESP_OK) {
         struct vpool vp;
         vpool_init(&vp, 1024, 0);
-        if (header.name) {
-            vpool_insert(&vp, vpool_get_length(&vp), header.name, strlen(header.name));
+        if (header->name) {
+            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->name, strlen(header->name));
             vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
         }
-        if (header.artist) {
-            vpool_insert(&vp, vpool_get_length(&vp), header.artist, strlen(header.artist));
+        if (header->artist) {
+            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->artist, strlen(header->artist));
             vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
         }
-        if (header.copyright) {
-            vpool_insert(&vp, vpool_get_length(&vp), header.copyright, strlen(header.copyright));
+        if (header->copyright) {
+            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->copyright, strlen(header->copyright));
         }
         vpool_insert(&vp, vpool_get_length(&vp), "\0", 1);
 
@@ -283,7 +282,7 @@ static void main_menu_file_picker_play_nsf(const char *filename)
             keypad_event_t keypad_event;
             if (keypad_wait_for_event(&keypad_event, 0) == ESP_OK) {
                 if (keypad_event.pressed && keypad_event.key == KEYPAD_BUTTON_B) {
-                    vgm_player_stop();
+                    nes_player_stop();
                 }
             }
         }
@@ -325,11 +324,11 @@ static void main_menu_demo_sound_effects()
                 "Credit");
 
         if (option == 1) {
-            vgm_player_play_effect(VGM_PLAYER_EFFECT_CHIME, VGM_REPEAT_NONE);
+            nes_player_play_effect(NES_PLAYER_EFFECT_CHIME, NES_REPEAT_NONE);
         } else if (option == 2) {
-            vgm_player_play_effect(VGM_PLAYER_EFFECT_BLIP, VGM_REPEAT_NONE);
+            nes_player_play_effect(NES_PLAYER_EFFECT_BLIP, NES_REPEAT_NONE);
         } else if (option == 3) {
-            vgm_player_play_effect(VGM_PLAYER_EFFECT_CREDIT, VGM_REPEAT_NONE);
+            nes_player_play_effect(NES_PLAYER_EFFECT_CREDIT, NES_REPEAT_NONE);
         } else if (option == UINT8_MAX) {
             menu_timeout = true;
         }
@@ -514,7 +513,7 @@ static void main_menu_diagnostics()
         } else if (option == 4) {
             diagnostics_volume();
         } else if (option == 5) {
-            vgm_player_benchmark_data();
+            nes_player_benchmark_data();
         } else if (option == UINT8_MAX) {
             menu_timeout = true;
         }
@@ -1197,13 +1196,13 @@ static void start_alarm_sequence()
     }
 
     if (ret == ESP_OK) {
-        ret = vgm_player_play_vgm_file(filename, VGM_REPEAT_CONTINUOUS, NULL, NULL);
+        ret = nes_player_play_vgm_file(filename, NES_REPEAT_CONTINUOUS, NULL, NULL);
     }
     free(filename);
 
     // If a VGM file could not be played, then do a fallback chime
     if (ret != ESP_OK) {
-        vgm_player_play_effect(VGM_PLAYER_EFFECT_CHIME, VGM_REPEAT_CONTINUOUS);
+        nes_player_play_effect(NES_PLAYER_EFFECT_CHIME, NES_REPEAT_CONTINUOUS);
     }
 
     xTimerStart(alarm_complete_timer, portMAX_DELAY);
@@ -1213,7 +1212,7 @@ static void stop_alarm_sequence()
 {
     ESP_LOGI(TAG, "Stopping alarm sequence");
     xTimerStop(alarm_complete_timer, portMAX_DELAY);
-    vgm_player_stop();
+    nes_player_stop();
     display_set_contrast(contrast_value);
 }
 

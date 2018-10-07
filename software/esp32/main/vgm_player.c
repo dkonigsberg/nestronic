@@ -1,58 +1,33 @@
 #include "vgm_player.h"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <freertos/queue.h>
-#include <freertos/event_groups.h>
 #include <esp_err.h>
 #include <esp_log.h>
 #include <esp_types.h>
-#include <sys/unistd.h>
 #include <sys/param.h>
-#include <string.h>
+#include <sys/unistd.h>
 
+#include "vgm.h"
+#include "nes_player.h"
+#include "vgm_data.h"
+#include "utarray.h"
 #include "board_config.h"
 #include "i2c_util.h"
 #include "nes.h"
-#include "vgm.h"
-#include "display.h"
-#include "vgm_data.h"
-#include "utarray.h"
 
 static const char *TAG = "vgm_player";
 
 #define BLOCK_LOAD_MIN 8
 #define BLOCK_LOAD_MAX 127
 
-static xQueueHandle vgm_player_event_queue = NULL;
-static EventGroupHandle_t vgm_player_event_group = NULL;
-static TimerHandle_t vgm_player_idle_timer = 0;
-
-typedef enum {
-    VGM_PLAYER_PLAY_EFFECT,
-    VGM_PLAYER_PLAY_VGM,
-    VGM_PLAYER_PLAY_NSF,
-    VGM_PLAYER_BENCHMARK_DATA
-} vgm_player_command_t;
-
-typedef struct {
-    vgm_player_command_t command;
-    vgm_playback_cb_t playback_cb;
-    union {
-        vgm_player_effect_t effect;
-        vgm_file_t *vgm_file;
-        nsf_file_t *nsf_file;
-    };
-    vgm_playback_repeat_t repeat;
-} vgm_player_event_t;
-
-typedef struct {
+typedef struct vgm_player_t {
     vgm_file_t *vgm_file;
-    vgm_playback_cb_t playback_cb;
-    vgm_playback_repeat_t repeat;
+    vgm_gd3_tags_t *tags;
+    nes_playback_cb_t playback_cb;
+    nes_playback_repeat_t repeat;
+    EventGroupHandle_t event_group;
     bool has_data_block;
     vgm_data_state_t *data_state;
-} vgm_player_state_t;
+} vgm_player_t;
 
 typedef struct {
     uint8_t loaded_block;
@@ -63,180 +38,99 @@ typedef struct {
 UT_icd vgm_data_block_segment_icd = {sizeof(vgm_data_block_segment_t), NULL, NULL, NULL};
 UT_icd uint8_icd = {sizeof(uint8_t), NULL, NULL, NULL};
 
-static void vgm_player_play_effect_impl(vgm_player_effect_t effect);
-static void vgm_player_play_effect_chime();
-static void vgm_player_play_effect_blip();
-static void vgm_player_play_effect_credit();
-static void vgm_player_scan_vgm(vgm_player_state_t *state);
-static void vgm_player_play_vgm(vgm_player_state_t *state);
-static void vgm_player_play_nsf(nsf_file_t *nsf_file, vgm_playback_cb_t playback_cb);
-static void vgm_player_run_benchmark_data();
-
 static UT_array* vgm_player_build_segment_list(
-        vgm_player_state_t *state, vgm_data_block_ref_t *last_block_ref,
+        vgm_data_block_ref_t *last_block_ref,
         uint32_t sample_time, vgm_data_block_group_t *load_map[]);
 static UT_array* vgm_player_find_eviction_candiates(
         UT_array *segments, uint32_t block_size);
 
-static void vgm_player_idle_timer_callback(TimerHandle_t xTimer)
+esp_err_t vgm_player_init(vgm_player_t **player,
+        const char *filename,
+        nes_playback_cb_t playback_cb,
+        nes_playback_repeat_t repeat,
+        EventGroupHandle_t event_group)
 {
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_set_amplifier_enabled(I2C_P0_NUM, false);
-    i2c_mutex_unlock(I2C_P0_NUM);
-}
+    esp_err_t ret = ESP_OK;
+    vgm_player_t *player_result = NULL;
 
-static void vgm_player_prepare()
-{
-    xTimerStop(vgm_player_idle_timer, portMAX_DELAY);
-    xEventGroupClearBits(vgm_player_event_group, BIT0);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-
-    bool amplifier_enabled;
-    if (nes_get_amplifier_enabled(I2C_P0_NUM, &amplifier_enabled) != ESP_OK) {
-        amplifier_enabled = false;
-    }
-
-    if (!amplifier_enabled) {
-        nes_set_amplifier_enabled(I2C_P0_NUM, true);
-        nes_apu_init(I2C_P0_NUM);
-        i2c_mutex_unlock(I2C_P0_NUM);
-        vTaskDelay(250 / portTICK_RATE_MS);
-    } else {
-        i2c_mutex_unlock(I2C_P0_NUM);
-    }
-}
-
-static void vgm_player_cleanup()
-{
-    xTimerStart(vgm_player_idle_timer, portMAX_DELAY);
-}
-
-static void vgm_player_task(void *pvParameters)
-{
-    ESP_LOGD(TAG, "vgm_player_task");
-
-    vgm_player_idle_timer = xTimerCreate("vgm_player_idle_timer", 1000 / portTICK_RATE_MS,
-            pdFALSE, NULL, vgm_player_idle_timer_callback);
-
-    vgm_player_event_t event;
-    for(;;) {
-        if(xQueueReceive(vgm_player_event_queue, &event, portMAX_DELAY)) {
-            if (event.command == VGM_PLAYER_PLAY_EFFECT) {
-                vgm_player_prepare();
-                if (event.repeat == VGM_REPEAT_CONTINUOUS) {
-                    while(true) {
-                        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
-                            break;
-                        }
-                        vgm_player_play_effect_impl(event.effect);
-                        vTaskDelay(500 / portTICK_RATE_MS);
-                    }
-                } else {
-                    vgm_player_play_effect_impl(event.effect);
-                }
-                vgm_player_cleanup();
-            }
-            else if (event.command == VGM_PLAYER_PLAY_VGM) {
-                vgm_player_state_t state = {
-                        .vgm_file = event.vgm_file,
-                        .playback_cb = event.playback_cb,
-                        .repeat = event.repeat,
-                        .data_state = NULL
-                };
-
-                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
-
-                vgm_player_prepare();
-
-                vgm_player_scan_vgm(&state);
-                vgm_player_play_vgm(&state);
-
-                vgm_free(state.vgm_file);
-                vgm_data_state_free(state.data_state);
-
-                vgm_player_cleanup();
-
-                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
-            }
-            else if (event.command == VGM_PLAYER_PLAY_NSF) {
-                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
-
-                vgm_player_prepare();
-
-                vgm_player_play_nsf(event.nsf_file, event.playback_cb);
-
-                nsf_free(event.nsf_file);
-
-                vgm_player_cleanup();
-
-                ESP_LOGI(TAG, "RAM left %d", esp_get_free_heap_size());
-            }
-            else if (event.command == VGM_PLAYER_BENCHMARK_DATA) {
-                vgm_player_run_benchmark_data();
-            }
+    do {
+        player_result = malloc(sizeof(vgm_player_t));
+        if (!player_result) {
+            ret = ESP_ERR_NO_MEM;
+            break;
         }
+
+        bzero(player_result, sizeof(vgm_player_t));
+        player_result->playback_cb = playback_cb;
+        player_result->repeat = repeat;
+        player_result->event_group = event_group;
+
+        ESP_LOGI(TAG, "Opening file: %s", filename);
+        ret = vgm_open(&player_result->vgm_file, filename);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to open VGM file");
+            break;
+        }
+
+        ret = vgm_read_gd3_tags(&player_result->tags, player_result->vgm_file);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to read GD3 tags");
+            break;
+        }
+
+        ret = vgm_seek_start(player_result->vgm_file);
+        if (ret != ESP_OK) {
+            break;
+        }
+        ESP_LOGI(TAG, "At start of data\n");
+    } while (0);
+
+    if (ret == ESP_OK) {
+        *player = player_result;
+    } else {
+        vgm_player_free(player_result);
     }
+
+    return ret;
 }
 
-esp_err_t vgm_player_init()
+const vgm_gd3_tags_t *vgm_player_get_gd3_tags(const vgm_player_t *player)
 {
-    // Create the queue for player events
-    vgm_player_event_queue = xQueueCreate(10, sizeof(vgm_player_event_t));
-    if (!vgm_player_event_queue) {
-        return ESP_ERR_NO_MEM;
-    }
-
-    vgm_player_event_group = xEventGroupCreate();
-    if (!vgm_player_event_group) {
-        vQueueDelete(vgm_player_event_queue);
-        vgm_player_event_queue = NULL;
-        return ESP_ERR_NO_MEM;
-    }
-
-    if (xTaskCreate(vgm_player_task, "vgm_player_task", 4096, NULL, 5, NULL) != pdPASS) {
-        vEventGroupDelete(vgm_player_event_group);
-        vgm_player_event_group = NULL;
-        vQueueDelete(vgm_player_event_queue);
-        vgm_player_event_queue = NULL;
-        return ESP_ERR_NO_MEM;
-    }
-
-    return ESP_OK;
+    return player->tags;
 }
 
-void vgm_player_scan_vgm(vgm_player_state_t *state)
+esp_err_t vgm_player_prepare(vgm_player_t *player)
 {
     ESP_LOGI(TAG, "Scanning file");
 
     vgm_command_t command;
 
-    state->has_data_block = false;
+    player->has_data_block = false;
     uint32_t sample_time = 0;
     uint16_t current_block = 0;
     uint16_t current_len = 0;
     bool mod_dirty = false;
 
     // Allocate the state structure for playback VGM data blocks
-    state->data_state = vgm_data_state_create();
-    if (!state->data_state) {
+    player->data_state = vgm_data_state_create();
+    if (!player->data_state) {
         ESP_LOGE(TAG, "Unable to allocate VGM data state");
-        return;
+        return ESP_ERR_NO_MEM;
     }
 
     // Allocate the temporary memory space for collected VGM data blocks.
     vgm_data_t *vgm_data = vgm_data_create();
     if (!vgm_data) {
         ESP_LOGE(TAG, "Unable to allocate VGM data map");
-        return;
+        return ESP_ERR_NO_MEM;
     }
 
     while(true) {
-        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
+        if ((xEventGroupGetBits(player->event_group) & BIT0) == BIT0) {
             break;
         }
 
-        if (vgm_next_command(state->vgm_file, &command, /*load_data*/true) != ESP_OK) {
+        if (vgm_next_command(player->vgm_file, &command, /*load_data*/true) != ESP_OK) {
             break;
         }
 
@@ -265,7 +159,7 @@ void vgm_player_scan_vgm(vgm_player_state_t *state)
                     ESP_LOGE(TAG, "Unable to load data block into map");
                     break;
                 }
-                state->has_data_block = true;
+                player->has_data_block = true;
             } while (0);
 
             free(command.info.data_block.data);
@@ -293,7 +187,7 @@ void vgm_player_scan_vgm(vgm_player_state_t *state)
             mod_dirty = false;
 
             // Check and update the block groups
-            if (vgm_data_state_add_ref(state->data_state, vgm_data, sample_time, current_block, current_len) != ESP_OK) {
+            if (vgm_data_state_add_ref(player->data_state, vgm_data, sample_time, current_block, current_len) != ESP_OK) {
                 ESP_LOGI(TAG, "Unable to add sample reference");
                 break;
             }
@@ -311,20 +205,22 @@ void vgm_player_scan_vgm(vgm_player_state_t *state)
 
     vgm_data_free(vgm_data);
 
-    if (!vgm_data_state_has_refs(state->data_state)) {
-        if (state->has_data_block) {
+    if (!vgm_data_state_has_refs(player->data_state)) {
+        if (player->has_data_block) {
             ESP_LOGI(TAG, "VGM has unreferenced sample data");
         }
-        state->has_data_block = false;
-        vgm_data_state_free(state->data_state);
-        state->data_state = NULL;
+        player->has_data_block = false;
+        vgm_data_state_free(player->data_state);
+        player->data_state = NULL;
     }
     else {
         // Log collected data for debugging
-        vgm_data_state_log_block_groups(state->data_state);
+        vgm_data_state_log_block_groups(player->data_state);
     }
 
-    vgm_seek_restart(state->vgm_file);
+    vgm_seek_restart(player->vgm_file);
+
+    return ESP_OK;
 }
 
 static bool vgm_player_load_block_group(const vgm_data_block_group_t *block_group, uint8_t starting_block)
@@ -393,7 +289,7 @@ static bool vgm_player_load_block_group_increment(const vgm_data_block_group_t *
     return load_len == 0;
 }
 
-void vgm_player_play_vgm(vgm_player_state_t *state)
+esp_err_t vgm_player_play_loop(vgm_player_t *player)
 {
     vgm_data_block_group_t *load_map[128] = { 0 };
     vgm_data_block_ref_t *block_ref = NULL;
@@ -402,12 +298,12 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
     uint16_t inc_blocks_loaded = 0;
 
     // Pre-load block groups up to available memory
-    if (state->has_data_block) {
+    if (player->has_data_block) {
         ESP_LOGI(TAG, "Preloading data blocks");
         const uint8_t max_blocks = (BLOCK_LOAD_MAX - BLOCK_LOAD_MIN) + 1;
         uint8_t block_offset = BLOCK_LOAD_MIN;
         uint8_t remaining_blocks = max_blocks;
-        vgm_data_block_ref_node_t *node = vgm_data_state_ref_list(state->data_state);
+        vgm_data_block_ref_node_t *node = vgm_data_state_ref_list(player->data_state);
         while (node) {
             block_ref = vgm_data_block_ref_list_element(node);
 
@@ -433,7 +329,7 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
 
             node = vgm_data_block_ref_list_next(node);
         }
-        block_ref = vgm_data_state_take_next_ref(state->data_state);
+        block_ref = vgm_data_state_take_next_ref(player->data_state);
     }
 
     ESP_LOGI(TAG, "Starting playback");
@@ -444,11 +340,11 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
     uint32_t sample_time = 0;
 
     while(true) {
-        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
+        if ((xEventGroupGetBits(player->event_group) & BIT0) == BIT0) {
             break;
         }
 
-        if (vgm_next_command(state->vgm_file, &command, /*load_data*/false) != ESP_OK) {
+        if (vgm_next_command(player->vgm_file, &command, /*load_data*/false) != ESP_OK) {
             break;
         }
 
@@ -456,7 +352,7 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
             if ((command.info.nes_apu.reg == NES_APU_MODCTRL ||
                     command.info.nes_apu.reg == NES_APU_MODADDR ||
                     command.info.nes_apu.reg == NES_APU_MODLEN)
-                    && !state->has_data_block) {
+                    && !player->has_data_block) {
                 // Skip DMC commands until we can handle them
                 ESP_LOGI(TAG, "Unsupported DMC command: $%04X, $%02X", command.info.nes_apu.reg, command.info.nes_apu.dat);
                 continue;
@@ -502,7 +398,7 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
             if (block_ref && vgm_data_block_ref_sample_time(block_ref) == sample_time) {
                 int64_t time0 = esp_timer_get_time();
                 vgm_data_block_ref_t *last_block_ref = block_ref;
-                block_ref = vgm_data_state_take_next_ref(state->data_state);
+                block_ref = vgm_data_state_take_next_ref(player->data_state);
                 if (block_ref) {
                     vgm_data_block_group_t *block_group = vgm_data_block_ref_block_group(block_ref);
                     uint8_t loaded_block = vgm_data_block_group_get_loaded_block(block_group);
@@ -514,7 +410,7 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
 #endif
 
                         // Build the list of loaded data segments and eviction costs
-                        UT_array *segments = vgm_player_build_segment_list(state, last_block_ref, sample_time, load_map);
+                        UT_array *segments = vgm_player_build_segment_list(last_block_ref, sample_time, load_map);
 
                         // Find the loaded segments to evict
                         UT_array *evict = vgm_player_find_eviction_candiates(segments, vgm_data_block_group_block_size(block_group));
@@ -607,10 +503,10 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
         }
         else if (command.type == VGM_CMD_DONE) {
             ESP_LOGI(TAG, "At end of data tag");
-            if (state->repeat == VGM_REPEAT_LOOP && vgm_has_loop(state->vgm_file)) {
+            if (player->repeat == NES_REPEAT_LOOP && vgm_has_loop(player->vgm_file)) {
                 ESP_LOGI(TAG, "Seeking to start of loop");
-                vgm_seek_loop(state->vgm_file);
-            } else if (state->repeat == VGM_REPEAT_CONTINUOUS) {
+                vgm_seek_loop(player->vgm_file);
+            } else if (player->repeat == NES_REPEAT_CONTINUOUS) {
                 ESP_LOGI(TAG, "Seeking to start of file");
 
                 // Reset APU for a clean state
@@ -622,7 +518,7 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
                 vTaskDelay(500 / portTICK_RATE_MS);
 
                 // Seek to start of file
-                vgm_seek_restart(state->vgm_file);
+                vgm_seek_restart(player->vgm_file);
             } else {
                 break;
             }
@@ -638,13 +534,11 @@ void vgm_player_play_vgm(vgm_player_state_t *state)
 
     ESP_LOGI(TAG, "Finished playback");
 
-    if (state->playback_cb) {
-        state->playback_cb(VGM_PLAYER_FINISHED);
-    }
+    return ESP_OK;
 }
 
 UT_array* vgm_player_build_segment_list(
-        vgm_player_state_t *state, vgm_data_block_ref_t *last_block_ref,
+        vgm_data_block_ref_t *last_block_ref,
         uint32_t sample_time, vgm_data_block_group_t *load_map[])
 {
     UT_array *segments;
@@ -767,417 +661,12 @@ UT_array* vgm_player_find_eviction_candiates(
     return evict;
 }
 
-esp_err_t vgm_player_play_vgm_file(const char *filename, vgm_playback_repeat_t repeat, vgm_playback_cb_t cb, vgm_gd3_tags_t **tags)
+void vgm_player_free(vgm_player_t *player)
 {
-    esp_err_t ret;
-    vgm_player_event_t event;
-    vgm_file_t *vgm_file;
-    vgm_gd3_tags_t *tags_result = 0;
-
-    ESP_LOGI(TAG, "Opening file: %s", filename);
-    ret = vgm_open(&vgm_file, filename);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open VGM file");
-        return ESP_FAIL;
+    if (player) {
+        vgm_data_state_free(player->data_state);
+        vgm_free_gd3_tags(player->tags);
+        vgm_free(player->vgm_file);
+        free(player);
     }
-
-    vgm_log_header_fields(vgm_file);
-
-    if (vgm_get_header(vgm_file)->nes_apu_fds) {
-        ESP_LOGE(TAG, "FDS Add-on is not supported");
-        vgm_free(vgm_file);
-        return ESP_FAIL;
-    }
-
-    if (tags) {
-        if (vgm_read_gd3_tags(&tags_result, vgm_file) != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to read GD3 tags");
-            vgm_free(vgm_file);
-            return ESP_FAIL;
-        }
-    }
-
-    ret = vgm_seek_start(vgm_file);
-    if (ret != ESP_OK) {
-        vgm_free_gd3_tags(tags_result);
-        vgm_free(vgm_file);
-        return ESP_FAIL;
-    }
-    ESP_LOGI(TAG, "At start of data\n");
-
-    // Start the playback
-    bzero(&event, sizeof(vgm_player_event_t));
-    event.command = VGM_PLAYER_PLAY_VGM;
-    event.vgm_file = vgm_file;
-    event.repeat = repeat;
-    event.playback_cb = cb;
-    if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
-        vgm_free_gd3_tags(tags_result);
-        vgm_free(vgm_file);
-        return ESP_FAIL;
-    }
-
-    if (tags_result) {
-        *tags = tags_result;
-    }
-
-    return ESP_OK;
-}
-
-static void vgm_player_nsf_apu_write(nes_apu_register_t reg, uint8_t dat)
-{
-    if (reg == NES_APU_MODCTRL || reg == NES_APU_MODADDR || reg == NES_APU_MODLEN) {
-        // Skip DMC commands until we can handle them
-        //ESP_LOGI(TAG, "Unsupported DMC command: $%04X, $%02X", reg, dat);
-    } else {
-        i2c_mutex_lock(I2C_P0_NUM);
-        nes_apu_write(I2C_P0_NUM, reg, dat);
-        i2c_mutex_unlock(I2C_P0_NUM);
-    }
-}
-
-void vgm_player_play_nsf(nsf_file_t *nsf_file, vgm_playback_cb_t playback_cb)
-{
-    ESP_LOGI(TAG, "Starting playback");
-
-    const nsf_header_t *header = nsf_get_header(nsf_file);
-
-    if (nsf_playback_init(nsf_file, /*song*/0, vgm_player_nsf_apu_write) != ESP_OK) {
-        ESP_LOGE(TAG, "NSF initialization failed");
-        if (playback_cb) {
-            playback_cb(VGM_PLAYER_FINISHED);
-        }
-        return;
-    }
-
-    ESP_LOGI(TAG, "NSF playback initialized");
-
-    while(true) {
-        if ((xEventGroupGetBits(vgm_player_event_group) & BIT0) == BIT0) {
-            break;
-        }
-
-        int64_t time0 = esp_timer_get_time();
-        if (nsf_playback_frame(nsf_file) != ESP_OK) {
-            ESP_LOGE(TAG, "NSF frame playback failed");
-            break;
-        }
-        int64_t time1 = esp_timer_get_time();
-
-        int64_t time_remaining = header->play_speed_ntsc - (time1 - time0);
-
-        if (time_remaining > 0 && time_remaining <= header->play_speed_ntsc) {
-            usleep(time_remaining);
-        }
-    }
-
-    // Reset the APU
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_init(I2C_P0_NUM);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    ESP_LOGI(TAG, "Finished playback");
-
-    if (playback_cb) {
-        playback_cb(VGM_PLAYER_FINISHED);
-    }
-}
-
-esp_err_t vgm_player_play_nsf_file(const char *filename, vgm_playback_cb_t cb, nsf_header_t *header)
-{
-    esp_err_t ret;
-    vgm_player_event_t event;
-    nsf_file_t *nsf_file;
-    const nsf_header_t *file_header;
-
-    ESP_LOGI(TAG, "Opening file: %s", filename);
-    ret = nsf_open(&nsf_file, filename);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to open NSF file");
-        return ESP_FAIL;
-    }
-
-    nsf_log_header_fields(nsf_file);
-
-    file_header = nsf_get_header(nsf_file);
-
-    //TODO check for bankswitch and FDS, fail if necessary
-
-    if (header) {
-        memcpy(header, file_header, sizeof(nsf_header_t));
-    }
-
-    ESP_LOGI(TAG, "At start of data\n");
-
-    // Start the playback
-    bzero(&event, sizeof(vgm_player_event_t));
-    event.command = VGM_PLAYER_PLAY_NSF;
-    event.nsf_file = nsf_file;
-    event.playback_cb = cb;
-    if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
-        nsf_free(nsf_file);
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t vgm_player_play_effect(vgm_player_effect_t effect, vgm_playback_repeat_t repeat)
-{
-    vgm_player_event_t event;
-
-    // Start the playback
-    bzero(&event, sizeof(vgm_player_event_t));
-    event.command = VGM_PLAYER_PLAY_EFFECT;
-    event.effect = effect;
-    event.repeat = repeat;
-    if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t vgm_player_stop()
-{
-    xEventGroupSetBits(vgm_player_event_group, BIT0);
-    return ESP_OK;
-}
-
-esp_err_t vgm_player_benchmark_data()
-{
-    vgm_player_event_t event;
-
-    bzero(&event, sizeof(vgm_player_event_t));
-    event.command = VGM_PLAYER_BENCHMARK_DATA;
-    if (xQueueSend(vgm_player_event_queue, &event, 0) != pdTRUE) {
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-void vgm_player_play_effect_impl(vgm_player_effect_t effect)
-{
-    if (effect == VGM_PLAYER_EFFECT_CHIME) {
-        vgm_player_play_effect_chime();
-    } else if (effect == VGM_PLAYER_EFFECT_BLIP) {
-        vgm_player_play_effect_blip();
-    } else if (effect == VGM_PLAYER_EFFECT_CREDIT) {
-        vgm_player_play_effect_credit();
-    }
-}
-
-void vgm_player_play_effect_chime()
-{
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x32);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x08);
-    nes_apu_write(I2C_P0_NUM, 0x05, 0x7F);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x86);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(165 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x21);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x08);
-    nes_apu_write(I2C_P0_NUM, 0x05, 0x7F);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x86);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(330 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x90);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x18);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x00);
-    i2c_mutex_unlock(I2C_P0_NUM);
-}
-
-void vgm_player_play_effect_blip()
-{
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x00, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x01, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x02, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x03, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x05, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x08, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x09, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0A, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0B, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0C, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0D, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0E, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0F, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x10, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x12, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x13, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0x40);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x00, 0x9A);
-    nes_apu_write(I2C_P0_NUM, 0x02, 0x8E);
-    nes_apu_write(I2C_P0_NUM, 0x03, 0x08);
-    nes_apu_write(I2C_P0_NUM, 0x01, 0x7F);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(50 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x02, 0x47);
-    nes_apu_write(I2C_P0_NUM, 0x03, 0x08);
-    nes_apu_write(I2C_P0_NUM, 0x01, 0x7F);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(48 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x00, 0x90);
-    nes_apu_write(I2C_P0_NUM, 0x03, 0x18);
-    nes_apu_write(I2C_P0_NUM, 0x02, 0x00);
-    i2c_mutex_unlock(I2C_P0_NUM);
-}
-
-void vgm_player_play_effect_credit()
-{
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x00, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x01, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x02, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x03, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x05, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x08, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x09, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0A, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0B, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0C, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0D, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0E, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x0F, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x10, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x12, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x13, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xC0);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xFF);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x04, 0x8D);
-    nes_apu_write(I2C_P0_NUM, 0x05, 0x7F);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x71);
-    nes_apu_write(I2C_P0_NUM, 0x07, 0x08);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(83 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xFF);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x06, 0x54);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    i2c_mutex_unlock(I2C_P0_NUM);
-
-    vTaskDelay(765 / portTICK_RATE_MS);
-
-    i2c_mutex_lock(I2C_P0_NUM);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xFF);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0D);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    nes_apu_write(I2C_P0_NUM, 0x17, 0xFF);
-    nes_apu_write(I2C_P0_NUM, 0x15, 0x0F);
-    nes_apu_write(I2C_P0_NUM, 0x11, 0x00);
-    i2c_mutex_unlock(I2C_P0_NUM);
-}
-
-void vgm_player_run_benchmark_data()
-{
-    ESP_LOGI(TAG, "Benchmarking data writes");
-
-    const int iterations = 4;
-    uint8_t data[256] = {0};
-    int64_t time0;
-    int64_t time1;
-    int64_t time_total0 = 0;
-    int64_t time_total1 = 0;
-    int64_t time_total2 = 0;
-    int64_t time_total4 = 0;
-
-    for (int i = 0; i < iterations; i++) {
-        i2c_mutex_lock(I2C_P0_NUM);
-        time0 = esp_timer_get_time();
-        nes_data_write(I2C_P0_NUM, 8 + i, data, 32);
-        time1 = esp_timer_get_time();
-        i2c_mutex_unlock(I2C_P0_NUM);
-        time_total0 += (time1 - time0);
-    }
-
-    for (int i = 0; i < iterations; i++) {
-        i2c_mutex_lock(I2C_P0_NUM);
-        time0 = esp_timer_get_time();
-        nes_data_write(I2C_P0_NUM, 8 + i, data, 64);
-        time1 = esp_timer_get_time();
-        i2c_mutex_unlock(I2C_P0_NUM);
-        time_total1 += (time1 - time0);
-    }
-
-    for (int i = 0; i < iterations; i++) {
-        i2c_mutex_lock(I2C_P0_NUM);
-        time0 = esp_timer_get_time();
-        nes_data_write(I2C_P0_NUM, 8 + i, data, 128);
-        time1 = esp_timer_get_time();
-        i2c_mutex_unlock(I2C_P0_NUM);
-        time_total2 += (time1 - time0);
-    }
-
-    for (int i = 0; i < iterations; i++) {
-        i2c_mutex_lock(I2C_P0_NUM);
-        time0 = esp_timer_get_time();
-        nes_data_write(I2C_P0_NUM, 8 + i, data, 256);
-        time1 = esp_timer_get_time();
-        i2c_mutex_unlock(I2C_P0_NUM);
-        time_total4 += (time1 - time0);
-    }
-
-    ESP_LOGI(TAG, "Block load: count=0.5, time=%lldms, rate=%d bps",
-            (time_total0 / (iterations * 1000LL)),
-            (int)((((32*iterations)*8) / (time_total0 * 1.0)) * 1000000));
-    ESP_LOGI(TAG, "Block load: count=%d, time=%lldms, rate=%d bps",
-            1, (time_total1 / (iterations * 1000LL)),
-            (int)((((64*iterations)*8) / (time_total1 * 1.0)) * 1000000));
-    ESP_LOGI(TAG, "Block load: count=%d, time=%lldms, rate=%d bps",
-            2, (time_total2 / (iterations * 1000LL)),
-            (int)((((128*iterations)*8) / (time_total2 * 1.0)) * 1000000));
-    ESP_LOGI(TAG, "Block load: count=%d, time=%lldms, rate=%d bps",
-            4, (time_total4 / (iterations * 1000LL)),
-            (int)((((256*iterations)*8) / (time_total4 * 1.0)) * 1000000));
-
-    const double sample_multiplier = 1000000.0/44100.0;
-    int bits = ((256 * iterations) + (128 * iterations) + (64 * iterations)) * 8;
-    int blocks = ((4 * iterations) + (2 * iterations) + (1 * iterations));
-    double useconds = (time_total1 + time_total2 + time_total4);
-    int bps = (int)((bits / useconds) * 1000000);
-    ESP_LOGI(TAG, "Block load rate: %d bps", bps);
-    ESP_LOGI(TAG, "Time per block: %dms, samples=%d",
-            (int)((useconds / blocks) / 1000),
-            (int)((useconds / blocks) / sample_multiplier));
 }

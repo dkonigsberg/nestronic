@@ -34,7 +34,7 @@
 #include "keypad.h"
 #include "mcp40d17.h"
 #include "tsl2591.h"
-#include "vgm_player.h"
+#include "nes_player.h"
 #include "main_menu.h"
 
 static const char *TAG = "main";
@@ -271,7 +271,7 @@ void app_main(void)
     light_sensor_init_helper();
 
     // Initialize the VGM player task
-    ESP_ERROR_CHECK(vgm_player_init());
+    ESP_ERROR_CHECK(nes_player_init());
 
     // Show the menu system
     vTaskDelay(1000 / portTICK_RATE_MS);

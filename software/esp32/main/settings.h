@@ -20,7 +20,7 @@ esp_err_t settings_get_ntp_server(char **hostname);
 esp_err_t settings_set_alarm_time(uint8_t hh, uint8_t mm);
 esp_err_t settings_get_alarm_time(uint8_t *hh, uint8_t *mm);
 
-esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle);
-esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle);
+esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle, uint8_t song);
+esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle, uint8_t *song);
 
 #endif /* SETTINGS_H */

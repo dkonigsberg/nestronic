@@ -255,7 +255,7 @@ static void main_menu_file_picker_play_vgm(const char *filename)
     }
 }
 
-static void main_menu_file_picker_play_nsf(const char *filename)
+static void main_menu_file_picker_play_nsf(const char *filename, uint8_t song)
 {
     nsf_header_t header;
     if (nsf_read_header(filename, &header) != ESP_OK) {
@@ -286,14 +286,18 @@ static void main_menu_file_picker_play_nsf(const char *filename)
     uint8_t result = 0;
     uint8_t value_sel = 1;
     do {
-        *p = '\0';
-        result = display_input_value((char *)vpool_get_buf(&vp), "Song: ", &value_sel, 1, header.total_songs, 3, post);
-        if (result == UINT8_MAX) {
-            menu_timeout = true;
-            break;
+        if (song == 0) {
+            *p = '\0';
+            result = display_input_value((char *)vpool_get_buf(&vp), "Song: ", &value_sel, 1, header.total_songs, 3, post);
+            if (result == UINT8_MAX) {
+                menu_timeout = true;
+                break;
+            }
+        } else {
+            value_sel = song;
         }
 
-        if (result == 1) {
+        if (result == 1 || song > 0) {
             if (nes_player_play_nsf_file(filename, value_sel, main_menu_demo_playback_cb, 0) == ESP_OK) {
                 *p = '\n';
                 sprintf(q, "<%d/%d>", value_sel, header.total_songs);
@@ -312,39 +316,6 @@ static void main_menu_file_picker_play_nsf(const char *filename)
     } while (result == 1);
 
     vpool_final(&vp);
-
-#if 0
-    const nsf_header_t *header;
-    if (nes_player_play_nsf_file(filename, main_menu_demo_playback_cb, &header) == ESP_OK) {
-        struct vpool vp;
-        vpool_init(&vp, 1024, 0);
-        if (header->name) {
-            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->name, strlen(header->name));
-            vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
-        }
-        if (header->artist) {
-            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->artist, strlen(header->artist));
-            vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
-        }
-        if (header->copyright) {
-            vpool_insert(&vp, vpool_get_length(&vp), (char *)header->copyright, strlen(header->copyright));
-        }
-        vpool_insert(&vp, vpool_get_length(&vp), "\0", 1);
-
-        display_clear();
-        display_static_list("NSF Player", (char *)vpool_get_buf(&vp));
-        vpool_final(&vp);
-
-        while (ulTaskNotifyTake(pdTRUE, 100 / portTICK_RATE_MS) == 0) {
-            keypad_event_t keypad_event;
-            if (keypad_wait_for_event(&keypad_event, 0) == ESP_OK) {
-                if (keypad_event.pressed && keypad_event.key == KEYPAD_BUTTON_B) {
-                    nes_player_stop();
-                }
-            }
-        }
-    }
-#endif
 }
 
 static bool main_menu_file_picker_cb(const char *filename)
@@ -358,7 +329,7 @@ static bool main_menu_file_picker_cb(const char *filename)
     if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz"))) {
         main_menu_file_picker_play_vgm(filename);
     } else if (dot && !strcmp(dot, ".nsf")) {
-        main_menu_file_picker_play_nsf(filename);
+        main_menu_file_picker_play_nsf(filename, 0);
     }
 
     // Remain in the picker
@@ -594,13 +565,11 @@ static void main_menu_set_alarm_time()
     }
 }
 
-static bool alarm_tune_file_picker_cb(const char *filename)
+static bool alarm_tune_file_picker_vgm(const char *filename)
 {
     esp_err_t ret;
     vgm_file_t *vgm_file;
     vgm_gd3_tags_t *tags_result = 0;
-
-    ESP_LOGI(TAG, "File: \"%s\"", filename);
 
     ret = vgm_open(&vgm_file, filename);
     if (ret != ESP_OK) {
@@ -633,12 +602,12 @@ static bool alarm_tune_file_picker_cb(const char *filename)
                 "",
                 " Select \n Play ");
         if (option == 1) {
-            if (settings_set_alarm_tune(filename, tags_result->game_name, tags_result->track_name) == ESP_OK) {
+            if (settings_set_alarm_tune(filename, tags_result->game_name, tags_result->track_name, 0) == ESP_OK) {
                 selected = true;
             }
             break;
         } else if (option == 2) {
-            main_menu_file_picker_cb(filename);
+            main_menu_file_picker_play_vgm(filename);
         } else if (option == UINT8_MAX) {
             menu_timeout = true;
             break;
@@ -650,6 +619,89 @@ static bool alarm_tune_file_picker_cb(const char *filename)
     vgm_free_gd3_tags(tags_result);
 
     return selected;
+}
+
+static bool alarm_tune_file_picker_nsf(const char *filename)
+{
+    bool selected = false;
+    nsf_header_t header;
+    if (nsf_read_header(filename, &header) != ESP_OK) {
+        return false;
+    }
+
+    bool has_name = header.name && strlen(header.name) > 0 && strcmp(header.name, "<?>") != 0;
+    bool has_artist = header.artist && strlen(header.artist) > 0 && strcmp(header.artist, "<?>") != 0;
+    bool has_copyright = header.copyright && strlen(header.copyright) > 0 && strcmp(header.copyright, "<?>") != 0;
+
+    struct vpool vp;
+    vpool_init(&vp, 128, 0);
+    if (has_name) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.name, strlen(header.name));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+    if (has_artist) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.artist, strlen(header.artist));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+    if (has_copyright) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.copyright, strlen(header.copyright));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+    vpool_insert(&vp, vpool_get_length(&vp), "\0", 1);
+    char post[8];
+    sprintf(post, "/%d", header.total_songs);
+
+    uint8_t result = 0;
+    uint8_t value_sel = 1;
+    do {
+        result = display_input_value((char *)vpool_get_buf(&vp), "Song: ", &value_sel, 1, header.total_songs, 3, post);
+        if (result == UINT8_MAX) {
+            menu_timeout = true;
+            break;
+        }
+
+        if (result == 1) {
+            do {
+                char song_sel[10];
+                sprintf(song_sel, "<%d/%d>", value_sel, header.total_songs);
+                uint8_t option = display_message(
+                        has_name ? header.name : "Unknown",
+                        has_artist ? header.artist : "",
+                        song_sel,
+                        " Select \n Play ");
+                if (option == 1) {
+                    if (settings_set_alarm_tune(filename, header.name, song_sel, value_sel) == ESP_OK) {
+                        selected = true;
+                    }
+                    break;
+                } else if (option == 2) {
+                    main_menu_file_picker_play_nsf(filename, value_sel);
+                } else if (option == UINT8_MAX) {
+                    menu_timeout = true;
+                    break;
+                } else if (option  == 0) {
+                    break;
+                }
+            } while (true);
+        }
+    } while (result == 1 && !selected);
+
+    vpool_final(&vp);
+    return selected;
+}
+
+static bool alarm_tune_file_picker_cb(const char *filename)
+{
+    ESP_LOGI(TAG, "File: \"%s\"", filename);
+
+    char *dot = strrchr(filename, '.');
+    if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz"))) {
+        return alarm_tune_file_picker_vgm(filename);
+    } else if (dot && !strcmp(dot, ".nsf")) {
+        return alarm_tune_file_picker_nsf(filename);
+    } else {
+        return false;
+    }
 }
 
 static void main_menu_set_alarm()
@@ -676,7 +728,7 @@ static void main_menu_set_alarm()
         char *filename = 0;
         char *title = 0;
         char *subtitle = 0;
-        esp_err_t ret = settings_get_alarm_tune(&filename, &title, &subtitle);
+        esp_err_t ret = settings_get_alarm_tune(&filename, &title, &subtitle, NULL);
         if (ret != ESP_OK || !filename || strlen(filename) == 0) {
             snprintf(buf_tune, 128, "\n%s\n%s", "[Unset]", "");
         } else if (title && strlen(title) > 0) {
@@ -1247,14 +1299,24 @@ static void start_alarm_sequence()
     display_set_contrast(0xFF);
 
     char *filename = 0;
-    ret = settings_get_alarm_tune(&filename, NULL, NULL);
+    uint8_t song = 0;
+    ret = settings_get_alarm_tune(&filename, NULL, NULL, &song);
     if (ret != ESP_OK || !filename || strlen(filename) == 0) {
         // No valid filename
         ret = ESP_FAIL;
     }
 
     if (ret == ESP_OK) {
-        ret = nes_player_play_vgm_file(filename, NES_REPEAT_CONTINUOUS, NULL, NULL);
+        char *dot = strrchr(filename, '.');
+        if (dot && (!strcmp(dot, ".vgm") || !strcmp(dot, ".vgz"))) {
+            ret = nes_player_play_vgm_file(filename, NES_REPEAT_CONTINUOUS, NULL, NULL);
+        } else if (dot && !strcmp(dot, ".nsf")) {
+            if (song == 0) { song = 1; }
+            ret = nes_player_play_nsf_file(filename, song, NULL, NULL);
+        } else {
+            // Bad filename extension
+            ret = ESP_FAIL;
+        }
     }
     free(filename);
 

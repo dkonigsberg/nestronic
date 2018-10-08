@@ -9,6 +9,8 @@ static const char *TAG = "settings";
 
 #define NVS_NAMESPACE "nestronic"
 
+static esp_err_t settings_set_uint8(const char *key, uint8_t value);
+static esp_err_t settings_get_uint8(const char *key, uint8_t *value);
 static esp_err_t settings_set_string(const char *key, const char *value);
 static esp_err_t settings_get_string(const char *key, char **value);
 
@@ -256,7 +258,7 @@ esp_err_t settings_get_alarm_time(uint8_t *hh, uint8_t *mm)
     return ESP_OK;
 }
 
-esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle)
+esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle, uint8_t song)
 {
     if (!filename || strlen(filename) == 0) {
         return ESP_ERR_INVALID_ARG;
@@ -265,11 +267,12 @@ esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const
     esp_err_t err = settings_set_string("alarm_tune", filename);
     settings_set_string("alarm_tune_tt", (title && strlen(title) > 0) ? title : "");
     settings_set_string("alarm_tune_st", (subtitle && strlen(subtitle) > 0) ? subtitle : "");
+    settings_set_uint8("alarm_tune_sn", song);
 
     return err;
 }
 
-esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle)
+esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle, uint8_t *song)
 {
     if (filename) {
         esp_err_t err = settings_get_string("alarm_tune", filename);
@@ -283,6 +286,78 @@ esp_err_t settings_get_alarm_tune(char **filename, char **title, char **subtitle
     if (subtitle) {
         settings_get_string("alarm_tune_st", subtitle);
     }
+    if (song) {
+        settings_get_uint8("alarm_tune_sn", song);
+    }
+    return ESP_OK;
+}
+
+static esp_err_t settings_set_uint8(const char *key, uint8_t value)
+{
+    esp_err_t err;
+    nvs_handle handle;
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+        return err;
+    }
+
+    uint8_t out_value = 0;
+    err = nvs_get_u8(handle, key, &out_value);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
+        nvs_close(handle);
+        return err;
+    }
+
+    if (out_value != value) {
+        err = nvs_set_u8(handle, key, value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_set_u8: %s (%d)", esp_err_to_name(err), err);
+            nvs_close(handle);
+            return err;
+        }
+
+        err = nvs_commit(handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_commit: %s (%d)", esp_err_to_name(err), err);
+            nvs_close(handle);
+            return err;
+        }
+    }
+
+    nvs_close(handle);
+
+    return ESP_OK;
+}
+
+static esp_err_t settings_get_uint8(const char *key, uint8_t *value)
+{
+    esp_err_t err;
+    nvs_handle handle;
+
+    if (!value) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+        return err;
+    }
+
+    uint8_t out_value = 0;
+    err = nvs_get_u8(handle, key, &out_value);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
+        nvs_close(handle);
+        return err;
+    }
+
+    *value = out_value;
+
+    nvs_close(handle);
     return ESP_OK;
 }
 

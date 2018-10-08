@@ -40,6 +40,7 @@ typedef struct {
         nsf_player_t *nsf_player;
     };
     nes_playback_repeat_t repeat;
+    uint8_t song;
 } nes_player_event_t;
 
 static void nes_player_play_effect_impl(nes_player_effect_t effect);
@@ -132,7 +133,7 @@ static void nes_player_task(void *pvParameters)
                     event.vgm_player = NULL;
                 } else if (event.command == NES_PLAYER_PLAY_NSF) {
                     do {
-                        if (nsf_player_prepare(event.nsf_player) != ESP_OK) {
+                        if (nsf_player_prepare(event.nsf_player, event.song) != ESP_OK) {
                             break;
                         }
                         if (event.playback_cb) {
@@ -217,7 +218,7 @@ esp_err_t nes_player_play_vgm_file(const char *filename, nes_playback_repeat_t r
     return ESP_OK;
 }
 
-esp_err_t nes_player_play_nsf_file(const char *filename, nes_playback_cb_t cb, const nsf_header_t **header)
+esp_err_t nes_player_play_nsf_file(const char *filename, uint8_t song, nes_playback_cb_t cb, const nsf_header_t **header)
 {
     esp_err_t ret;
     nes_player_event_t event;
@@ -239,6 +240,7 @@ esp_err_t nes_player_play_nsf_file(const char *filename, nes_playback_cb_t cb, c
     event.nsf_player = player;
     event.playback_cb = cb;
     event.repeat = NES_REPEAT_NONE;
+    event.song = song;
     if (xQueueSend(nes_player_event_queue, &event, 0) != pdTRUE) {
         nsf_player_free(player);
         return ESP_FAIL;

@@ -37,7 +37,7 @@ typedef void (*nes_playback_cb_t)(nes_playback_state_t state);
 esp_err_t nes_player_init();
 
 esp_err_t nes_player_play_vgm_file(const char *filename, nes_playback_repeat_t repeat, nes_playback_cb_t cb, const vgm_gd3_tags_t **tags);
-esp_err_t nes_player_play_nsf_file(const char *filename, nes_playback_cb_t cb, const nsf_header_t **header);
+esp_err_t nes_player_play_nsf_file(const char *filename, uint8_t song, nes_playback_cb_t cb, const nsf_header_t **header);
 esp_err_t nes_player_play_effect(nes_player_effect_t effect, nes_playback_repeat_t repeat);
 esp_err_t nes_player_stop();
 esp_err_t nes_player_benchmark_data();

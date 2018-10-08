@@ -257,6 +257,63 @@ static void main_menu_file_picker_play_vgm(const char *filename)
 
 static void main_menu_file_picker_play_nsf(const char *filename)
 {
+    nsf_header_t header;
+    if (nsf_read_header(filename, &header) != ESP_OK) {
+        return;
+    }
+
+    struct vpool vp;
+    vpool_init(&vp, 128, 0);
+    if (header.name && strlen(header.name) > 0 && strcmp(header.name, "<?>") != 0) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.name, strlen(header.name));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+    if (header.artist && strlen(header.artist) > 0 && strcmp(header.artist, "<?>") != 0) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.artist, strlen(header.artist));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+    if (header.copyright && strlen(header.copyright) > 0 && strcmp(header.copyright, "<?>") != 0) {
+        vpool_insert(&vp, vpool_get_length(&vp), (char *)header.copyright, strlen(header.copyright));
+        vpool_insert(&vp, vpool_get_length(&vp), "\n", 1);
+    }
+
+    char *p = vpool_insert(&vp, vpool_get_length(&vp), "\0", 1);
+    char *q = vpool_insert(&vp, vpool_get_length(&vp), "         \0", 10);
+
+    char post[8];
+    sprintf(post, "/%d", header.total_songs);
+
+    uint8_t result = 0;
+    uint8_t value_sel = 1;
+    do {
+        *p = '\0';
+        result = display_input_value((char *)vpool_get_buf(&vp), "Song: ", &value_sel, 1, header.total_songs, 3, post);
+        if (result == UINT8_MAX) {
+            menu_timeout = true;
+            break;
+        }
+
+        if (result == 1) {
+            if (nes_player_play_nsf_file(filename, value_sel, main_menu_demo_playback_cb, 0) == ESP_OK) {
+                *p = '\n';
+                sprintf(q, "<%d/%d>", value_sel, header.total_songs);
+                display_static_list("NSF Player", (char *)vpool_get_buf(&vp));
+
+                while (ulTaskNotifyTake(pdTRUE, 100 / portTICK_RATE_MS) == 0) {
+                    keypad_event_t keypad_event;
+                    if (keypad_wait_for_event(&keypad_event, 0) == ESP_OK) {
+                        if (keypad_event.pressed && keypad_event.key == KEYPAD_BUTTON_B) {
+                            nes_player_stop();
+                        }
+                    }
+                }
+            }
+        }
+    } while (result == 1);
+
+    vpool_final(&vp);
+
+#if 0
     const nsf_header_t *header;
     if (nes_player_play_nsf_file(filename, main_menu_demo_playback_cb, &header) == ESP_OK) {
         struct vpool vp;
@@ -287,6 +344,7 @@ static void main_menu_file_picker_play_nsf(const char *filename)
             }
         }
     }
+#endif
 }
 
 static bool main_menu_file_picker_cb(const char *filename)

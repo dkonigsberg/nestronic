@@ -28,6 +28,17 @@ typedef struct nsf_file_t nsf_file_t;
 
 typedef void (*nsf_apu_write_cb_t)(nes_apu_register_t reg, uint8_t dat);
 
+/*
+ * Open the provided NSF file and just read the header.
+ *
+ * This is a convenience function for cases where we just want to know
+ * the contents of the NSF file's header, without allocating any of the
+ * larger data structures necessary for playback processing.
+ * Since the header size is fixed, data is written to the provided
+ * structure without performing any allocation internally.
+ */
+esp_err_t nsf_read_header(const char *filename, nsf_header_t *header);
+
 esp_err_t nsf_open(nsf_file_t **nsf, const char *filename);
 
 void nsf_log_header_fields(const nsf_file_t *nsf);

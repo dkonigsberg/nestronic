@@ -21,7 +21,7 @@ esp_err_t nsf_player_init(nsf_player_t **player,
 
 const nsf_header_t *nsf_player_get_header(const nsf_player_t *player);
 
-esp_err_t nsf_player_prepare(nsf_player_t *player);
+esp_err_t nsf_player_prepare(nsf_player_t *player, uint8_t song);
 esp_err_t nsf_player_play_loop(nsf_player_t *player);
 
 void nsf_player_free(nsf_player_t *player);

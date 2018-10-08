@@ -39,13 +39,40 @@ struct nsf_file_t {
 
 static nsf_file_t *active_nsf_file = NULL;
 
-static esp_err_t nsf_read_header(nsf_file_t *nsf);
+static esp_err_t nsf_read_header_impl(FILE *file, nsf_header_t *header);
 static bool nsf_has_bank_switching(nsf_file_t *nsf);
 static void nsf_init_nes_memory(nsf_file_t *nsf);
 static void nsf_init_nes_prg(nsf_file_t *nsf, uint8_t song, uint8_t pal_ntsc);
 static esp_err_t nsf_init_load_nes_rom(nsf_file_t *nsf);
 static esp_err_t nsf_init_load_nes_rom_banks(nsf_file_t *nsf);
 static esp_err_t nsf_load_rom_bank(nsf_file_t *nsf, uint16_t reg, uint8_t bank);
+
+esp_err_t nsf_read_header(const char *filename, nsf_header_t *header)
+{
+    int ret = ESP_OK;
+    FILE *file = NULL;
+
+    if (!filename || !header) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    do {
+        file = fopen(filename, "rb");
+        if (!file) {
+            ESP_LOGE(TAG, "Failed to open file for reading: %s", strerror(errno));
+            ret = ESP_FAIL;
+            break;
+        }
+
+        ret = nsf_read_header_impl(file, header);
+    } while (0);
+
+    if (file) {
+        fclose(file);
+    }
+
+    return ret;
+}
 
 esp_err_t nsf_open(nsf_file_t **nsf, const char *filename)
 {
@@ -72,8 +99,8 @@ esp_err_t nsf_open(nsf_file_t **nsf, const char *filename)
             break;
         }
 
-        ret = nsf_read_header(nsf_file);
-        if (ret < 0) {
+        ret = nsf_read_header_impl(nsf_file->file, &nsf_file->header);
+        if (ret != ESP_OK) {
             break;
         }
     } while(0);
@@ -87,12 +114,12 @@ esp_err_t nsf_open(nsf_file_t **nsf, const char *filename)
     return ret;
 }
 
-esp_err_t nsf_read_header(nsf_file_t *nsf)
+esp_err_t nsf_read_header_impl(FILE *file, nsf_header_t *header)
 {
     uint8_t buf[128];
     size_t n;
 
-    n = fread(buf, 1, sizeof(buf), nsf->file);
+    n = fread(buf, 1, sizeof(buf), file);
     if (n != sizeof(buf)) {
         ESP_LOGE(TAG, "Short header");
         return -1;
@@ -103,8 +130,6 @@ esp_err_t nsf_read_header(nsf_file_t *nsf)
         return -1;
     }
     n = 5;
-
-    nsf_header_t *header = &nsf->header;
 
     header->version = buf[n++];
     header->total_songs = buf[n++];

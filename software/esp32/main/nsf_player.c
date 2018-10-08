@@ -83,12 +83,17 @@ static void vgm_player_nsf_apu_write(nes_apu_register_t reg, uint8_t dat)
     }
 }
 
-esp_err_t nsf_player_prepare(nsf_player_t *player)
+esp_err_t nsf_player_prepare(nsf_player_t *player, uint8_t song)
 {
     ESP_LOGI(TAG, "Preparing for playback");
     const nsf_header_t *header = nsf_get_header(player->nsf_file);
 
-    if (nsf_playback_init(player->nsf_file, header->starting_song - 1, vgm_player_nsf_apu_write) != ESP_OK) {
+    if (song < 1 || song > header->total_songs) {
+        ESP_LOGE(TAG, "Invalid song index: %d", song);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (nsf_playback_init(player->nsf_file, (header->starting_song + (song - 1)) - 1, vgm_player_nsf_apu_write) != ESP_OK) {
         ESP_LOGE(TAG, "NSF initialization failed");
         return ESP_FAIL;
     }

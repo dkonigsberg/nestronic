@@ -72,6 +72,8 @@ esp_err_t vgm_player_init(vgm_player_t **player,
             break;
         }
 
+        vgm_log_header_fields(player_result->vgm_file);
+
         ret = vgm_read_gd3_tags(&player_result->tags, player_result->vgm_file);
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "Failed to read GD3 tags");

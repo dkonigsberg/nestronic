@@ -375,6 +375,75 @@ void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, bool clock)
     u8g2_SendBuffer(&u8g2);
 }
 
+void display_draw_clock(uint8_t frame)
+{
+    asset_info_t asset;
+    if (!display_asset_get(&asset, ASSET_CLOCK_ICON)) {
+        return;
+    }
+
+    uint16_t x = u8g2_GetDisplayWidth(&u8g2) - asset.width;
+    uint16_t y = u8g2_GetDisplayHeight(&u8g2) - asset.height;
+
+    // Clear the bounding box
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, x, y - 2, asset.width, asset.height + 2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    // Draw the clock base
+    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+
+    if (frame > 0) {
+        // Clear the clock face
+        u8g2_SetDrawColor(&u8g2, 0);
+        u8g2_DrawBox(&u8g2, x + 4, y + 12, 14, 14);
+        u8g2_SetDrawColor(&u8g2, 1);
+
+        u8g2_DrawBox(&u8g2, x + 10, y + 12, 2, 8);
+
+        if (frame == 1) {
+            u8g2_DrawBox(&u8g2, x + 12, y + 16, 2, 2);
+            u8g2_DrawBox(&u8g2, x + 14, y + 14, 2, 2);
+        } else if (frame == 2) {
+            u8g2_DrawBox(&u8g2, x + 12, y + 18, 4, 2);
+        } else if (frame == 3) {
+            u8g2_DrawBox(&u8g2, x + 10, y + 20, 2, 4);
+        } else if (frame == 4) {
+            u8g2_DrawBox(&u8g2, x + 8, y + 20, 2, 2);
+            u8g2_DrawBox(&u8g2, x + 6, y + 22, 2, 2);
+        } else if (frame == 5) {
+            u8g2_DrawBox(&u8g2, x + 6, y + 18, 4, 2);
+        } else if (frame == 6) {
+            u8g2_DrawBox(&u8g2, x + 8, y + 16, 2, 2);
+            u8g2_DrawBox(&u8g2, x + 6, y + 14, 2, 2);
+        }
+
+        // Clear the clock top
+        u8g2_SetDrawColor(&u8g2, 0);
+        u8g2_DrawBox(&u8g2, x + 6, y - 2, 16, 8);
+        u8g2_SetDrawColor(&u8g2, 1);
+
+        if (frame == 1) {
+            u8g2_DrawBox(&u8g2, x + 6, y - 2, 10, 4);
+            u8g2_DrawBox(&u8g2, x + 10, y + 2, 2, 4);
+        } else if (frame == 2) {
+            u8g2_DrawBox(&u8g2, x + 6, y - 1, 10, 4);
+            u8g2_DrawBox(&u8g2, x + 10, y + 3, 2, 3);
+        } else if (frame == 3 || frame == 7) {
+            u8g2_DrawBox(&u8g2, x + 6, y, 10, 4);
+            u8g2_DrawBox(&u8g2, x + 10, y + 4, 2, 2);
+        } else if (frame == 4 || frame == 6) {
+            u8g2_DrawBox(&u8g2, x + 6, y + 1, 10, 4);
+            u8g2_DrawBox(&u8g2, x + 10, y + 5, 2, 1);
+        } else if (frame == 5) {
+            u8g2_DrawBox(&u8g2, x + 6, y + 2, 10, 4);
+        }
+    }
+
+    u8g2_SendBuffer(&u8g2);
+}
+
 bool display_set_time(uint8_t *hh, uint8_t *mm, bool twentyfour)
 {
     keypad_event_t event;

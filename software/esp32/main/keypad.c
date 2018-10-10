@@ -108,6 +108,10 @@ esp_err_t keypad_init()
             break;
         }
 
+        if ((ret = touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER)) != ESP_OK) {
+            break;
+        }
+
         if ((ret = touch_pad_config(TOUCH_PAD_PIN, 0)) != ESP_OK) {
             break;
         }
@@ -116,7 +120,7 @@ esp_err_t keypad_init()
             break;
         }
 
-        if ((ret = touch_pad_set_thresh(TOUCH_PAD_PIN, 500)) != ESP_OK) {
+        if ((ret = touch_pad_set_thresh(TOUCH_PAD_PIN, 200)) != ESP_OK) {
             break;
         }
 

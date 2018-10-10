@@ -48,6 +48,7 @@ static uint8_t alarm_hh;
 static uint8_t alarm_mm;
 static bool alarm_triggered = false;
 static bool alarm_running = false;
+static uint8_t alarm_frame = 0;
 static TimerHandle_t alarm_complete_timer = 0;
 static TimerHandle_t alarm_snooze_timer = 0;
 
@@ -1271,8 +1272,11 @@ static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
         xSemaphoreTake(clock_mutex, portMAX_DELAY);
         if (!menu_visible) {
             display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, alarm_set);
+            if (alarm_triggered) {
+                display_draw_clock(alarm_frame);
+            }
         }
-        if (alarm_set
+        if (alarm_set && !alarm_triggered
                 && xTimerIsTimerActive(alarm_snooze_timer) == pdFALSE
                 && timeinfo.tm_hour == alarm_hh && timeinfo.tm_min == alarm_mm) {
             alarm_triggered = true;
@@ -1326,6 +1330,7 @@ static void start_alarm_sequence()
     }
 
     xTimerStart(alarm_complete_timer, portMAX_DELAY);
+    alarm_frame = 0;
 }
 
 static void stop_alarm_sequence()
@@ -1334,6 +1339,7 @@ static void stop_alarm_sequence()
     xTimerStop(alarm_complete_timer, portMAX_DELAY);
     nes_player_stop();
     display_set_contrast(contrast_value);
+    alarm_frame = 0;
 }
 
 static void alarm_complete_timer_callback(TimerHandle_t xTimer)
@@ -1401,6 +1407,9 @@ static void main_menu_task(void *pvParameters)
             struct tm timeinfo;
             if (localtime_r(&time, &timeinfo)) {
                 display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, alarm_set);
+                if (alarm_triggered) {
+                    display_draw_clock(alarm_frame);
+                }
             }
         }
         xSemaphoreGive(clock_mutex);
@@ -1408,7 +1417,7 @@ static void main_menu_task(void *pvParameters)
         // Block until a key press is detected
         while (1) {
             keypad_event_t keypad_event;
-            if (keypad_wait_for_event(&keypad_event, -1) == ESP_OK) {
+            if (keypad_wait_for_event(&keypad_event, alarm_triggered ? 250 : -1) == ESP_OK) {
                 if (keypad_event.pressed) {
                     if (keypad_event.key == KEYPAD_BUTTON_START) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
@@ -1452,6 +1461,13 @@ static void main_menu_task(void *pvParameters)
                     break;
                 }
             }
+
+            xSemaphoreTake(clock_mutex, portMAX_DELAY);
+            if (!menu_visible && alarm_triggered) {
+                display_draw_clock(alarm_frame++);
+                if (alarm_frame > 7) { alarm_frame = 1; }
+            }
+            xSemaphoreGive(clock_mutex);
         }
 
         if (menu_visible) {

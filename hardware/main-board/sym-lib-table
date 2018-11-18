@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name nes)(type Legacy)(uri ${KIPRJMOD}/../lib_sch/nes.lib)(options "")(descr ""))
+  (lib (name ESP32-footprints-Shem-Lib)(type Legacy)(uri ${KIPRJMOD}/../lib_sch/ESP32-footprints-Shem-Lib.lib)(options "")(descr ""))
+)

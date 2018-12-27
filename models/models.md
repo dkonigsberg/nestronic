@@ -116,7 +116,7 @@ probably look fine if printed with a lower level of detail than specified.
 * **Base** (base.stl)
     * Extruder 1: Atomic Filament 2.85mm Gray PLA
     * Extruder 2: Ultimaker Breakaway Material
-    * Layer Height: 0.1mm
+    * Layer Height: 0.15mm
     * Infill: 20%
     * Supports: yes (Extruder 2)
     * _**Note:** Using a prime tower is highly recommended as a way to reduce
@@ -126,12 +126,12 @@ probably look fine if printed with a lower level of detail than specified.
 * **Top** (top.stl, top-touchpad.stl)
     * Extruder 1: Atomic Filament 2.85mm Light Gray v2 PLA
     * Extruder 2: Proto-Pasta 2.85mm Conductive PLA
-    * Layer Height: 0.1mm
+    * Layer Height: 0.15mm
     * Infill: 20%
     * Supports: yes (Extruder 1)
     * Print the top model with extruder 1.
     * Print the top-touchpad model with extruder 2 and a Y offset of
-      -14.9938 mm.
+      11.935 mm.
     * _**Note:** The conductive PLA material can print on the messy side.
       Using a prime tower is highly recommended, however some residual mess
       is inevitable."_

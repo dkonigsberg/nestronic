@@ -119,15 +119,21 @@ esp_err_t time_handler_init()
 
 static void time_handler_sntp_callback()
 {
+    int64_t time0 = esp_timer_get_time();
     ESP_LOGI(TAG, "SNTP time updated");
 
     time_t now = 0;
+    time_t prev = 0;
     if (time(&now) < 0) {
         return;
     }
+    if (board_rtc_get_time(&prev) == ESP_OK) {
+        int64_t time1 = esp_timer_get_time();
+        now += (time_t)((time1 - time0) / 1000000LL);
 
-    if (board_rtc_set_time(&now) == ESP_OK) {
-        ESP_LOGI(TAG, "Board RTC time set from SNTP result");
+        if (now != prev && board_rtc_set_time(&now) == ESP_OK) {
+            ESP_LOGI(TAG, "Board RTC time set from SNTP result (%ld)", (now-prev));
+        }
     }
 }
 

@@ -334,6 +334,14 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
                     asset.width, asset.height, asset.bits);
         }
     }
+    else if (elements->clock == 2) {
+        if (display_asset_get(&asset, ASSET_SNOOZE_ICON)) {
+            u8g2_DrawXBM(&u8g2,
+                    u8g2_GetDisplayWidth(&u8g2) - asset.width,
+                    u8g2_GetDisplayHeight(&u8g2) - asset.height,
+                    asset.width, asset.height, asset.bits);
+        }
+    }
 }
 
 int display_convert_from_twentyfour(int8_t *hh, int8_t *mm)
@@ -353,7 +361,7 @@ int display_convert_from_twentyfour(int8_t *hh, int8_t *mm)
     return am_pm;
 }
 
-void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, bool clock)
+void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock)
 {
     int show_ampm;
     int8_t hour = hh;
@@ -369,7 +377,7 @@ void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, bool clock)
             .hh = hour,
             .mm = minute,
             .am_pm = show_ampm,
-            .clock = clock ? 1 : 0
+            .clock = clock
     };
     display_draw_time_elements(&elements);
     u8g2_SendBuffer(&u8g2);

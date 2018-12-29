@@ -22,7 +22,8 @@ typedef enum {
     ASSET_TSEG_A,
     ASSET_TSEG_P,
     ASSET_TSEG_M,
-    ASSET_CLOCK_ICON
+    ASSET_CLOCK_ICON,
+    ASSET_SNOOZE_ICON
 } asset_name_t;
 
 uint8_t display_asset_get(asset_info_t *asset_info, asset_name_t asset_name);

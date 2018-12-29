@@ -51,6 +51,7 @@ static bool alarm_running = false;
 static uint8_t alarm_frame = 0;
 static TimerHandle_t alarm_complete_timer = 0;
 static TimerHandle_t alarm_snooze_timer = 0;
+static struct tm timeinfo_prev = {0};
 
 static esp_err_t main_menu_keypad_wait(keypad_event_t *event)
 {
@@ -1265,20 +1266,70 @@ static void main_menu()
     } while (option > 0 && !menu_timeout);
 }
 
+static bool is_alarm_time(struct tm *timeinfo)
+{
+    if (!timeinfo) {
+        return false;
+    }
+
+    if (timeinfo->tm_hour == alarm_hh && timeinfo->tm_min == alarm_mm) {
+        return true;
+    }
+
+    int minutes_alarm = (alarm_hh) * 60 + alarm_mm;
+    int minutes_curr = (timeinfo->tm_hour * 60) + timeinfo->tm_min;
+    int minutes_prev = (timeinfo_prev.tm_hour * 60) + timeinfo_prev.tm_min;
+
+    if (minutes_curr == minutes_alarm) {
+        // Clock at exact alarm time
+        return true;
+    }
+    else if (timeinfo_prev.tm_mday == 0) {
+        // No previous time value for comparison, assume untriggered
+        return false;
+    }
+    else if (timeinfo_prev.tm_year == timeinfo->tm_year && timeinfo_prev.tm_yday == timeinfo->tm_yday) {
+        // Same day as previous time
+        if (minutes_curr >= minutes_alarm && minutes_prev < minutes_alarm && (minutes_curr - minutes_prev) <= 10) {
+            return true;
+        }
+    }
+    else if ((timeinfo_prev.tm_year == timeinfo->tm_year && timeinfo_prev.tm_yday + 1 == timeinfo->tm_yday)
+            || (timeinfo_prev.tm_year + 1 == timeinfo->tm_year
+                    && timeinfo_prev.tm_mon == 11 && timeinfo_prev.tm_mday == 31
+                    && timeinfo->tm_mday == 1)) {
+        // Previous time is on the day before the current time
+        minutes_prev -= 1440;
+        if (minutes_curr >= minutes_alarm && minutes_prev < minutes_alarm && (minutes_curr - minutes_prev) <= 10) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
 {
     struct tm timeinfo;
     if (localtime_r(&time, &timeinfo)) {
         xSemaphoreTake(clock_mutex, portMAX_DELAY);
         if (!menu_visible) {
-            display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, alarm_set);
+            int clock;
+            if (alarm_set && xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                clock = 2;
+            } else if (alarm_set) {
+                clock = 1;
+            } else {
+                clock = 0;
+            }
+            display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock);
             if (alarm_triggered) {
                 display_draw_clock(alarm_frame);
             }
         }
         if (alarm_set && !alarm_triggered
                 && xTimerIsTimerActive(alarm_snooze_timer) == pdFALSE
-                && timeinfo.tm_hour == alarm_hh && timeinfo.tm_min == alarm_mm) {
+                && is_alarm_time(&timeinfo)) {
             alarm_triggered = true;
             if (!menu_visible) {
                 keypad_event_t keypad_event = {
@@ -1288,6 +1339,7 @@ static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
                 keypad_inject_event(&keypad_event);
             }
         }
+        memcpy(&timeinfo_prev, &timeinfo, sizeof(struct tm));
         xSemaphoreGive(clock_mutex);
     }
 
@@ -1406,7 +1458,15 @@ static void main_menu_task(void *pvParameters)
         if (board_rtc_get_time(&time) == ESP_OK) {
             struct tm timeinfo;
             if (localtime_r(&time, &timeinfo)) {
-                display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, alarm_set);
+                int clock;
+                if (alarm_set && xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                    clock = 2;
+                } else if (alarm_set) {
+                    clock = 1;
+                } else {
+                    clock = 0;
+                }
+                display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock);
                 if (alarm_triggered) {
                     display_draw_clock(alarm_frame);
                 }
@@ -1421,31 +1481,36 @@ static void main_menu_task(void *pvParameters)
                 if (keypad_event.pressed) {
                     if (keypad_event.key == KEYPAD_BUTTON_START) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
-                        alarm_set = true;
-                        board_rtc_set_alarm_enabled(alarm_set);
-                        alarm_triggered = false;
-                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
-                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        if (!alarm_set) {
+                            alarm_set = true;
+                            board_rtc_set_alarm_enabled(alarm_set);
+                            alarm_triggered = false;
+                            if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                                xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                            }
                         }
                         xSemaphoreGive(clock_mutex);
                     }
                     else if (keypad_event.key == KEYPAD_BUTTON_SELECT) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
-                        alarm_set = false;
-                        board_rtc_set_alarm_enabled(alarm_set);
-                        alarm_triggered = false;
-                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
-                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        if (alarm_set) {
+                            alarm_set = false;
+                            board_rtc_set_alarm_enabled(alarm_set);
+                            alarm_triggered = false;
+                            if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                                xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                            }
                         }
                         xSemaphoreGive(clock_mutex);
                     }
                     else if (keypad_event.key == KEYPAD_BUTTON_A || keypad_event.key == KEYPAD_BUTTON_B) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
-                        display_set_contrast(0x9F);
-                        menu_visible = true;
-                        alarm_triggered = false;
-                        if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
-                            xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                        if (!alarm_triggered) {
+                            display_set_contrast(0x9F);
+                            menu_visible = true;
+                            if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
+                                xTimerStop(alarm_snooze_timer, portMAX_DELAY);
+                            }
                         }
                         xSemaphoreGive(clock_mutex);
                     }

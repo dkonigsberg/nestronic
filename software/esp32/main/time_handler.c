@@ -143,7 +143,7 @@ esp_err_t time_handler_sntp_init()
         my_sntp_setoperatingmode(SNTP_OPMODE_POLL);
 
         char *hostname;
-        if (settings_get_ntp_server(&hostname) == ESP_OK) {
+        if (settings_get_ntp_server(&hostname) == ESP_OK && hostname && strlen(hostname) > 0) {
             ESP_LOGI(TAG, "Setting configured NTP hostname: \"%s\"", hostname);
             my_sntp_setservername(0, hostname);
             sntp_hostname_default = false;

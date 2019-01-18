@@ -21,14 +21,14 @@ esp_err_t settings_set_rtc_trim(bool coarse, uint8_t value)
 
     err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
         return err;
     }
 
     uint16_t out_value = 0;
     err = nvs_get_u16(handle, "rtc_trim", &out_value);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u16: %d", err);
+        ESP_LOGE(TAG, "nvs_get_u16: %s (%d)", esp_err_to_name(err), err);
         nvs_close(handle);
         return err;
     }
@@ -37,14 +37,14 @@ esp_err_t settings_set_rtc_trim(bool coarse, uint8_t value)
     if (out_value != in_value) {
         err = nvs_set_u16(handle, "rtc_trim", in_value);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_set_u16: %d", err);
+            ESP_LOGE(TAG, "nvs_set_u16: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
 
         err = nvs_commit(handle);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_commit: %d", err);
+            ESP_LOGE(TAG, "nvs_commit: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
@@ -57,32 +57,36 @@ esp_err_t settings_set_rtc_trim(bool coarse, uint8_t value)
 
 esp_err_t settings_get_rtc_trim(bool *coarse, uint8_t *value)
 {
-    esp_err_t err;
-    nvs_handle handle;
+    esp_err_t err = ESP_OK;
+    nvs_handle handle = 0;
+    uint16_t out_value = 0;
 
     if (!coarse || !value) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
+    do {
+        err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    uint16_t out_value = 0;
-    err = nvs_get_u16(handle, "rtc_trim", &out_value);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u16: %d", err);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_u16(handle, "rtc_trim", &out_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_u16: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
+    } while(0);
 
-    *coarse = (out_value & 0x0100) == 0x0100;
-    *value = (uint8_t)(out_value & 0x00FF);
+    if (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND) {
+        *coarse = (out_value & 0x0100) == 0x0100;
+        *value = (uint8_t)(out_value & 0x00FF);
+        err = ESP_OK;
+    }
 
     nvs_close(handle);
-    return ESP_OK;
+    return err;
 }
 
 esp_err_t settings_set_time_zone(const char *zone_name)
@@ -102,14 +106,14 @@ esp_err_t settings_set_time_format(bool twentyfour)
 
     err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
         return err;
     }
 
     uint8_t out_value = 0;
     err = nvs_get_u8(handle, "time_format", &out_value);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u8: %d", err);
+        ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
         nvs_close(handle);
         return err;
     }
@@ -118,14 +122,14 @@ esp_err_t settings_set_time_format(bool twentyfour)
     if (out_value != in_value) {
         err = nvs_set_u8(handle, "time_format", in_value);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_set_u8: %d", err);
+            ESP_LOGE(TAG, "nvs_set_u8: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
 
         err = nvs_commit(handle);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_commit: %d", err);
+            ESP_LOGE(TAG, "nvs_commit: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
@@ -138,31 +142,35 @@ esp_err_t settings_set_time_format(bool twentyfour)
 
 esp_err_t settings_get_time_format(bool *twentyfour)
 {
-    esp_err_t err;
-    nvs_handle handle;
+    esp_err_t err = ESP_OK;
+    nvs_handle handle = 0;
+    uint8_t out_value = 0;
 
     if (!twentyfour) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
+    do {
+        err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    uint8_t out_value = 0;
-    err = nvs_get_u8(handle, "time_format", &out_value);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u8: %d", err);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_u8(handle, "time_format", &out_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
+    } while(0);
 
-    *twentyfour = (out_value == 1);
+    if (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND) {
+        *twentyfour = (out_value == 1);
+        err = ESP_OK;
+    }
 
     nvs_close(handle);
-    return ESP_OK;
+    return err;
 }
 
 esp_err_t settings_set_ntp_server(const char *hostname)
@@ -186,14 +194,14 @@ esp_err_t settings_set_alarm_time(uint8_t hh, uint8_t mm)
 
     err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
+        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
         return err;
     }
 
     uint16_t out_value = 0;
     err = nvs_get_u16(handle, "alarm_time", &out_value);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u16: %d", err);
+        ESP_LOGE(TAG, "nvs_get_u16: %s (%d)", esp_err_to_name(err), err);
         nvs_close(handle);
         return err;
     }
@@ -202,14 +210,14 @@ esp_err_t settings_set_alarm_time(uint8_t hh, uint8_t mm)
     if (out_value != in_value) {
         err = nvs_set_u16(handle, "alarm_time", in_value);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_set_u16: %d", err);
+            ESP_LOGE(TAG, "nvs_set_u16: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
 
         err = nvs_commit(handle);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "nvs_commit: %d", err);
+            ESP_LOGE(TAG, "nvs_commit: %s (%d)", esp_err_to_name(err), err);
             nvs_close(handle);
             return err;
         }
@@ -222,40 +230,44 @@ esp_err_t settings_set_alarm_time(uint8_t hh, uint8_t mm)
 
 esp_err_t settings_get_alarm_time(uint8_t *hh, uint8_t *mm)
 {
-    esp_err_t err;
-    nvs_handle handle;
+    esp_err_t err = ESP_OK;
+    nvs_handle handle = 0;
+    uint16_t out_value = 0;
 
     if (!hh || !mm) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %d", err);
-        return err;
-    }
+    do {
+        err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    uint16_t out_value = 0;
-    err = nvs_get_u16(handle, "alarm_time", &out_value);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u16: %d", err);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_u16(handle, "alarm_time", &out_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_u16: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
+    } while(0);
 
-    uint8_t hh_value = (uint8_t)((out_value & 0xFF00) >> 8);
-    uint8_t mm_value = (uint8_t)(out_value & 0x00FF);
+    if (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND) {
+        uint8_t hh_value = (uint8_t)((out_value & 0xFF00) >> 8);
+        uint8_t mm_value = (uint8_t)(out_value & 0x00FF);
 
-    if (hh_value > 23 || mm_value > 59) {
-        *hh = 0;
-        *mm = 0;
-    } else {
-        *hh = hh_value;
-        *mm = mm_value;
+        if (hh_value > 23 || mm_value > 59) {
+            *hh = 0;
+            *mm = 0;
+        } else {
+            *hh = hh_value;
+            *mm = mm_value;
+        }
+        err = ESP_OK;
     }
 
     nvs_close(handle);
-    return ESP_OK;
+    return err;
 }
 
 esp_err_t settings_set_alarm_tune(const char *filename, const char *title, const char *subtitle, uint8_t song)
@@ -334,31 +346,35 @@ static esp_err_t settings_set_uint8(const char *key, uint8_t value)
 
 static esp_err_t settings_get_uint8(const char *key, uint8_t *value)
 {
-    esp_err_t err;
-    nvs_handle handle;
+    esp_err_t err = ESP_OK;
+    nvs_handle handle = 0;
+    uint8_t out_value = 0;
 
     if (!value) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
-        return err;
-    }
+    do {
+        err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    uint8_t out_value = 0;
-    err = nvs_get_u8(handle, key, &out_value);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_u8(handle, key, &out_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_u8: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
+    } while(0);
 
-    *value = out_value;
+    if (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND) {
+        *value = out_value;
+        err = ESP_OK;
+    }
 
     nvs_close(handle);
-    return ESP_OK;
+    return err;
 }
 
 static esp_err_t settings_set_string(const char *key, const char *value)
@@ -428,43 +444,50 @@ static esp_err_t settings_set_string(const char *key, const char *value)
 
 static esp_err_t settings_get_string(const char *key, char **value)
 {
-    esp_err_t err;
-    nvs_handle handle;
+    esp_err_t err = ESP_OK;
+    nvs_handle handle = 0;
+    size_t required_size = 0;
+    char *existing_value = 0;
 
     if (!value) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
-        return err;
-    }
+    do {
+        err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_open: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    size_t required_size = 0;
-    err = nvs_get_str(handle, key, NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_str(handle, key, NULL, &required_size);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
 
-    char *existing_value = malloc(required_size);
-    if (!existing_value) {
-        nvs_close(handle);
-        return ESP_ERR_NO_MEM;
-    }
+        existing_value = malloc(required_size);
+        if (!existing_value) {
+            err = ESP_ERR_NO_MEM;
+            break;
+        }
 
-    err = nvs_get_str(handle, key, existing_value, &required_size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
-        free(existing_value);
-        nvs_close(handle);
-        return err;
-    }
+        err = nvs_get_str(handle, key, existing_value, &required_size);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "nvs_get_str: %s (%d)", esp_err_to_name(err), err);
+            break;
+        }
+    } while(0);
 
-    *value = existing_value;
+    if (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND) {
+        *value = existing_value;
+        err = ESP_OK;
+    } else {
+        if (existing_value) {
+            free(existing_value);
+        }
+    }
 
     nvs_close(handle);
-    return ESP_OK;
+    return err;
 }

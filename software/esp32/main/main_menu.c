@@ -6,6 +6,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
+#include <esp_system.h>
 #include <esp_log.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
@@ -1225,10 +1226,16 @@ static void main_menu_setup()
 
 static void main_menu_about()
 {
+    char buf[256];
+    const char *idf_version = esp_get_idf_version();
+
+    sprintf(buf, "\nVideo Game Music Player\nAlarm Clock\nESP-IDF: %s\n",
+            idf_version);
+
     uint8_t option = display_message(
             "Nestronic",
             NULL,
-            "\nVideo Game Music Player\nAlarm Clock\n", " OK ");
+            buf, " OK ");
     if (option == UINT8_MAX) {
         menu_timeout = true;
     }

@@ -44,6 +44,8 @@ static const char *TAG = "main";
 #define V_REF 1116 // 1.1175V
 
 static xQueueHandle gpio_event_queue = NULL;
+static SemaphoreHandle_t rtc_event_mutex = NULL;
+static int64_t last_rtc_event = 0;
 
 static float brightness_pct_from_reading(uint16_t reading)
 {
@@ -70,6 +72,23 @@ static void gpio_poll_task(void *pvParameters)
     uint8_t brightness_target = 0x9F;
 
     while (1) {
+        // Check if its been longer than expected since the last RTC alarm
+        // interrupt event. These interrupts do not automatically re-trigger if
+        // missed, so this code attempts to directly check the GPIO state and
+        // recover from that.
+        xSemaphoreTake(rtc_event_mutex, portMAX_DELAY);
+        int64_t now = esp_timer_get_time();
+        if (((now - last_rtc_event) / 1000000LL) > 90) {
+            int mfp_level = gpio_get_level(MCP7940_MFP_PIN);
+            if (mfp_level == 0) {
+                last_rtc_event = now;
+                ESP_LOGW(TAG, "RTC alarm active on GPIO poll");
+                uint32_t gpio_num = (uint32_t) MCP7940_MFP_PIN;
+                xQueueSend(gpio_event_queue, &gpio_num, 0);
+            }
+        }
+        xSemaphoreGive(rtc_event_mutex);
+
         if (index == 0) {
             // Check the volume control and adjust the amplifier volume
             int val = adc1_get_raw(ADC1_VOL_PIN);
@@ -142,7 +161,10 @@ static void gpio_queue_task(void *arg)
     for(;;) {
         if(xQueueReceive(gpio_event_queue, &io_num, portMAX_DELAY)) {
             if (io_num == MCP7940_MFP_PIN) {
+                xSemaphoreTake(rtc_event_mutex, portMAX_DELAY);
+                last_rtc_event = esp_timer_get_time();
                 board_rtc_int_event_handler();
+                xSemaphoreGive(rtc_event_mutex);
             }
             else if (io_num == TCA8418_INT_PIN) {
                 keypad_int_event_handler();
@@ -217,6 +239,12 @@ void app_main(void)
 
     ESP_LOGI(TAG, "Nestronic System Firmware");
     ESP_LOGI(TAG, "-------------------------");
+
+    rtc_event_mutex = xSemaphoreCreateMutex();
+    if (!rtc_event_mutex) {
+        ESP_LOGE(TAG, "Unable to create RTC event mutex");
+        ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
+    }
 
 #ifdef V_REF_TO_GPIO
     // ADC calibration

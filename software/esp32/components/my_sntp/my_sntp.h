@@ -1,3 +1,8 @@
+/**
+ * @file
+ * SNTP client API
+ */
+
 /*
  * Copyright (c) 2007-2009 Frédéric Bernon, Simon Goldschmidt
  * All rights reserved.
@@ -53,7 +58,7 @@ void my_sntp_stop(void);
 u8_t my_sntp_enabled(void);
 
 void my_sntp_setserver(u8_t idx, const ip_addr_t *addr);
-ip_addr_t my_sntp_getserver(u8_t idx);
+const ip_addr_t* my_sntp_getserver(u8_t idx);
 
 #if SNTP_SERVER_DNS
 void my_sntp_setservername(u8_t idx, char *server);

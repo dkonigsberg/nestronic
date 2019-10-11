@@ -10,6 +10,7 @@
 #include <esp_log.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
+#include <esp_ota_ops.h>
 #include <tcpip_adapter.h>
 #include <driver/adc.h>
 #include <stdbool.h>
@@ -1226,11 +1227,18 @@ static void main_menu_setup()
 
 static void main_menu_about()
 {
-    char buf[256];
-    const char *idf_version = esp_get_idf_version();
+    char buf[512];
+    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
 
-    sprintf(buf, "\nVideo Game Music Player\nAlarm Clock\nESP-IDF: %s\n",
-            idf_version);
+    sprintf(buf,
+            "VGM Player Alarm Clock\n"
+            "\n"
+            "%s\n"
+            "%s %s\n"
+            "ESP-IDF: %s",
+            app_desc->version,
+            app_desc->date, app_desc->time,
+            app_desc->idf_ver);
 
     uint8_t option = display_message(
             "Nestronic",

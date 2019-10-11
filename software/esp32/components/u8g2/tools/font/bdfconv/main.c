@@ -91,6 +91,26 @@ int get_num_arg(char ***argv, int c, unsigned long *result)
   return 0;
 }
 
+int get_num_strarg(char ***argv, const char *s, unsigned long *result)
+{
+  if ( (**argv)[0] == '-' )
+  {
+    //printf("get_num_strarg %s: match %s\n", **argv, s);
+    if ( strcmp( (**argv)+1, s ) == 0 )
+    {      
+      //printf("get_num_strarg %s: match %s found\n", **argv, s);
+      if ( *((*argv)+1) != NULL )
+      {
+	(*argv)++;
+	*result = strtoul((**argv), NULL, 10);
+      }
+      (*argv)++;
+      return 1;      
+    }
+  }
+  return 0;
+}
+
 int is_arg(char ***argv, int c)
 {
   if ( (**argv)[0] == '-' )
@@ -116,7 +136,11 @@ void help(void)
   printf("-M 'mapfile'    Read Unicode ASCII mapping from file 'mapname'\n");
   printf("-o <file>   C output font file\n");
   printf("-k <file>   C output file with kerning information\n");	
-  printf("-p <%%>    Minimum distance for kerning in percent of the global char width (lower values: Smaller gaps, more data)\n");	
+  printf("-p <%%>      Minimum distance for kerning in percent of the global char width (lower values: Smaller gaps, more data)\n");	
+  printf("-x <n>      X-Offset for 8x8 font sub-glyph extraction (requires -f 2, default 0)\n");
+  printf("-y <n>      Y-Offset for 8x8 font sub-glyph extraction (requires -f 2, default 0)\n");
+  printf("-th <n>     Horizontal size of the 8x8 glyphs (requires -f 2, default 1)\n");
+  printf("-tv <n>     Vertical size of the 8x8 glyphs (requires -f 2, default 1)\n");
 
   printf("-n <name>   C indentifier (font name)\n");
   printf("-d <file>   Overview picture: Enable generation of bdf.tga and assign BDF font <file> for description\n");
@@ -164,6 +188,10 @@ unsigned long build_bbx_mode = 0;
 unsigned long font_format = 0;
 unsigned long min_distance_in_per_cent_of_char_width = 25;
 unsigned long cmdline_glyphs_per_line = 16;
+unsigned long xoffset = 0;
+unsigned long yoffset = 0;
+unsigned long tile_h_size = 1;
+unsigned long tile_v_size = 1;
 int font_picture_extra_info = 0;
 int font_picture_test_string = 0;
 int runtime_test = 0;
@@ -343,6 +371,12 @@ int main(int argc, char **argv)
     {
       font_picture_extra_info = 1;
     }
+    else if ( get_num_strarg(&argv, "th", &tile_h_size) != 0 )
+    {
+    }
+    else if ( get_num_strarg(&argv, "tv", &tile_v_size) != 0 )
+    {
+    }
     else if ( is_arg(&argv, 't') != 0 )
     {
       font_picture_test_string = 1;
@@ -358,6 +392,12 @@ int main(int argc, char **argv)
     {
     }
     else if ( get_num_arg(&argv, 'f', &font_format) != 0 )
+    {
+    }
+    else if ( get_num_arg(&argv, 'x', &xoffset) != 0 )
+    {
+    }
+    else if ( get_num_arg(&argv, 'y', &yoffset) != 0 )
     {
     }
     else if ( get_num_arg(&argv, 'l', &left_margin) != 0 )
@@ -400,7 +440,7 @@ int main(int argc, char **argv)
   bf_desc_font = NULL;
   if ( desc_font_str[0] != '\0' )
   {
-    bf_desc_font = bf_OpenFromFile(desc_font_str, 0, BDF_BBX_MODE_MINIMAL, "*", "", 0);	/* assume format 0 for description */
+    bf_desc_font = bf_OpenFromFile(desc_font_str, 0, BDF_BBX_MODE_MINIMAL, "*", "", 0, 0, 0, 1, 1);	/* assume format 0 for description */
     if ( bf_desc_font == NULL )
     {
       exit(1);
@@ -414,7 +454,8 @@ int main(int argc, char **argv)
     /* bf_Log(bf, "Font mode 1: BBX mode set to 3"); */
   }
   
-  bf = bf_OpenFromFile(bdf_filename, is_verbose, build_bbx_mode, map_str, map_filename, font_format);
+  /* render the complete font */
+  bf = bf_OpenFromFile(bdf_filename, is_verbose, build_bbx_mode, map_str, map_filename, font_format, xoffset, yoffset, tile_h_size, tile_v_size);
   
   if ( bf == NULL )
   {
@@ -424,32 +465,40 @@ int main(int argc, char **argv)
   if ( font_format == 2 )
   {
     /* now generate the log message */
-    bf_Log(bf, "Note: For font format 1 BBX mode has been set to 3");
+    bf_Log(bf, "Note: For font format 2 BBX mode has been set to 3");
   }
 
   if ( bf_desc_font != NULL )
   {
-    tga_init(1024, 1024*12);
-    if ( target_fontname[0] != '\0' )
-      y = tga_draw_font(0, target_fontname, bf_desc_font, bf, cmdline_glyphs_per_line);
-    else
-      y = tga_draw_font(0, bdf_filename, bf_desc_font, bf, cmdline_glyphs_per_line);
-    
-    if ( runtime_test != 0 )
+    if ( font_format == 2 )
     {
-      long i;
-      clock_t c = clock();
-      fd_t fd;
-      fd_init(&fd);
-      fd_set_font(&fd, bf->target_data);
-      for( i = 0; i < 10000; i++ )
-	fd_draw_string(&fd, left_margin, y, "Woven silk pyjamas exchanged for blue quartz.");
-      bf_Log(bf, "Runtime test: %.2lf sec", (double)(clock()-c)/(double)CLOCKS_PER_SEC);
+      bf_Log(bf, "Note: Overview Picture not possible for font format 2, option -d ignored.");
     }
-    
-    tga_set_pixel(1, 1, 0, 0, 0);
+    else
+    {
+      
+      tga_init(1024, 1024*12);
+      if ( target_fontname[0] != '\0' )
+	y = tga_draw_font(0, target_fontname, bf_desc_font, bf, cmdline_glyphs_per_line);
+      else
+	y = tga_draw_font(0, bdf_filename, bf_desc_font, bf, cmdline_glyphs_per_line);
+      
+      if ( runtime_test != 0 )
+      {
+	long i;
+	clock_t c = clock();
+	fd_t fd;
+	fd_init(&fd);
+	fd_set_font(&fd, bf->target_data);
+	for( i = 0; i < 10000; i++ )
+	  fd_draw_string(&fd, left_margin, y, "Woven silk pyjamas exchanged for blue quartz.");
+	bf_Log(bf, "Runtime test: %.2lf sec", (double)(clock()-c)/(double)CLOCKS_PER_SEC);
+      }
+      
+      tga_set_pixel(1, 1, 0, 0, 0);
 
-    tga_save("bdf.tga");
+      tga_save("bdf.tga");
+    }
   }
 
   
@@ -463,8 +512,8 @@ int main(int argc, char **argv)
     }
     else
     {
-      /* font format >= 1 are for u8g2 */
-      bf_WriteU8G2CByFilename(bf, c_filename, target_fontname, "  ");
+      /* font format >= 1 are for u8g2, the following procedure just writes the content to the file */
+      bf_WriteU8G2CByFilename(bf, c_filename, target_fontname, "  ");	/* bdf_font.c */
     }
   }
 

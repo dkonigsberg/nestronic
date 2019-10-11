@@ -45,19 +45,24 @@
 #include <Wire.h>
 #endif
 
+
+
 /*=============================================*/
 
 size_t U8X8::write(uint8_t v) 
 {
   if ( v == '\n' )
   {
-    ty++;
+    uint8_t dy = u8x8_pgm_read(u8x8.font+3);		/* new 2019 format */
+    ty+=dy;
     tx=0;
   }
   else
   {
+    uint8_t dx = u8x8_pgm_read(u8x8.font+2);		/* new 2019 format */
     u8x8_DrawGlyph(&u8x8, tx, ty, v);
-    tx++;
+
+    tx+=dx;
   }
   return 1;
 }
@@ -65,7 +70,7 @@ size_t U8X8::write(uint8_t v)
 
 
 /*=============================================*/
-/* callbacks */
+/*=== ARDUINO GPIO & DELAY ===*/
 
 #ifdef U8X8_USE_PINS
 extern "C" uint8_t u8x8_gpio_and_delay_arduino(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, U8X8_UNUSED void *arg_ptr)
@@ -168,6 +173,7 @@ extern "C" uint8_t u8x8_gpio_and_delay_arduino(u8x8_t *u8x8, uint8_t msg, uint8_
 
 
 /*=============================================*/
+/*=== 3 WIRE SOFTWARE SPI ===*/
 
 /*
   replacement for a more faster u8x8_byte_3wire_sw_spi
@@ -351,6 +357,7 @@ extern "C" uint8_t u8x8_byte_arduino_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 
 
 /*=============================================*/
+/*=== 4 WIRE SOFTWARE SPI ===*/
 
 /*
   replacement for a more faster u8x8_byte_4wire_sw_spi
@@ -381,6 +388,7 @@ extern "C" uint8_t u8x8_byte_arduino_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 /* this function completly replaces u8x8_byte_4wire_sw_spi*/
 extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
+  uint8_t SREG_backup;
   uint8_t i, b;
   uint8_t *data;
   uint8_t takeover_edge = u8x8_GetSPIClockPhase(u8x8);
@@ -412,6 +420,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 	  b = *data;
 	  data++;
 	  arg_int--;
+	  SREG_backup = SREG; cli();
 	  /* issue 156, check for speed */
 #if F_CPU <= 17000000
 	  if ( b == 0 )
@@ -438,6 +447,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 	      *arduino_clock_port &= arduino_clock_n_mask;
 	    }
 	  }
+	  SREG = SREG_backup;
 	}
       }
       else
@@ -447,6 +457,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 	  b = *data;
 	  data++;
 	  arg_int--;
+	  SREG_backup = SREG; cli();
 	  /* issue 156, check for speed */
 #if F_CPU <= 17000000
 	  if ( b == 0 )
@@ -473,6 +484,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 	      *arduino_clock_port |= arduino_clock_mask;	    
 	    }
 	  }
+	  SREG = SREG_backup;
 	}
       }      
       break;
@@ -517,6 +529,155 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
   return 1;
 }
 
+#elif defined(__SAM3X8E__) 		/* Arduino DUE */
+
+/* this function completly replaces u8x8_byte_4wire_sw_spi*/
+extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  uint8_t i, b;
+  uint16_t us = ((u8x8->display_info->sck_pulse_width_ns + 999)/1000);
+  uint8_t *data;
+  uint8_t takeover_edge = u8x8_GetSPIClockPhase(u8x8);
+  //uint8_t not_takeover_edge = 1 - takeover_edge;
+
+  /* the following static vars are recalculated in U8X8_MSG_BYTE_START_TRANSFER */
+  /* so, it should be possible to use multiple displays with different pins */
+  
+  /*
+  static volatile uint32_t *arduino_clock_port;  
+  static uint32_t arduino_clock_mask;
+  static uint32_t arduino_clock_n_mask;
+  
+  static volatile uint32_t *arduino_data_port;
+  static uint32_t arduino_data_mask;
+  static uint32_t arduino_data_n_mask;
+  */
+
+  static WoReg *arduinoSetClockPort, *arduinoUnsetClockPort;
+  static uint32_t arduino_clock_mask;
+
+  static WoReg *arduinoSetDataPort, *arduinoUnsetDataPort;
+  static uint32_t arduino_data_mask;
+
+  switch(msg)
+  {
+    case U8X8_MSG_BYTE_SEND:
+    
+      data = (uint8_t *)arg_ptr;      
+      if ( takeover_edge == 0 )
+      {
+	while( arg_int > 0 )
+	{
+	  b = *data;
+	  data++;
+	  arg_int--;
+	  {
+	    for( i = 0; i < 8; i++ )
+	    {
+	      /*
+	      if ( b & 128 )
+		*arduino_data_port |= arduino_data_mask;
+	      else
+		*arduino_data_port &= arduino_data_n_mask;
+	      */
+	      if (b & 128)
+		  *arduinoSetDataPort = arduino_data_mask;
+	      else
+		  *arduinoUnsetDataPort = arduino_data_mask;
+
+	      //delayMicroseconds(us);
+	      //*arduino_clock_port |= arduino_clock_mask;
+	      *arduinoSetClockPort = arduino_clock_mask;
+	      b <<= 1;
+	      delayMicroseconds(us);
+	      //*arduino_clock_port &= arduino_clock_n_mask;
+	      *arduinoUnsetClockPort = arduino_clock_mask;
+	    }
+	  }
+	}
+      }
+      else
+      {
+	while( arg_int > 0 )
+	{
+	  b = *data;
+	  data++;
+	  arg_int--;
+	  {
+	    for( i = 0; i < 8; i++ )
+	    {
+	      /*
+	      if ( b & 128 )
+		*arduino_data_port |= arduino_data_mask;
+	      else
+		*arduino_data_port &= arduino_data_n_mask;
+	      */
+	      if (b & 128)
+		  *arduinoSetDataPort = arduino_data_mask;
+	      else
+		  *arduinoUnsetDataPort = arduino_data_mask;
+
+	      //delayMicroseconds(us);
+	      //*arduino_clock_port &= arduino_clock_n_mask;
+	      *arduinoUnsetClockPort = arduino_clock_mask;
+	      b <<= 1;
+	      delayMicroseconds(us);
+	      //*arduino_clock_port |= arduino_clock_mask;	    
+	      *arduinoSetClockPort = arduino_clock_mask;
+	    }
+	  }
+	}
+      }      
+      break;
+      
+    case U8X8_MSG_BYTE_INIT:
+      /* disable chipselect */
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+      /* no wait required here */
+      
+      /* for SPI: setup correct level of the clock signal */
+      u8x8_gpio_SetSPIClock(u8x8, u8x8_GetSPIClockPhase(u8x8));
+      break;
+    case U8X8_MSG_BYTE_SET_DC:
+      u8x8_gpio_SetDC(u8x8, arg_int);
+      break;
+    case U8X8_MSG_BYTE_START_TRANSFER:
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_enable_level);  
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->post_chip_enable_wait_ns, NULL);
+
+      /* there is no consistency checking for u8x8->pins[U8X8_PIN_SPI_CLOCK] */
+    
+      /*
+      arduino_clock_port = portOutputRegister(digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_CLOCK]));
+      arduino_clock_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_SPI_CLOCK]);
+      arduino_clock_n_mask = ~arduino_clock_mask;
+    
+      arduino_data_port = portOutputRegister(digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_DATA]));
+      arduino_data_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_SPI_DATA]);
+      arduino_data_n_mask = ~arduino_data_mask;
+      */
+      
+      arduinoSetClockPort = &digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_CLOCK])->PIO_SODR;
+      arduinoUnsetClockPort = &digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_CLOCK])->PIO_CODR;
+      arduino_clock_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_SPI_CLOCK]);      
+
+      arduinoSetDataPort = &digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_DATA])->PIO_SODR;
+      arduinoUnsetDataPort = &digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_DATA])->PIO_CODR;
+      arduino_data_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_SPI_DATA]);
+    
+      
+      break;
+    case U8X8_MSG_BYTE_END_TRANSFER:
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, NULL);
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+      break;
+    default:
+      return 0;
+  }
+  return 1;
+}
+
+
 #else
   /* fallback */
   uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
@@ -528,6 +689,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 
 
 /*=============================================*/
+/*=== 4 WIRE HARDWARE SPI ===*/
 
 #ifdef U8X8_USE_PINS
 
@@ -556,6 +718,8 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
   
       break;
     case U8X8_MSG_BYTE_INIT:
+      if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	u8x8->bus_clock = u8x8->display_info->sck_clock_hz;
       /* disable chipselect */
       u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
       
@@ -608,7 +772,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
       }
       
 #if ARDUINO >= 10600
-      SPI.beginTransaction(SPISettings(u8x8->display_info->sck_clock_hz, MSBFIRST, internal_spi_mode));
+      SPI.beginTransaction(SPISettings(u8x8->bus_clock, MSBFIRST, internal_spi_mode));
 #else
       SPI.begin();
       
@@ -674,6 +838,8 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
   
       break;
     case U8X8_MSG_BYTE_INIT:
+      if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	u8x8->bus_clock = u8x8->display_info->sck_clock_hz;
       /* disable chipselect */
       u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
       /* no wait required here */
@@ -704,7 +870,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       }
       
 #if ARDUINO >= 10600
-      SPI1.beginTransaction(SPISettings(u8x8->display_info->sck_clock_hz, MSBFIRST, internal_spi_mode));
+      SPI1.beginTransaction(SPISettings(u8x8->bus_clock, MSBFIRST, internal_spi_mode));
 #else
       SPI1.begin();
       
@@ -965,6 +1131,7 @@ extern "C" uint8_t u8x8_byte_arduino_sw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
 #endif
 
 /*=============================================*/
+/*=== HARDWARE I2C ===*/
 
 extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSED uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void *arg_ptr)
 {
@@ -975,6 +1142,8 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
       Wire.write((uint8_t *)arg_ptr, (int)arg_int);
       break;
     case U8X8_MSG_BYTE_INIT:
+      if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	u8x8->bus_clock = u8x8->display_info->i2c_bus_clock_100kHz * 100000UL;
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP8266) || defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32)
       /* for ESP8266/ESP32, Wire.begin has two more arguments: clock and data */          
       if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
@@ -996,10 +1165,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
 #if ARDUINO >= 10600
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
       /* if there is any error with Wire.setClock() just remove this function call */
-      if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )
-      {
-	Wire.setClock(400000L); 
-      }
+      Wire.setClock(u8x8->bus_clock); 
 #endif
       Wire.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);
       break;
@@ -1022,6 +1188,8 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       Wire1.write((uint8_t *)arg_ptr, (int)arg_int);
       break;
     case U8X8_MSG_BYTE_INIT:
+      if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	u8x8->bus_clock = u8x8->display_info->i2c_bus_clock_100kHz * 100000UL;
       Wire1.begin();
       break;
     case U8X8_MSG_BYTE_SET_DC:
@@ -1030,10 +1198,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
 #if ARDUINO >= 10600
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
       /* if there is any error with Wire.setClock() just remove this function call */
-      if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )
-      {
-	Wire1.setClock(400000L); 
-      }
+      Wire1.setClock(u8x8->bus_clock); 
 #endif
       Wire1.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);
       break;

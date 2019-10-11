@@ -15,6 +15,15 @@ rm ./../../../../U8g2_Arduino/src/clib/u8x8_d_stdio.c
 
 # page buffer
 
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/Devanagari
+cp ../../../sys/arduino/u8g2_page_buffer/Devanagari/*.ino ../../../../U8g2_Arduino/examples/page_buffer/Devanagari/.
+
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/UpdatePartly
+cp ../../../sys/arduino/u8g2_page_buffer/UpdatePartly/*.ino ../../../../U8g2_Arduino/examples/page_buffer/UpdatePartly/.
+
+mkdir ../../../../U8g2_Arduino/examples/page_buffer/ClipWindow
+cp ../../../sys/arduino/u8g2_page_buffer/ClipWindow/*.ino ../../../../U8g2_Arduino/examples/page_buffer/ClipWindow/.
+
 mkdir ../../../../U8g2_Arduino/examples/page_buffer/StateBufferLoop
 cp ../../../sys/arduino/u8g2_page_buffer/StateBufferLoop/*.ino ../../../../U8g2_Arduino/examples/page_buffer/StateBufferLoop/.
 
@@ -114,6 +123,9 @@ cp ../../../sys/arduino/u8g2_page_buffer/SpaceTrash/*.ino ../../../../U8g2_Ardui
 
 # full buffer
 
+mkdir ../../../../U8g2_Arduino/examples/full_buffer/UpdateArea
+cp ../../../sys/arduino/u8g2_full_buffer/UpdateArea/*.ino ../../../../U8g2_Arduino/examples/full_buffer/UpdateArea/.
+
 mkdir ../../../../U8g2_Arduino/examples/full_buffer/IconMenu
 cp ../../../sys/arduino/u8g2_full_buffer/IconMenu/*.ino ../../../../U8g2_Arduino/examples/full_buffer/IconMenu/.
 
@@ -141,7 +153,13 @@ cp ../../../sys/arduino/u8g2_full_buffer/GraphicsTest/*.ino ../../../../U8g2_Ard
 mkdir ../../../../U8g2_Arduino/examples/full_buffer/FPS
 cp ../../../sys/arduino/u8g2_full_buffer/FPS/*.ino ../../../../U8g2_Arduino/examples/full_buffer/FPS/.
 
+mkdir ../../../../U8g2_Arduino/examples/full_buffer/ScreenShot
+cp ../../../sys/arduino/u8g2_full_buffer/ScreenShot/*.ino ../../../../U8g2_Arduino/examples/full_buffer/ScreenShot/.
+
 # u8x8
+
+mkdir ../../../../U8g2_Arduino/examples/u8x8/16x16Font
+cp ../../../sys/arduino/u8x8/16x16Font/*.ino ../../../../U8g2_Arduino/examples/u8x8/16x16Font/.
 
 mkdir ../../../../U8g2_Arduino/examples/u8x8/Terminal
 cp ../../../sys/arduino/u8x8/Terminal/*.ino ../../../../U8g2_Arduino/examples/u8x8/Terminal/.

@@ -165,9 +165,21 @@ The file "u8g2.h" is located in "/libraries/U8g2_Arduino/src/clib" inside your d
 sketch folder.
 
 Q: U8g2 requires a lot of memory. How to reduce this?
-- Limit the font size. If possible avoid "f" fonts, instead use "r" fonts
+- Visit https://github.com/olikraus/u8g2/wiki/u8g2optimization
+- Disable U8g2 features if possible (see u8g2.h)
+- Limit the font size. If possible avoid "f" fonts, instead use "r" or "n" fonts
 - If the I2C interface is not required, then uncomment #define U8X8_HAVE_HW_I2C in U8x8lib.h
   (Background: Due to a problem in Wire.h, the I2C Arduino lib is always included)
+
+Q: There is no visible output output. What is can be done?
+- Check the wiring, see first part of this FAQ.
+- Check the constructor. Does it fit to your display?
+- Do not output a text at (0,0): The reference point for text is lower left, so 
+  u8g2_DrawStr(&u8g2, 0, 0, “Hello world!”); will not display anything. Instead use
+  u8g2_DrawStr(&u8g2, 0, 20, “Hello world!”);
+
+Q: Only a small fraction of the display is visible. Why?
+A: With a "_1_" constructor, ensure to use the firstPage/nextPage loop.
 
 Q: U8g2 output is corrupted. What are possible causes?
 - Do not change the output inside the firstPage/nextPage loop: 
@@ -191,7 +203,18 @@ A5: For SW I2C and AVR architectures: Uncomment
 in U8x8lib.h. This will increase speed a lot for I2C on all AVR uC. However the I2C
 bus is always driven by this implementation. Other I2C devices will not work on
 the same pins.
+A6: For HW I2C the default speed for some controllers is set 100KHz. However these
+controller often work with higher speed (200KHz or 400KHz). Suggestion is
+to test whether "u8g2.setBusClock(400000);" still works.
 
+Q: Umlaut chars or other chars with a unicode value greater than 127 do not 
+appear on the displays. What is wrong?
+A; Check the following:
+Did you use drawUTF8() instead of drawStr()?
+Did you enable UTF8 when using print() with enableUTF8Print()?
+Does the font include the expected char? Fonts with a 'n' (numbers), 
+'u' (uppercase) or 'r' (restricted) at the end of the fontname do only 
+include glyphs with unicode lower than 128.
 
 Q: How can I generate my own font.
 A: The font must be available in bdf file format. Then use bdfconv to generate
@@ -244,8 +267,8 @@ A: The sequence is: Start transfer, send data and args, close transfer. Note tha
 this is not portable, because these commands are specific to the display controller.
 The following C++/Arduino code will send one command with one argument to the
 display:
-  u8x8_cad_StartTransfer(u8g2.GetU8x8());
-  u8x8_cad_SendCmd( u8g2.GetU8x8(), <display command>);
-  u8x8_cad_SendArg( u8g2.GetU8x8(), <display-command-arg>);  
-  u8x8_cad_EndTransfer(u8g2.GetU8x8());
+  u8x8_cad_StartTransfer(u8g2.getU8x8());
+  u8x8_cad_SendCmd( u8g2.getU8x8(), <display command>);
+  u8x8_cad_SendArg( u8g2.getU8x8(), <display-command-arg>);  
+  u8x8_cad_EndTransfer(u8g2.getU8x8());
 

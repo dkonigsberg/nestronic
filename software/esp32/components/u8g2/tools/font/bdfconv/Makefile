@@ -37,9 +37,93 @@ helvb18: bdfconv
 helvb18n: bdfconv
 	./bdfconv -v -f 1 -m '32,48-57' ../bdf/helvB18.bdf -o helvb18_tn.c  -n u8g2_font_helvB18_tn -d ../bdf/helvB18.bdf 
 
+emoticons21: bdfconv
+	./bdfconv -v -f 1 -m '32-64' ../emoticons/emoticons21.bdf -o emoticons21.c  -n u8g2_font_emoticons21_tn -d ../bdf/helvB18.bdf 
+
+old16x16: bdfconv
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/Px437_Wyse700a.ttf
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700a_ul_n.c  -n u8x8_font_px437wyse700a_ul_n
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700a_ur_n.c  -n u8x8_font_px437wyse700a_ur_n
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700a_ll_n.c  -n u8x8_font_px437wyse700a_ll_n
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700a_lr_n.c  -n u8x8_font_px437wyse700a_lr_n	
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700a_ul_r.c  -n u8x8_font_px437wyse700a_ul_r
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700a_ur_r.c  -n u8x8_font_px437wyse700a_ur_r
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700a_ll_r.c  -n u8x8_font_px437wyse700a_ll_r
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700a_lr_r.c  -n u8x8_font_px437wyse700a_lr_r
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700a_ul_f.c  -n u8x8_font_px437wyse700a_ul_f
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700a_ur_f.c  -n u8x8_font_px437wyse700a_ur_f
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700a_ll_f.c  -n u8x8_font_px437wyse700a_ll_f
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700a_lr_f.c  -n u8x8_font_px437wyse700a_lr_f	
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/Px437_Wyse700b.ttf
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700b_ul_n.c  -n u8x8_font_px437wyse700b_ul_n
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700b_ur_n.c  -n u8x8_font_px437wyse700b_ur_n
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700b_ll_n.c  -n u8x8_font_px437wyse700b_ll_n
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-59' tmp.bdf -o u8x8_font_px437wyse700b_lr_n.c  -n u8x8_font_px437wyse700b_lr_n	
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700b_ul_r.c  -n u8x8_font_px437wyse700b_ul_r
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700b_ur_r.c  -n u8x8_font_px437wyse700b_ur_r
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700b_ll_r.c  -n u8x8_font_px437wyse700b_ll_r
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700b_lr_r.c  -n u8x8_font_px437wyse700b_lr_r
+	./bdfconv -x 0 -y 8 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700b_ul_f.c  -n u8x8_font_px437wyse700b_ul_f
+	./bdfconv -x 8 -y 8 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700b_ur_f.c  -n u8x8_font_px437wyse700b_ur_f
+	./bdfconv -x 0 -y 0 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700b_ll_f.c  -n u8x8_font_px437wyse700b_ll_f
+	./bdfconv -x 8 -y 0 -v -f 2 -m '32-255' tmp.bdf -o u8x8_font_px437wyse700b_lr_f.c  -n u8x8_font_px437wyse700b_lr_f
+	cat u8x8_font_px437*.c >16x16.c
+
+16x16: bdfconv
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/Px437_Wyse700b.ttf
+	./bdfconv -y -1 -th 2 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700b_2x2_r.c  -n u8x8_font_px437wyse700b_2x2_r
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/Px437_Wyse700a.ttf
+	./bdfconv -y -1 -th 2 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_px437wyse700a_2x2_r.c  -n u8x8_font_px437wyse700a_2x2_r
+	-../otf2bdf/otf2bdf -r 72 -p 32 -o tmp.bdf ../ttf/BALTT_0.ttf
+	./bdfconv -y 0 -th 1 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_balthasar_titling_nbp_1x2_r.c  -n u8x8_font_balthasar_titling_nbp_1x2_r
+	-../otf2bdf/otf2bdf -r 72 -p 32 -o tmp.bdf ../ttf/lucasarts-scumm-subtitle-roman-outline.ttf
+	./bdfconv -y 1 -th 2 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o lucasarts_scumm_subtitle_o_2x2_r.c  -n lucasarts_scumm_subtitle_o_2x2_r
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/lucasarts-scumm-subtitle-roman.ttf
+	./bdfconv -y 0 -th 2 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o lucasarts_scumm_subtitle_r_2x2_r.c  -n lucasarts_scumm_subtitle_r_2x2_r  
+	./bdfconv -y -1 -th 2 -tv 3 -v -f 2 -m '32-127' ../bdf/courB18.bdf -o u8x8_font_courb18_2x3_r.c  -n u8x8_font_courB18_2x3_r
+	./bdfconv -y -1 -th 2 -tv 3 -v -f 2 -m '32-127' ../bdf/courR18.bdf -o u8x8_font_courr18_2x3_r.c  -n u8x8_font_courR18_2x3_r
+	./bdfconv -y -2 -th 3 -tv 4 -v -f 2 -m '32-127' ../bdf/courB24.bdf -o u8x8_font_courb24_3x4_r.c  -n u8x8_font_courB24_3x4_r
+	./bdfconv -y -2 -th 3 -tv 4 -v -f 2 -m '32-127' ../bdf/courR24.bdf -o u8x8_font_courr24_3x4_r.c  -n u8x8_font_courR24_3x4_r
+	./bdfconv -y 0 -th 2 -tv 3 -v -f 2 -m '32-127' ../bdf/profont29.bdf -o u8x8_font_profont29_2x3_r.c  -n u8x8_font_profont29_2x3_r
+	./bdfconv -y -2 -th 1 -tv 2 -v -f 2 -m '32-127' ../bdf/8x13.bdf -o u8x8_font_8x13_r.c  -n u8x8_font_8x13_1x2_r
+	./bdfconv -y -2 -th 1 -tv 2 -v -f 2 -m '32-127' ../bdf/8x13B.bdf -o u8x8_font_8x13b_r.c  -n u8x8_font_8x13B_1x2_r
+	./bdfconv -y -1 -x -1 -th 1 -tv 2 -v -f 2 -m '32-127' ../bdf/7x14.bdf -o u8x8_font_7x14_r.c  -n u8x8_font_7x14_1x2_r
+	./bdfconv -y -1 -x -1 -th 1 -tv 2 -v -f 2 -m '32-127' ../bdf/7x14B.bdf -o u8x8_font_7x14b_r.c  -n u8x8_font_7x14B_1x2_r
+	-../otf2bdf/otf2bdf -r 72 -p 16 -o tmp.bdf ../ttf/shylock_nbp.ttf
+	./bdfconv -y -1 -th 1 -tv 2 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_shylock_nbp_1x2_r.c  -n u8x8_font_shylock_nbp_1x2_r
+
+	-../otf2bdf/otf2bdf -a -r 72 -p 30 -o tmp.bdf ../ttf/inr.otf
+	./bdfconv -y -1 -x 1 -th 2 -tv 4 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inr21_2x4_r.c  -n u8x8_font_inr21_2x4_r
+	-../otf2bdf/otf2bdf -a -r 72 -p 44 -o tmp.bdf ../ttf/inr.otf
+	./bdfconv -y -1 -x 2 -th 3 -tv 6 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inr33_3x6_r.c  -n u8x8_font_inr33_3x6_r
+	-../otf2bdf/otf2bdf -a -r 72 -p 62 -o tmp.bdf ../ttf/inr.otf
+	./bdfconv -y 0 -x 3 -th 4 -tv 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inr46_4x8_r.c  -n u8x8_font_inr46_4x8_r
+
+	-../otf2bdf/otf2bdf -a -r 72 -p 30 -o tmp.bdf ../ttf/inb.otf
+	./bdfconv -y -1 -x 1 -th 2 -tv 4 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inb21_2x4_r.c  -n u8x8_font_inb21_2x4_r
+	-../otf2bdf/otf2bdf -a -r 72 -p 44 -o tmp.bdf ../ttf/inb.otf
+	./bdfconv -y -1 -x 2 -th 3 -tv 6 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inb33_3x6_r.c  -n u8x8_font_inb33_3x6_r
+	-../otf2bdf/otf2bdf -a -r 72 -p 62 -o tmp.bdf ../ttf/inb.otf
+	./bdfconv -y 0 -x 3 -th 4 -tv 8 -v -f 2 -m '32-127' tmp.bdf -o u8x8_font_inb46_4x8_r.c  -n u8x8_font_inb46_4x8_r
+
+	./bdfconv -y 0 -th 2 -tv 2 -v -f 2 -m '32-127' ../bdf/open_iconic_weather_2x.bdf -o u8x8_font_open_iconic_weather_2x2.c  -n u8x8_font_open_iconic_weather_2x2
+	./bdfconv -y 0 -th 4 -tv 4 -v -f 2 -m '32-127' ../bdf/open_iconic_weather_4x.bdf -o u8x8_font_open_iconic_weather_4x4.c  -n u8x8_font_open_iconic_weather_4x4
+	./bdfconv -y 0 -th 8 -tv 8 -v -f 2 -m '32-127' ../bdf/open_iconic_weather_8x.bdf -o u8x8_font_open_iconic_weather_8x8.c  -n u8x8_font_open_iconic_weather_8x8
+
+
+
 logisoso: bdfconv
 	-../otf2bdf/otf2bdf -a -r 72 -p 131 -o tmp.bdf ../ttf/Logisoso.ttf
 	./bdfconv -v -f 1 -m '32,42-57' tmp.bdf -o u8g2_font_logisoso_tn.c  -n u8g2_font_logisoso_tn -d ../bdf/helvB18.bdf 
+
+tpss: bdfconv
+	-../otf2bdf/otf2bdf -r 72 -p 8 -o tmp.bdf ../ttf/TEACPSS_.TTF
+	./bdfconv -v -f 1 -m '32-255' tmp.bdf -o u8g2_font_tpss_tf.c  -n u8g2_font_tpss_tn -d ../bdf/helvR10.bdf 
+
+
+q_pixia: bdfconv
+	-../otf2bdf/otf2bdf -a -r 72 -p 13 -o tmp.bdf q_pixia.ttf
+	./bdfconv -v -f 1 -m '32-65534' tmp.bdf -o u8g2_font_q_pixia.c  -n u8g2_font_q_pixia -d ../bdf/helvB18.bdf 
 
 inr: bdfconv
 	-../otf2bdf/otf2bdf -a -r 72 -p 33 -o tmp.bdf ../ttf/inr.otf
@@ -56,6 +140,29 @@ fub: bdfconv
 fub20x: bdfconv
 	-../otf2bdf/otf2bdf -a -r 72 -p 27 -o tmp.bdf ../ttf/FreeUniversal-Bold.ttf
 	./bdfconv -v -f 1 -m '32-127,8364' tmp.bdf -o u8g2_font_fub20_tx.c  -n u8g2_font_fub20_tx -d ../bdf/helvB18.bdf 
+
+unifont_emoticon: bdfconv
+	./bdfconv -v -f 1 -m '$$01f600-$$01f64f>$$20, $$01f910-$$01f92f>$$70, $$01f970-$$01f971>$$90, $$01f973-$$01f976>$$92,$$01f97a>$$96, $$01f9b8-$$01f9b9>$$97, $$01f9d0-$$01f9d6>$$99' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_emoticon.c  -n u8g2_font_unifont_emoticon_tx -d ../bdf/helvB18.bdf 
+
+unifont_misc_sym_and_pic: bdfconv
+	./bdfconv -v -f 1 -m '$$01f300-$$01f5ff>$$f300' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_misc_sym_and_pic.c  -n u8g2_font_unifont_misc_sym_and_pic_tx -d ../bdf/helvB18.bdf 
+
+unifont_animals: bdfconv
+	./bdfconv -v -f 1 -m '$$01f400-$$01f43f>$$20,$$01f980-$$01f9af>$$60' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_animal.c  -n u8g2_font_unifont_animal_tx -d ../bdf/helvB18.bdf 
+
+unifont_domino: bdfconv
+	./bdfconv -v -f 1 -m '$$01f030-$$01f093>$$20' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_domino.c  -n u8g2_font_unifont_domino_tx -d ../bdf/helvB18.bdf 
+
+unifont_cards: bdfconv
+	./bdfconv -v -f 1 -m '$$01f0a0-$$01f0f5>$$20' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_cards.c  -n u8g2_font_unifont_cards_tx -d ../bdf/helvB18.bdf 
+
+unifont_weather: bdfconv
+	./bdfconv -v -f 1 -m '$$01f310-$$01f32c>$$20' ../bdf/unifont_upper.bdf -o u8g2_font_unifont_weather.c  -n u8g2_font_unifont_weather_tx -d ../bdf/helvB18.bdf 
+
+
+climacons: bdfconv
+	-../otf2bdf/otf2bdf -a -r 72 -p 32 -o tmp.bdf Climacons.ttf
+	./bdfconv -v -f 1 -m '32-256' tmp.bdf -o u8g2_font_climacons.c  -n u8g2_font_climacons -d ../bdf/helvB18.bdf 
 
 logisoso20x: bdfconv
 	-../otf2bdf/otf2bdf -a -r 72 -p 30 -o tmp.bdf ../ttf/Logisoso.ttf
@@ -116,6 +223,10 @@ wqy: bdfconv
 
 ncenR24: bdfconv
 	./bdfconv  -v -f 1 -b 0 -m '32-701>32,7838' ../bdf/ncenR24.bdf -n u8g2_font_ncenR24_te -o test.c 
+
+profont12v2: bdfconv
+	#./bdfconv  -v -f 1 -b 0 -m '32-701>32,7838' ../bdf/profont12v2.bdf -n u8g2_font_profont12v2_te -o test.c 
+	./bdfconv  -v -f 1 -b 0 -m '32-127' ../bdf/profont12v2.bdf -n u8g2_font_profont12v2_tr -o test.c 
 
 	
 #	http://stackoverflow.com/questions/713397/what-is-a-minimal-set-of-unicode-characters-for-reasonable-japanese-support

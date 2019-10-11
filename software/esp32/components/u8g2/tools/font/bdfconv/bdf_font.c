@@ -51,7 +51,9 @@ bf_t *bf_Open(int is_verbose, int bbx_mode)
     bf->enc_y = 0;
     
     bf->bbx_mode = bbx_mode;
-    
+    bf->tile_h_size = 1;
+    bf->tile_v_size = 1;
+        
     return bf;
   }
   return NULL;
@@ -593,42 +595,6 @@ int bf_WriteUCGCByFP(bf_t *bf, FILE *out_fp, const char *fontname, const char *i
   return 1;
 }
 
-int OLD___bf_WriteU8G2CByFP(bf_t *bf, FILE *out_fp, const char *fontname, const char *indent)
-{
-  int i;
-  int bytes_per_line = 16;
-  
-  fprintf(out_fp, "/*\n");
-  fprintf(out_fp, "  Fontname: %s\n", bf->str_font);
-  fprintf(out_fp, "  Copyright: %s\n", bf->str_copyright);
-  fprintf(out_fp, "  Glyphs: %d/%d\n", (int)bf->selected_glyphs, (int)bf->glyph_cnt );
-  fprintf(out_fp, "  BBX Build Mode: %d\n", (int)bf->bbx_mode);
-  fprintf(out_fp, "*/\n");
-  if ( bf->bbx_mode == 3 )
-  {
-    //fprintf(out_fp, "#include \"u8x8.h\"\n");  
-    fprintf(out_fp, "const uint8_t %s[%d] U8X8_FONT_SECTION(\"%s\") = {\n", fontname, bf->target_cnt, fontname);
-  }
-  else
-  {
-    //fprintf(out_fp, "#include \"u8g2.h\"\n");  
-    fprintf(out_fp, "const uint8_t %s[%d] U8G2_FONT_SECTION(\"%s\") = {\n", fontname, bf->target_cnt, fontname);
-  }
-  fprintf(out_fp, "  ");
-    
-  for( i = 0; i < bf->target_cnt; i++ )
-  {
-    fprintf(out_fp, "%d", bf->target_data[i]);
-    if ( i+1 != bf->target_cnt )
-      fprintf(out_fp, ",");
-    if ( (i+1) % bytes_per_line == 0 )
-      fprintf(out_fp, "\n%s", indent);    
-  }
-
-  fprintf(out_fp, "};\n");  
-  return 1;
-}
-
 int bf_WriteU8G2CByFP(bf_t *bf, FILE *out_fp, const char *fontname, const char *indent)
 {
   int i;
@@ -652,7 +618,7 @@ int bf_WriteU8G2CByFP(bf_t *bf, FILE *out_fp, const char *fontname, const char *
     fprintf(out_fp, "#ifdef U8G2_USE_LARGE_FONTS\n");    
   }
   
-  if ( bf->bbx_mode == 3 )
+  if ( bf->bbx_mode == 3 )	// maybe better check for the font_format
   {
     //fprintf(out_fp, "#include \"u8x8.h\"\n");  
     fprintf(out_fp, "const uint8_t %s[%d] U8X8_FONT_SECTION(\"%s\") = \n", fontname, bf->target_cnt+extra1, fontname);
@@ -710,6 +676,7 @@ int bf_WriteUCGCByFilename(bf_t *bf, const char *filename, const char *fontname,
   return 1;
 }
 
+/* called from main() */
 int bf_WriteU8G2CByFilename(bf_t *bf, const char *filename, const char *fontname, const char *indent)
 {
   FILE *fp;
@@ -728,14 +695,19 @@ int bf_WriteU8G2CByFilename(bf_t *bf, const char *filename, const char *fontname
 }
 
 
-
-bf_t *bf_OpenFromFile(const char *bdf_filename, int is_verbose, int bbx_mode, const char *map_str, const char *map_file_name, int font_format)
+/*
+  xo, yo: offset for 8x8 fonts (font_format==2)
+  called from main()
+*/
+bf_t *bf_OpenFromFile(const char *bdf_filename, int is_verbose, int bbx_mode, const char *map_str, const char *map_file_name, int font_format, int xo, int yo, int th, int tv)
 {
   bf_t *bf;
 
   bf = bf_Open(is_verbose, bbx_mode);
   if ( bf != NULL )
   {
+    bf->tile_h_size = th;
+    bf->tile_v_size = tv;
     
     if ( bf_ParseFile(bf, bdf_filename) != 0 )
     {
@@ -768,7 +740,7 @@ bf_t *bf_OpenFromFile(const char *bdf_filename, int is_verbose, int bbx_mode, co
       }
       else
       {
-	bf_Generate8x8Font(bf);
+	bf_Generate8x8Font(bf, xo, yo);	/* bdf_8x8.c */
       }
       
       if ( bf->bbx_mode != BDF_BBX_MODE_MINIMAL )

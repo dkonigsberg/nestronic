@@ -8,11 +8,21 @@
     - Calculates the checksum at 0x001c in the vector table
     - Part ID detection (if no hex file is specified on the commandline)
 
+  ToDo:
+    Consider https://github.com/ChristianVisintin/termiWin for Win compatibility
+
+  Other Tools:
+    - https://sourceforge.net/projects/lpc21isp/    	Last version from 2014, LPC804 not supported
+    - http://www.windscooting.com/softy/mxli.html	not tested, not sure whether LPC804 is supported
+    - http://www.flashmagictool.com/				GUI
+    - http://git.techno-innov.fr/?p=lpctools			LPC804 not part of the definitions, but could be added
+
 */
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 
@@ -33,17 +43,21 @@
 
 /* forward declarations */
 int fmem_store_data(unsigned long adr, unsigned long cnt, unsigned char *data);
+void uart_show_in_buf(void);
 
 
 /*================================================*/
 /* error procedure */
 void err(char *fmt, ...)
 {
-	va_list va;
-	va_start(va, fmt);
-	vprintf(fmt, va);
-	printf("\n");
-	va_end(va);
+  va_list va;
+  va_start(va, fmt);
+  vprintf(fmt, va);
+  printf("\n");
+  va_end(va);
+
+  printf("Last com data:\n");
+  uart_show_in_buf();
 }
 
 /* user msg */
@@ -445,7 +459,7 @@ const char *lpc_error_string[] =
   "SRC_ADDR_NOT_MAPPED",
   "DST_ADDR_NOT_MAPPED",  /* 5 */
   "COUNT_ERROR",
-  "iNVALID_SECTOR",
+  "INVALID_SECTOR/INVALID_PAGE",	/* 7 */
   "SECTOR_NOT_BLANK",
   "SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION",
   "COMPARE_ERROR", /* 10 */
@@ -453,18 +467,33 @@ const char *lpc_error_string[] =
   "PARAM_ERROR",
   "ADDR_ERROR",
   "ADDR_NOT_MAPPED",
-  "CMD_LOCKED", /* 15 */
+  "CMD_LOCKED", /* 15, 0x0F */
   "INVALID_CODE",
   "INVALID_BAUD_RATE",
   "INVALID_STOP_BIT",
-  "CODE_READ_PROTECTION_ENABLED",
-  "internal hex2lpc error" /* 20 */
+  "CODE_READ_PROTECTION_ENABLED", /* 0x013 */
+  "internal hex2lpc error", /* 20, 0x014 */
+  "USER_CODE_CHECKSUM", /* 0x015 */
+  "unknown error", /* 0x016 */
+  "EFRO_NO_POWER", /* 0x017 */
+  "FLASH_NO_POWER", /* 0x018 */
+  "unknown error", /* 0x019 */
+  "unknown error", /* 0x01A */
+  "FLASH_NO_CLOCK", /* 0x01B */
+  "REINVOKE_ISP_CONFIG", /* 0x01C */
+  "NO_VALID_IMAGE", /* 0x01D */
+  "unknown error", /* 0x01E */
+  "unknown error", /* 0x01F */  
+  "FLASH_ERASE_PROGRAM", /* 0x020 */
+  "INVALID_PAGE",	/* 21 */
+  "unknown error", /* 0x022 */
 };
 
 /*================================================*/
 /* uart connection  */
 
 int uart_fd = 0;
+int uart_show_isp_cmd = 0;
 struct termios uart_io;
 /* in_buf should be large enough to read a complete sector with some additional overhead */
 #define UART_IN_BUF_LEN (1024*48)
@@ -491,12 +520,44 @@ void uart_reset_in_buf(void)
   uart_in_pos = 0;
 }
 
+void uart_show_buf(const unsigned char *buf, unsigned int buf_size)
+{
+  unsigned long i,j;
+  i = 0;
+  while( i < buf_size )
+  {
+    printf("%3ld/%02lx: ", i, i);
+    for( j = 0; j < 16; j++ )
+    {
+      if ( i + j < buf_size )
+	printf("%02x ", buf[i+j]);
+      else
+	printf("   ");
+    }
+
+    for( j = 0; j < 16; j++ )
+    {
+      if ( i + j < buf_size && buf[i+j] >= 32 && buf[i+j] <= 127 )
+	printf("%c", buf[i+j]);
+      else
+	printf(".");
+    }
+    printf("\n");
+    i += j;
+  }
+}
+
+
 void uart_show_in_buf(void)
 {
+  uart_show_buf(uart_in_buf, uart_in_pos);
+
+  /*
   unsigned long i,j;
   i = 0;
   while( i < uart_in_pos )
   {
+    printf("%3ld/%02lx: ", i, i);
     for( j = 0; j < 16; j++ )
     {
       if ( i + j < uart_in_pos )
@@ -515,6 +576,7 @@ void uart_show_in_buf(void)
     printf("\n");
     i += j;
   }
+  */
 }
 
 int uart_get_result_code_after_first_0x0a(void)
@@ -553,8 +615,12 @@ int uart_get_result_code_from_buf_end(void)
     if ( uart_in_buf[i] >= '0' && uart_in_buf[i] <= '9' )
     {
       code = (uart_in_buf[i] - '0')*10 + code;
+      if ( i == 0 )
+	return code;
+      i--;
     }
-    return code;
+    if ( uart_in_buf[i] < 32 )
+      return code;
   }
   return -1;
   
@@ -713,6 +779,8 @@ int uart_send_cnt_bytes(int cnt, unsigned char data)
 
 int uart_send_str(const char *str)
 {
+  if ( uart_show_isp_cmd )
+    printf("ISP Cmd:%s", str);
   return uart_send_bytes(strlen(str), (const unsigned char *)str);
   
 /*  
@@ -889,6 +957,50 @@ long uart_read_from_adr(unsigned long adr, unsigned long cnt)
   return uart_in_pos-cnt;
 }
 
+int uart_echo_off(void)
+{
+  int i;
+  int result_code;
+  
+  uart_reset_in_buf();
+  uart_send_str("A 0\r\n");
+
+  for( i = 0; i < 4*5; i++)
+  {
+    uart_read_more();
+    
+    result_code = uart_get_result_code_from_buf_end();
+    if ( result_code > 0 )
+      return err("echo off failed (%d)", result_code), 0;
+    else if ( result_code == 0 )
+      return 1;
+    msg("echo off in progress (%d)", i);
+  }
+  return err("echo off timeout"), 0;
+}
+
+int uart_echo_on(void)
+{
+  int i;
+  int result_code;
+  
+  uart_reset_in_buf();
+  uart_send_str("A 1\r\n");
+  
+  for( i = 0; i < 4*5; i++)
+  {
+    uart_read_more();
+    
+    result_code = uart_get_result_code_from_buf_end();
+    if ( result_code > 0 )
+      return err("echo on failed (%d)", result_code), 0;
+    else if ( result_code == 0 )
+      return 1;
+    msg("echo on in progress (%d)", i);
+  }
+  return err("echo on timeout"), 0;
+}
+
 /*
   read part number, also returned as result
 */
@@ -942,10 +1054,12 @@ typedef struct _lpc_struct lpc_struct;
 /*
   for LPC81x and LPC82x, the stack is located at 0x1000 0270 and grows downwards.
   LPC81x: sector size=1024 bytes, page size=64 bytes
+
 */
 
 lpc_struct lpc_list[] = {
 /* name, 				part_id, 		flash_adr, 	flash_size, sec_size, 	ram_adr,		ram_size	 */
+/* condition: (a) sec_size >= ram_size (b) ram_adr+ram_size <= highest sram address+1 */
   
 {"LPC824M201JHI33", 	0x00008241,	0x00000000,	0x8000,	0x0400,	0x10000300,	0x0400 },
 {"LPC822M201JHI33", 	0x00008221,	0x00000000,	0x8000,	0x0400,	0x10000300,	0x0400 },
@@ -957,8 +1071,17 @@ lpc_struct lpc_list[] = {
 {"LPC812M101JDH16", 	0x00008120, 	0x00000000, 	0x4000,	0x0400,	0x10000300,	0x0100 },
 {"LPC812M101JD20", 	0x00008121, 	0x00000000, 	0x4000,	0x0400,	0x10000300,	0x0100 },
 {"LPC812M101JDH20", 	0x00008122, 	0x00000000, 	0x4000,	0x0400,	0x10000300,	0x0100 },
-{"LPC812M101JTB16", 	0x00008122, 	0x00000000, 	0x4000,	0x0400,	0x10000300,	0x0100 }
+{"LPC812M101JTB16", 	0x00008122, 	0x00000000, 	0x4000,	0x0400,	0x10000300,	0x0100 },
 
+// LP804: The stack of UART ISP commands is located at address 0x1000 03A8. The maximum stack usage is 640 bytes (0x280) and grows downwards.
+// RAM end is at 0x10001000, so probably ram_size could be 0x0200 or 0x0400
+
+
+{"LPC804M101JBD64", 0x00008040, 	0x00000000, 	0x8000,	0x0400,	0x10000500,	0x0400 },
+{"LPC804M101JDH20", 0x00008041, 	0x00000000, 	0x8000,	0x0400,	0x10000500,	0x0400 },
+{"LPC804M101JDH24", 0x00008042, 	0x00000000, 	0x8000,	0x0400,	0x10000500,	0x0400 },
+{"LPC804M111JDH24", 0x00008043, 	0x00000000, 	0x8000,	0x0400,	0x10000500,	0x0400 },
+{"LPC804M101JHI33", 0x00008044, 	0x00000000, 	0x8000,	0x0400,	0x10000500,	0x0400 }
 
 
 };
@@ -1027,12 +1150,12 @@ int lpc_prepare_sectors(unsigned long start_sector, unsigned long end_sector)
     
     result_code = uart_get_result_code_from_buf_end();
     if ( result_code > 0 )
-      return err("flash prepare failed (%d)", result_code), 0;
+      return err("flash prepare for sectors failed (%d)", result_code), 0;
     else if ( result_code == 0 )
       return 1;
-    msg("flash prepare in progress (%d)", i);
+    msg("flash prepare for sectors in progress (%d)", i);
   }
-  return err("flash prepare timeout"), 0;
+  return err("flash prepare for sectors timeout"), 0;
   
   //uart_show_in_buf();
   
@@ -1073,7 +1196,10 @@ int lpc_erase_all(void)
     if ( result_code > 0 )
       return err("flash erase failed (%d)", result_code), 0;
     else if ( result_code == 0 )
+    return 0;
+    {
       return 1;
+    }
     msg("flash erase in progress (%d)", i);
   }
   return err("flash erase timeout"), 0;
@@ -1089,23 +1215,40 @@ int lpc_erase_all(void)
 */
 int lpc_page_download_to_ram(unsigned long size, unsigned char *buf)
 {
+  int i;
   char s[32];
   int result_code;
 
   if ( lpc_part == NULL )
     return 0;
 
-  msg("page download to RAM");
+  msg("page download to RAM (size=%ld)", size);
   
   sprintf(s, "W %lu %lu\r\n", lpc_part->ram_buf_adr, lpc_part->ram_buf_size);
   uart_reset_in_buf();
   uart_send_str(s);
-  uart_read_more();
-  result_code = uart_get_result_code_from_buf_end();
+  
+  /* wait for success code */
+  for( i = 0; i < 4*5; i++)
+  {
+    uart_read_more();
+    
+    result_code = uart_get_result_code_from_buf_end();
+    if ( result_code > 0 )
+      return err("'page download to RAM' failed (%d)", result_code), 0;
+    else if ( result_code == 0 )
+      break;
+    msg("'page download to RAM' in progress (%d)", i);
+  }
+      
   if ( result_code > 0 )
     return err("page download failure (%d)", result_code), 0;
 
   uart_reset_in_buf();
+
+  //printf("download data:\n");
+  //uart_show_buf(buf, size);
+
   
   if ( size < lpc_part->ram_buf_size)
   {
@@ -1118,10 +1261,12 @@ int lpc_page_download_to_ram(unsigned long size, unsigned char *buf)
   }
   
   uart_read_more();
+  uart_read_more();
   //uart_show_in_buf();
 
-  if ( memcmp(buf, uart_in_buf,size) != 0 )
-    return err("page data download error"), 0;
+  
+  if ( memcmp(buf, uart_in_buf, size) != 0 )
+    return err("page data download error (size=%ld)", size), 0;
   
   
   return 1;  
@@ -1239,6 +1384,10 @@ int lpc_page_write_flash_verify(unsigned long size, unsigned char *buf, unsigned
   /* calculate the number of the sector, later used for the prepare command */
   sector = dest_adr / lpc_part->sector_size;
 
+  /* prepare the sector */
+  if ( lpc_prepare_sectors(sector, sector) == 0 )
+    return 0;
+
   /* download the page (a fraction of the sector) to RAM */
   if ( lpc_page_download_to_ram(size, buf) == 0 )
     return 0;
@@ -1246,6 +1395,7 @@ int lpc_page_write_flash_verify(unsigned long size, unsigned char *buf, unsigned
   /* prepare the sector */
   if ( lpc_prepare_sectors(sector, sector) == 0 )
     return 0;
+
 
   /* flash the page into the prepared sector */
   if ( lpc_page_flash(dest_adr) == 0 )
@@ -1307,9 +1457,9 @@ int lpc_flash_ihex(void)
 void arm_calculate_vector_table_crc(void)
 {
   int i;
-  unsigned long crc;
-  unsigned long vector;
-  unsigned long adr;
+  uint32_t crc;
+  uint32_t vector;
+  uint32_t adr;
 
   /* calculate the crc */
   crc = 0UL;
@@ -1477,7 +1627,8 @@ void help(void)
   printf("-x        Execute ARM reset handler after upload\n");
   printf("          Note: Reset handler must set the stack pointer and restore SYSMEMREMAP\n");
   printf("-p <port> Use UART at <port> (default: '/dev/ttyUSB0')\n");
-  printf("-s <n>    Set UART transfer speed, 0=9600 (default), 1=19200, 2=57600\n");
+  printf("-s <n>    Set UART transfer speed, 0=9600 (default), 1=19200, 2=57600, 3=115200\n");
+  printf("-i        Show ISP commands sent to the device\n");
 }
 
 /*================================================*/
@@ -1513,6 +1664,10 @@ int main(int argc, char **argv)
     {
       is_execute = 1;
     }
+    else if ( is_arg(&argv, 'i') != 0 )
+    {
+      uart_show_isp_cmd = 1;
+    }
     else if ( get_num_arg(&argv, 's', &speed) != 0 )
     {
     }
@@ -1536,6 +1691,7 @@ int main(int argc, char **argv)
     case 0: baud = B9600; break;
     case 1: baud = B19200; break;
     case 2: baud = B57600; break;
+    case 3: baud = B115200; break;
   }
   
   //fmem_show();
@@ -1559,7 +1715,11 @@ int main(int argc, char **argv)
 			  break;
 	  }
   }
-  
+
+  /* echo on should be default, but it is enforced here... */
+  //if ( uart_echo_on() == 0 )
+  //  return 0;
+
   /* read part number */
   lpc_part_id = uart_read_part_numer();
   msg("received part id 0x%08x", lpc_part_id);
@@ -1573,6 +1733,7 @@ int main(int argc, char **argv)
   }
   
   msg("controller %s with %lu bytes flash memory", lpc_part->name, lpc_part->flash_size);
+  
   
   if ( lpc_load_and_flash_ihex(file) == 0 )	/* unlock, erase and flash procedure */
     return 0;

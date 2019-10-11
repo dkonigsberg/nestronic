@@ -15,7 +15,6 @@
 #include <esp_adc_cal.h>
 #include <esp_intr_alloc.h>
 #include <lwip/err.h>
-#include <apps/sntp/sntp.h>
 
 #include <sys/types.h>
 #include <dirent.h>

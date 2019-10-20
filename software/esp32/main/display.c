@@ -16,6 +16,7 @@
 #include "u8g2.h"
 #include "display_assets.h"
 #include "keypad.h"
+#include "vpool.h"
 
 static const char *TAG = "display";
 
@@ -45,6 +46,8 @@ typedef struct {
     int8_t mm;
     uint8_t am_pm;
     uint8_t clock;
+    int8_t day;
+    int8_t month;
 } display_time_elements_t;
 
 esp_err_t display_init()
@@ -182,7 +185,7 @@ static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t seg
         break;
     case seg_sep:
         res = display_asset_get(&asset, ASSET_SEG_SEP);
-        x_offset = 5; y_offset = 17;
+        x_offset = 0; y_offset = 17;
         break;
     default:
         res = 0;
@@ -272,10 +275,144 @@ static void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
         break;
     }
 }
+static void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
+{
+    /*
+     * Segment size: 14x25
+     * Separator size: 8x25
+     */
+    switch(segment) {
+    case seg_a:
+        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 12, y + 0);
+        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 11, y + 1);
+        u8g2_DrawLine(&u8g2, x + 3, y + 2, x + 10, y + 2);
+        break;
+    case seg_b:
+        u8g2_DrawLine(&u8g2, x + 11, y + 3, x + 11, y + 10);
+        u8g2_DrawLine(&u8g2, x + 12, y + 2, x + 12, y + 11);
+        u8g2_DrawLine(&u8g2, x + 13, y + 1, x + 13, y + 10);
+        break;
+    case seg_c:
+        u8g2_DrawLine(&u8g2, x + 11, y + 14, x + 11, y + 21);
+        u8g2_DrawLine(&u8g2, x + 12, y + 13, x + 12, y + 22);
+        u8g2_DrawLine(&u8g2, x + 13, y + 14, x + 13, y + 23);
+        break;
+    case seg_d:
+        u8g2_DrawLine(&u8g2, x + 3, y + 22, x + 10, y + 22);
+        u8g2_DrawLine(&u8g2, x + 2, y + 23, x + 11, y + 23);
+        u8g2_DrawLine(&u8g2, x + 1, y + 24, x + 12, y + 24);
+        break;
+    case seg_e:
+        u8g2_DrawLine(&u8g2, x + 0, y + 14, x + 0, y + 23);
+        u8g2_DrawLine(&u8g2, x + 1, y + 13, x + 1, y + 22);
+        u8g2_DrawLine(&u8g2, x + 2, y + 14, x + 2, y + 21);
+        break;
+    case seg_f:
+        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 10);
+        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 11);
+        u8g2_DrawLine(&u8g2, x + 2, y + 3, x + 2, y + 10);
+        break;
+    case seg_g:
+        u8g2_DrawLine(&u8g2, x + 3, y + 11, x + 10, y + 11);
+        u8g2_DrawLine(&u8g2, x + 2, y + 12, x + 11, y + 12);
+        u8g2_DrawLine(&u8g2, x + 3, y + 13, x + 10, y + 13);
+        break;
+    case seg_sep:
+        u8g2_DrawLine(&u8g2, x + 0, y + 18, x + 0, y + 20);
+        u8g2_DrawLine(&u8g2, x + 1, y + 16, x + 1, y + 18);
+        u8g2_DrawLine(&u8g2, x + 2, y + 14, x + 2, y + 16);
+        u8g2_DrawLine(&u8g2, x + 3, y + 12, x + 3, y + 14);
+        u8g2_DrawLine(&u8g2, x + 4, y + 10, x + 4, y + 12);
+        u8g2_DrawLine(&u8g2, x + 5, y + 8, x + 5, y + 10);
+        u8g2_DrawLine(&u8g2, x + 6, y + 6, x + 6, y + 8);
+        u8g2_DrawLine(&u8g2, x + 7, y + 4, x + 7, y + 6);
+        break;
+    default:
+        break;
+    }
+}
+
+static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
+{
+    switch(digit) {
+    case 0:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_e);
+        display_draw_tsegment(x, y, seg_f);
+        break;
+    case 1:
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        break;
+    case 2:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_e);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 3:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 4:
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_f);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 5:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_f);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 6:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_e);
+        display_draw_tsegment(x, y, seg_f);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 7:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        break;
+    case 8:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_e);
+        display_draw_tsegment(x, y, seg_f);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    case 9:
+        display_draw_tsegment(x, y, seg_a);
+        display_draw_tsegment(x, y, seg_b);
+        display_draw_tsegment(x, y, seg_c);
+        display_draw_tsegment(x, y, seg_d);
+        display_draw_tsegment(x, y, seg_f);
+        display_draw_tsegment(x, y, seg_g);
+        break;
+    default:
+        break;
+    }
+}
 
 static void display_draw_time_elements(const display_time_elements_t *elements)
 {
     int offset = 0;
+    int time_end_offset = 0;
     asset_info_t asset;
 
     u8g2_SetDrawColor(&u8g2, 0);
@@ -296,7 +433,7 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
     offset += 36 + 8;
 
     display_draw_segment(offset, 0, seg_sep);
-    offset += 18 + 8;
+    offset += 8 + 8;
 
     if (elements->mm >= 0) {
         display_draw_digit(offset, 0, elements->mm / 10);
@@ -306,31 +443,58 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
     if (elements->mm >= 0) {
         display_draw_digit(offset, 0, elements->mm % 10);
     }
-    offset += 36 + 6;
+    offset += 36 + 8;
+    time_end_offset = offset;
 
     u8g2_SetBitmapMode(&u8g2, 0);
     if (elements->am_pm == 1) {
-        if (display_asset_get(&asset, ASSET_TSEG_A)) {
+        if (display_asset_get(&asset, ASSET_TSEG_CH_A)) {
             u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
             offset += asset.width + 2;
         }
     } else if (elements->am_pm == 2) {
-        if (display_asset_get(&asset, ASSET_TSEG_P)) {
+        if (display_asset_get(&asset, ASSET_TSEG_CH_P)) {
             u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
             offset += asset.width + 2;
         }
     }
     if (elements->am_pm == 1 || elements->am_pm == 2) {
-        if (display_asset_get(&asset, ASSET_TSEG_M)) {
+        if (display_asset_get(&asset, ASSET_TSEG_CH_M)) {
             u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
         }
+    }
+
+    offset = time_end_offset - 11;
+
+    if (elements->month >= 10) {
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->month / 10);
+    }
+    offset += 14 + 2;
+
+    if (elements->month > 0) {
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->month % 10);
+    }
+    offset += 14 + 2;
+
+    if (elements->month > 0 || elements->day > 0) {
+        display_draw_tsegment(offset, u8g2_GetDisplayHeight(&u8g2) - 25, seg_sep);
+    }
+    offset += 8 + 2;
+
+    if (elements->day > 0) {
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->day / 10);
+    }
+    offset += 14 + 2;
+
+    if (elements->day > 0) {
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->day % 10);
     }
 
     if (elements->clock == 1) {
         if (display_asset_get(&asset, ASSET_CLOCK_ICON)) {
             u8g2_DrawXBM(&u8g2,
                     u8g2_GetDisplayWidth(&u8g2) - asset.width,
-                    u8g2_GetDisplayHeight(&u8g2) - asset.height,
+                    0,
                     asset.width, asset.height, asset.bits);
         }
     }
@@ -338,7 +502,7 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
         if (display_asset_get(&asset, ASSET_SNOOZE_ICON)) {
             u8g2_DrawXBM(&u8g2,
                     u8g2_GetDisplayWidth(&u8g2) - asset.width,
-                    u8g2_GetDisplayHeight(&u8g2) - asset.height,
+                    0,
                     asset.width, asset.height, asset.bits);
         }
     }
@@ -361,7 +525,7 @@ int display_convert_from_twentyfour(int8_t *hh, int8_t *mm)
     return am_pm;
 }
 
-void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock)
+void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock, uint8_t month, uint8_t day)
 {
     int show_ampm;
     int8_t hour = hh;
@@ -377,7 +541,9 @@ void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock)
             .hh = hour,
             .mm = minute,
             .am_pm = show_ampm,
-            .clock = clock
+            .clock = clock,
+            .month = month,
+            .day = day
     };
     display_draw_time_elements(&elements);
     u8g2_SendBuffer(&u8g2);
@@ -391,13 +557,19 @@ void display_draw_clock(uint8_t frame)
     }
 
     uint16_t x = u8g2_GetDisplayWidth(&u8g2) - asset.width;
-    uint16_t y = u8g2_GetDisplayHeight(&u8g2) - asset.height;
+    uint16_t y = 2;
 
     // Clear the bounding box
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_DrawBox(&u8g2, x, y - 2, asset.width, asset.height + 2);
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
+
+    if (frame == 0) {
+        y = 1;
+    } else {
+        y = 2;
+    }
 
     // Draw the clock base
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
@@ -468,6 +640,8 @@ bool display_set_time(uint8_t *hh, uint8_t *mm, bool twentyfour)
     } else {
         am_pm = display_convert_from_twentyfour(&hour, &minute);
     }
+
+    bzero(&elements, sizeof(display_time_elements_t));
 
     do {
         elements.hh = (cursor == 0) ? (toggle ? hour : -1) : hour;
@@ -906,4 +1080,25 @@ uint8_t display_input_value(const char *title, const char *prefix, uint8_t *valu
     keypad_clear_events();
     uint8_t option = u8g2_UserInterfaceInputValue(&u8g2, title, prefix, value, low, high, digits, postfix);
     return menu_event_timeout ? UINT8_MAX : option;
+}
+
+static struct vpool screenshot_vp;
+
+static void screenshot_log_string(const char *s)
+{
+    vpool_insert(&screenshot_vp, vpool_get_length(&screenshot_vp), (char *)s, strlen(s));
+}
+
+void display_get_screenshot()
+{
+    vpool_init(&screenshot_vp, 4096, 0);
+
+    ESP_LOGI(TAG, "display_get_screenshot");
+    u8g2_WriteBufferPBM(&u8g2, screenshot_log_string);
+
+    char *list = (char *) vpool_get_buf(&screenshot_vp);
+    size_t len = vpool_get_length(&screenshot_vp);
+    list[len - 1] = '\0';
+    ESP_LOGI(TAG, "\n%s", list);
+    vpool_final(&screenshot_vp);
 }

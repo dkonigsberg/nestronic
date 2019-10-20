@@ -413,7 +413,8 @@ static esp_err_t board_rtc_alarm_func(bool alarm0, bool alarm1, time_t time)
             } else {
                 clock = 0;
             }
-            display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock);
+            display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock,
+                    timeinfo.tm_mon + 1, timeinfo.tm_mday);
             if (alarm_triggered) {
                 display_draw_clock(alarm_frame);
             }
@@ -557,7 +558,8 @@ static void main_menu_task(void *pvParameters)
                 } else {
                     clock = 0;
                 }
-                display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock);
+                display_draw_time(timeinfo.tm_hour, timeinfo.tm_min, time_twentyfour, clock,
+                        timeinfo.tm_mon + 1, timeinfo.tm_mday);
                 if (alarm_triggered) {
                     display_draw_clock(alarm_frame);
                 }
@@ -568,7 +570,18 @@ static void main_menu_task(void *pvParameters)
         // Block until a key press is detected
         while (1) {
             keypad_event_t keypad_event;
+            TickType_t tick0 = 0;
+            TickType_t tick1 = 0;
+            bool break_loop = true;
+
+            tick0 = xTaskGetTickCount();
             if (keypad_wait_for_event(&keypad_event, alarm_triggered ? 250 : -1) == ESP_OK) {
+                tick1 = xTaskGetTickCount();
+                /* Enforce a consistent delay during alarms so that key events don't cause inconsistent animation speed */
+                if (alarm_triggered && (tick1 - tick0) < 250) {
+                    vTaskDelay(250 - (tick1 - tick0));
+                }
+
                 if (keypad_event.pressed) {
                     if (keypad_event.key == KEYPAD_BUTTON_START) {
                         xSemaphoreTake(clock_mutex, portMAX_DELAY);
@@ -579,6 +592,8 @@ static void main_menu_task(void *pvParameters)
                             if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
                                 xTimerStop(alarm_snooze_timer, portMAX_DELAY);
                             }
+                        } else {
+                            break_loop = false;
                         }
                         xSemaphoreGive(clock_mutex);
                     }
@@ -591,6 +606,8 @@ static void main_menu_task(void *pvParameters)
                             if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
                                 xTimerStop(alarm_snooze_timer, portMAX_DELAY);
                             }
+                        } else {
+                            break_loop = false;
                         }
                         xSemaphoreGive(clock_mutex);
                     }
@@ -602,6 +619,8 @@ static void main_menu_task(void *pvParameters)
                             if (xTimerIsTimerActive(alarm_snooze_timer) == pdTRUE) {
                                 xTimerStop(alarm_snooze_timer, portMAX_DELAY);
                             }
+                        } else {
+                            break_loop = false;
                         }
                         xSemaphoreGive(clock_mutex);
                     }
@@ -611,10 +630,33 @@ static void main_menu_task(void *pvParameters)
                             ESP_LOGI(TAG, "Snooze button pressed");
                             xTimerStart(alarm_snooze_timer, portMAX_DELAY);
                             alarm_triggered = false;
+                        } else {
+                            break_loop = false;
                         }
                         xSemaphoreGive(clock_mutex);
                     }
-                    break;
+#if 0
+                    /* Key actions useful for development and testing */
+                    else if (keypad_event.key == KEYPAD_BUTTON_UP) {
+                        /* Manually trigger the alarm */
+                        xSemaphoreTake(clock_mutex, portMAX_DELAY);
+                        if (!alarm_triggered && !alarm_running && xTimerIsTimerActive(alarm_snooze_timer) == pdFALSE) {
+                            alarm_triggered = true;
+                        }
+                        xSemaphoreGive(clock_mutex);
+                        break_loop = true;
+                    }
+                    else if (keypad_event.key == KEYPAD_BUTTON_DOWN) {
+                        /* Dump a PBM format screenshot to the logger */
+                        xSemaphoreTake(clock_mutex, portMAX_DELAY);
+                        display_get_screenshot();
+                        xSemaphoreGive(clock_mutex);
+                        break_loop = true;
+                    }
+#endif
+                    if (break_loop) {
+                        break;
+                    }
                 }
             }
 

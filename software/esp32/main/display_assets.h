@@ -19,9 +19,9 @@ typedef enum {
     ASSET_SEG_F,
     ASSET_SEG_G,
     ASSET_SEG_SEP,
-    ASSET_TSEG_A,
-    ASSET_TSEG_P,
-    ASSET_TSEG_M,
+    ASSET_TSEG_CH_A,
+    ASSET_TSEG_CH_P,
+    ASSET_TSEG_CH_M,
     ASSET_CLOCK_ICON,
     ASSET_SNOOZE_ICON
 } asset_name_t;

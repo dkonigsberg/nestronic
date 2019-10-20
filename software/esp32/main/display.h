@@ -25,7 +25,7 @@ uint8_t display_get_brightness();
 void display_draw_test_pattern(bool mode);
 void display_draw_logo();
 int display_convert_from_twentyfour(int8_t *hh, int8_t *mm);
-void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock);
+void display_draw_time(uint8_t hh, uint8_t mm, bool twentyfour, int clock, uint8_t month, uint8_t day);
 void display_draw_clock(uint8_t frame);
 
 bool display_set_time(uint8_t *hh, uint8_t *mm, bool twentyfour);
@@ -36,5 +36,7 @@ void display_static_list(const char *title, const char *list);
 uint8_t display_input_text(const char *title, char **text);
 uint8_t display_input_value(const char *title, const char *prefix, uint8_t *value,
         uint8_t low, uint8_t high, uint8_t digits, const char *postfix);
+
+void display_get_screenshot();
 
 #endif /* DISPLAY_H */

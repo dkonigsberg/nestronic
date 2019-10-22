@@ -157,11 +157,11 @@ static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t seg
     switch(segment) {
     case seg_a:
         res = display_asset_get(&asset, ASSET_SEG_A);
-        x_offset = 0; y_offset = 0;
+        x_offset = 0; y_offset = 1;
         break;
     case seg_b:
         res = display_asset_get(&asset, ASSET_SEG_B);
-        x_offset = 28; y_offset = 0;
+        x_offset = 28; y_offset = 1;
         break;
     case seg_c:
         res = display_asset_get(&asset, ASSET_SEG_C);
@@ -169,7 +169,7 @@ static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t seg
         break;
     case seg_d:
         res = display_asset_get(&asset, ASSET_SEG_D);
-        x_offset = 0; y_offset = 56;
+        x_offset = 0; y_offset = 57;
         break;
     case seg_e:
         res = display_asset_get(&asset, ASSET_SEG_E);
@@ -177,11 +177,11 @@ static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t seg
         break;
     case seg_f:
         res = display_asset_get(&asset, ASSET_SEG_F);
-        x_offset = 0; y_offset = 0;
+        x_offset = 0; y_offset = 1;
         break;
     case seg_g:
         res = display_asset_get(&asset, ASSET_SEG_G);
-        x_offset = 0; y_offset = 28;
+        x_offset = 0; y_offset = 29;
         break;
     case seg_sep:
         res = display_asset_get(&asset, ASSET_SEG_SEP);
@@ -420,74 +420,81 @@ static void display_draw_time_elements(const display_time_elements_t *elements)
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
 
+    const int digit_width = 34;
+    const int tdigit_width = 14;
+    const int tdigit_height = 25;
+    const int sep_width = 8;
+    const int digit_space = 8;
+
     if (elements->hh >= 10) {
         display_draw_digit(offset, 0, elements->hh / 10);
     } else if (elements->hh >= 0 && elements->am_pm == UINT8_MAX) {
         display_draw_digit(offset, 0, 0);
     }
-    offset += 36 + 8;
+    offset += digit_width + digit_space;
 
     if (elements->hh >= 0) {
         display_draw_digit(offset, 0, elements->hh % 10);
     }
-    offset += 36 + 8;
+    offset += digit_width + digit_space;
 
     display_draw_segment(offset, 0, seg_sep);
-    offset += 8 + 8;
+    offset += sep_width + digit_space;
 
     if (elements->mm >= 0) {
         display_draw_digit(offset, 0, elements->mm / 10);
     }
-    offset += 36 + 8;
+    offset += digit_width + digit_space;
 
     if (elements->mm >= 0) {
         display_draw_digit(offset, 0, elements->mm % 10);
     }
-    offset += 36 + 8;
+    offset += digit_width + (digit_space * 2);
+
     time_end_offset = offset;
 
     u8g2_SetBitmapMode(&u8g2, 0);
     if (elements->am_pm == 1) {
         if (display_asset_get(&asset, ASSET_TSEG_CH_A)) {
-            u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
+            u8g2_DrawXBM(&u8g2, offset, 1, asset.width, asset.height, asset.bits);
             offset += asset.width + 2;
         }
     } else if (elements->am_pm == 2) {
         if (display_asset_get(&asset, ASSET_TSEG_CH_P)) {
-            u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
+            u8g2_DrawXBM(&u8g2, offset, 1, asset.width, asset.height, asset.bits);
             offset += asset.width + 2;
         }
     }
     if (elements->am_pm == 1 || elements->am_pm == 2) {
         if (display_asset_get(&asset, ASSET_TSEG_CH_M)) {
-            u8g2_DrawXBM(&u8g2, offset, 0, asset.width, asset.height, asset.bits);
+            u8g2_DrawXBM(&u8g2, offset, 1, asset.width, asset.height, asset.bits);
         }
     }
 
     offset = time_end_offset - 11;
 
     if (elements->month >= 10) {
-        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->month / 10);
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - tdigit_height - 1, elements->month / 10);
     }
-    offset += 14 + 2;
+    offset += tdigit_width + 2;
 
     if (elements->month > 0) {
-        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->month % 10);
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - tdigit_height - 1, elements->month % 10);
     }
-    offset += 14 + 2;
+    offset += tdigit_width + 3;
 
     if (elements->month > 0 || elements->day > 0) {
-        display_draw_tsegment(offset, u8g2_GetDisplayHeight(&u8g2) - 25, seg_sep);
+        display_draw_tsegment(offset, u8g2_GetDisplayHeight(&u8g2) - tdigit_height - 1, seg_sep);
     }
-    offset += 8 + 2;
+    offset += 8 + 3;
 
     if (elements->day > 0) {
-        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->day / 10);
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - tdigit_height - 1, elements->day / 10);
     }
-    offset += 14 + 2;
+    offset += tdigit_width + 2;
 
     if (elements->day > 0) {
-        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - 25, elements->day % 10);
+        display_draw_tdigit(offset, u8g2_GetDisplayHeight(&u8g2) - tdigit_height - 1, elements->day % 10);
     }
 
     if (elements->clock == 1) {

@@ -2,6 +2,7 @@
 
 #include <esp_err.h>
 #include <esp_log.h>
+#include <esp_sntp.h>
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
@@ -10,7 +11,6 @@
 #include "settings.h"
 #include "zoneinfo.h"
 #include "board_rtc.h"
-#include "my_sntp.h"
 
 static const char *TAG = "time_handler";
 
@@ -117,7 +117,7 @@ esp_err_t time_handler_init()
     return ret;
 }
 
-static void time_handler_sntp_callback()
+static void time_handler_sntp_callback(struct timeval *tv)
 {
     int64_t time0 = esp_timer_get_time();
     ESP_LOGI(TAG, "SNTP time updated");
@@ -140,20 +140,21 @@ static void time_handler_sntp_callback()
 esp_err_t time_handler_sntp_init()
 {
     if (!sntp_initialized) {
-        my_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+        sntp_setoperatingmode(SNTP_OPMODE_POLL);
 
         char *hostname;
         if (settings_get_ntp_server(&hostname) == ESP_OK && hostname && strlen(hostname) > 0) {
             ESP_LOGI(TAG, "Setting configured NTP hostname: \"%s\"", hostname);
-            my_sntp_setservername(0, hostname);
+            sntp_setservername(0, hostname);
             sntp_hostname_default = false;
         } else {
             ESP_LOGI(TAG, "Setting default NTP hostname");
-            my_sntp_setservername(0, (char *)"pool.ntp.org");
+            sntp_setservername(0, (char *)"pool.ntp.org");
             sntp_hostname_default = true;
         }
 
-        my_sntp_init(time_handler_sntp_callback);
+        sntp_set_time_sync_notification_cb(time_handler_sntp_callback);
+        sntp_init();
         sntp_initialized = true;
     }
     return ESP_OK;
@@ -173,9 +174,9 @@ esp_err_t time_handler_sntp_setservername(const char *hostname)
         return ESP_ERR_NO_MEM;
     }
 
-    char *old_server = my_sntp_getservername(0);
+    char *old_server = sntp_getservername(0);
 
-    my_sntp_setservername(0, new_server);
+    sntp_setservername(0, new_server);
 
     if (old_server && !sntp_hostname_default) {
         free(old_server);
@@ -191,5 +192,5 @@ const char* time_handler_sntp_getservername()
     if (!sntp_initialized) {
         return NULL;
     }
-    return my_sntp_getservername(0);
+    return sntp_getservername(0);
 }

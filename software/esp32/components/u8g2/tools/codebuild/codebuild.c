@@ -136,6 +136,23 @@ struct controller controller_list[] =
       { NULL }
     }
   },
+  
+   {
+    "ssd1306", 	9, 	5, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "72x40_er" },
+      { NULL }
+    }
+  },
+  {
+    "ssd1306", 	9, 	5, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_fast_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "72x40_er" },
+      { NULL }
+    }
+  },
 
    {
     "sh1106", 	16, 	8, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080|COM_8080,
@@ -518,6 +535,23 @@ struct controller controller_list[] =
   
 
   {
+    "ssd1327", 	12, 	8, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "ws_96x64" },
+      { NULL }
+    }
+  },
+  {
+    "ssd1327", 	12, 	8, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "ws_96x64" },
+      { NULL }
+    }
+  },  
+
+  {
     "ssd1327", 	12, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
     "", /* is_generate_u8g2_class= */ 1,
     {
@@ -554,6 +588,24 @@ struct controller controller_list[] =
       { NULL }
     }
   },  
+  
+  {
+    "ssd1327", 	16, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "visionox_128x96" },
+      { NULL }
+    }
+  },
+  {
+    "ssd1327", 	16, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "visionox_128x96" },
+      { NULL }
+    }
+  },  
+  
 
   {
     "ssd1329", 	16, 	12, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_6800|COM_8080,
@@ -974,6 +1026,7 @@ struct controller controller_list[] =
       { "jlx12864" },
       { "enh_dg128064" },
       { "enh_dg128064i" },
+      { "os12864" },
       { NULL }
     }
   },
@@ -1383,6 +1436,16 @@ struct controller controller_list[] =
       { NULL }
     }
   },
+#ifdef NOT_POSSIBLE
+  {
+    "max7219", 	2, 	2, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_empty", "", COM_4WSPI,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "16x16" },
+      { NULL }
+    }
+  },
+#endif
   {
     "max7219", 	1, 	1, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_empty", "", COM_4WSPI,
     "", /* is_generate_u8g2_class= */ 1,
@@ -1464,9 +1527,9 @@ struct interface interface_list[] =
   /* 5 */
   {
     "3W_HW_SPI",
-    "",
-    "",
-    "",   
+    "u8x8_SetPin_3Wire_HW_SPI",
+    "u8x8_byte_arduino_3wire_hw_spi",
+    "u8x8_gpio_and_delay_arduino",   
     "uint8_t cs, uint8_t reset = U8X8_PIN_NONE",
     "cs, reset",
     "cs [, reset]",
@@ -1899,7 +1962,7 @@ void do_display(int controller_idx, int display_idx, const char *postfix)
   if ( controller_list[controller_idx].com & COM_3WSPI )
   {
     do_display_interface(controller_idx, display_idx, postfix, 4);		/* 3wire SW SPI */
-    //do_display_interface(controller_idx, display_idx, postfix, 5);		/* 3wire HW SPI (not implemented) */
+    do_display_interface(controller_idx, display_idx, postfix, 5);		/* 3wire HW SPI (not implemented) */
   }
   if ( controller_list[controller_idx].com & COM_6800 )
   {
@@ -2010,11 +2073,17 @@ void do_md_display(int controller_idx, int display_idx)
 	fprintf(fp, "## %s ", struppercase(controller_list[controller_idx].name));    
 	fprintf(fp, "%s", struppercase(controller_list[controller_idx].display_list[display_idx].name));    
 	fprintf(fp, "\n");    
+#ifdef MD_TABLES
 
     fprintf(fp, "| Controller \"%s\", ", controller_list[controller_idx].name);
     fprintf(fp, "Display \"%s\" | ", controller_list[controller_idx].display_list[display_idx].name);
     fprintf(fp, "Description |\n");
     fprintf(fp, "|---|---|\n");
+#else
+    fprintf(fp, "Controller \"%s\", ", controller_list[controller_idx].name);
+    fprintf(fp, "Display \"%s\"  ", controller_list[controller_idx].display_list[display_idx].name);
+    fprintf(fp, "[Description]\n");
+#endif
   }
   else
   {
@@ -2036,12 +2105,8 @@ void do_md_display(int controller_idx, int display_idx)
 void do_md_display_interface_buffer(int controller_idx, int display_idx, int interface_idx, char *postfix, int size, int rows)
 {
   FILE *fp = md_fp;
-  /*
-  fprintf(fp, "%s:", controller_list[controller_idx].name);
-  fprintf(fp, "%s:", controller_list[controller_idx].display_list[display_idx].name);
-  fprintf(fp, "%s:", prefix);
-  fprintf(fp, "%s\n", interface_list[interface_idx].interface_name);
-  */
+  
+#ifdef MD_TABLES
   if ( is_u8g2 ) 
   {
     if ( is_arduino_cpp )
@@ -2065,12 +2130,6 @@ void do_md_display_interface_buffer(int controller_idx, int display_idx, int int
     else
     {
       fprintf(fp, "| ");
-      /*
-      fprintf(fp, "u8g2_Setup_");
-      fprintf(fp, "%s_", strlowercase(controller_list[controller_idx].name));
-      fprintf(fp, "%s_", strlowercase(controller_list[controller_idx].display_list[display_idx].name));
-      fprintf(fp, "%s", strlowercase(postfix));
-      */
       fprintf(fp, "%s", get_setup_function_name(controller_idx, display_idx, postfix));
       fprintf(fp, "(u8g2, ");
       fprintf(fp, "rotation, ");
@@ -2086,7 +2145,46 @@ void do_md_display_interface_buffer(int controller_idx, int display_idx, int int
       }
     }
   }
-  
+#else
+  if ( is_u8g2 ) 
+  {
+    if ( is_arduino_cpp )
+    {
+      fprintf(fp, " * U8G2_");
+      fprintf(fp, "%s_", struppercase(controller_list[controller_idx].name));
+      fprintf(fp, "%s_", struppercase(controller_list[controller_idx].display_list[display_idx].name));
+      fprintf(fp, "%s", struppercase(postfix));
+      if ( interface_list[interface_idx].interface_name[0] != '\0' )
+	fprintf(fp, "_%s", struppercase(interface_list[interface_idx].interface_name));
+      fprintf(fp, "(rotation, %s)", interface_list[interface_idx].pins_md_plain);
+      if ( postfix[0] == 'f' )
+      {
+	fprintf(fp, " [full framebuffer, size = %d bytes]\n", size);
+      }
+      else
+      {
+	fprintf(fp, " [page buffer, size = %d bytes]\n", size);
+      }
+    }
+    else
+    {
+      fprintf(fp, " * ");
+      fprintf(fp, "%s", get_setup_function_name(controller_idx, display_idx, postfix));
+      fprintf(fp, "(u8g2, ");
+      fprintf(fp, "rotation, ");
+      fprintf(fp, "%s, ", interface_list[interface_idx].generic_com_procedure);  
+      fprintf(fp, "%s)", "uC specific");  
+      if ( postfix[0] == 'f' )
+      {
+	fprintf(fp, " [full framebuffer, size = %d bytes]\n", size);
+      }
+      else
+      {
+	fprintf(fp, " [page buffer, size = %d bytes]\n", size);
+      }
+    }
+  }
+#endif
 }
 
 void do_md_display_interface(int controller_idx, int display_idx, int interface_idx)
@@ -2148,7 +2246,7 @@ void do_md_controller_list(void)
       if ( controller_list[controller_idx].com & COM_3WSPI )
       {
 	do_md_display_interface(controller_idx, display_idx, 4);		/* 3wire SW SPI */
-	//do_md_display_interface(controller_idx, display_idx, 5);		/* 3wire HW SPI (not implemented) */
+	do_md_display_interface(controller_idx, display_idx, 5);		/* 3wire HW SPI (not implemented) */
       }
       if ( controller_list[controller_idx].com & COM_6800 )
       {

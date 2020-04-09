@@ -161,8 +161,9 @@ static void gpio_queue_task(void *arg)
         if(xQueueReceive(gpio_event_queue, &io_num, portMAX_DELAY)) {
             if (io_num == MCP7940_MFP_PIN) {
                 xSemaphoreTake(rtc_event_mutex, portMAX_DELAY);
-                last_rtc_event = esp_timer_get_time();
-                board_rtc_int_event_handler();
+                if (board_rtc_int_event_handler() == ESP_OK) {
+                    last_rtc_event = esp_timer_get_time();
+                }
                 xSemaphoreGive(rtc_event_mutex);
             }
             else if (io_num == TCA8418_INT_PIN) {

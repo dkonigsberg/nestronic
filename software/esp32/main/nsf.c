@@ -15,6 +15,9 @@
 
 static const char *TAG = "nsf";
 
+#define ROM_BANK_SIZE  4096
+#define ROM_BANK_COUNT 10
+
 typedef struct {
     /* $0000 - $7FFF */
     uint8_t ram[2048];
@@ -26,8 +29,22 @@ typedef struct {
     uint8_t bank_regs[8];
     /* $FFFC - $FFFF */
     uint8_t int_vecs[6];
-    /* $8000 - $FFFF */
-    uint8_t rom[32768];
+
+    /* ROM bank Pointers ($8000 - $FFFF) */
+    uint8_t *rom_block[8];
+
+    /* ID of the bank referenced by each ROM block */
+    uint8_t rom_block_bank_id[8];
+
+    /* Raw ROM data */
+    uint8_t *rom;
+    /* Bank ID of each 4k segment of the raw ROM data */
+    uint8_t rom_bank_id[ROM_BANK_COUNT];
+    /* Load status of a particular ROM bank */
+    uint8_t rom_bank_loaded[ROM_BANK_COUNT];
+    /* List of loaded banks in use order for LRU cache */
+    int rom_bank_use_order[ROM_BANK_COUNT];
+
 } nsf_nes_memory_t;
 
 struct nsf_file_t {
@@ -41,6 +58,7 @@ static nsf_file_t *active_nsf_file = NULL;
 
 static esp_err_t nsf_read_header_impl(FILE *file, nsf_header_t *header);
 static bool nsf_has_bank_switching(nsf_file_t *nsf);
+static void IRAM_ATTR mark_rom_bank_used(nsf_nes_memory_t *nes_memory, uint8_t bank);
 static void nsf_init_nes_memory(nsf_file_t *nsf);
 static void nsf_init_nes_prg(nsf_file_t *nsf, uint8_t song, uint8_t pal_ntsc);
 static esp_err_t nsf_init_load_nes_rom(nsf_file_t *nsf);
@@ -247,6 +265,46 @@ const nsf_header_t *nsf_get_header(const nsf_file_t *nsf)
     return &nsf->header;
 }
 
+void IRAM_ATTR mark_rom_bank_used(nsf_nes_memory_t *nes_memory, uint8_t bank)
+{
+    // Bank is already the most recent one
+    if (nes_memory->rom_bank_use_order[0] == bank) {
+        return;
+    }
+    else {
+        int i;
+        // Try to find the bank in the LRU collection, and shift it forward
+        for (i = 1; i < ROM_BANK_COUNT; i++) {
+            if (nes_memory->rom_bank_use_order[i] == bank) {
+                for (int j = i; j > 0; --j) {
+                    nes_memory->rom_bank_use_order[j] = nes_memory->rom_bank_use_order[j - 1];
+                }
+                // Insert the bank at the head
+                nes_memory->rom_bank_use_order[0] = bank;
+                return;
+            }
+        }
+
+        // Bank was not in the collection, shift the list down and insert at the head
+        ESP_LOGD(TAG, "Used ROM bank [%d] not in LRU collection!", bank);
+
+        // Check for a condition that should not be possible if the loader code
+        // is working correctly and evicting the oldest element before loading
+        // a new one.
+        if (nes_memory->rom_bank_use_order[ROM_BANK_COUNT - 1] != -1) {
+            ESP_LOGE(TAG, "LRU collection tail was not empty!");
+            return;
+        }
+
+        // Shift the use list down by one element
+        for (i = ROM_BANK_COUNT - 1; i > 0; --i) {
+            nes_memory->rom_bank_use_order[i] = nes_memory->rom_bank_use_order[i - 1];
+        }
+        // Insert the bank at the head
+        nes_memory->rom_bank_use_order[0] = bank;
+    }
+}
+
 uint8_t IRAM_ATTR read6502(uint16_t address)
 {
     if (!active_nsf_file) { return 0; }
@@ -262,7 +320,13 @@ uint8_t IRAM_ATTR read6502(uint16_t address)
     } else if (address >= 0x5FF8 && address <= 0x5FFF) {
         value = nes_memory->bank_regs[address - 0x5FF8];
     } else if (address >= 0x8000 && address < 0xFFFA) {
-        value = nes_memory->rom[address - 0x8000];
+        uint8_t block_index = (address & 0x7000) >> 12;
+        if (nes_memory->rom_block[block_index] == 0) {
+            ESP_LOGE(TAG, "Attempted read from unloaded block %d", block_index);
+            return 0;
+        }
+        value = (nes_memory->rom_block[block_index])[address & 0x0FFF];
+        mark_rom_bank_used(nes_memory, nes_memory->rom_block_bank_id[block_index]);
     } else if (address >= 0xFFFA) {
         value = nes_memory->int_vecs[address - 0xFFFA];
     }
@@ -354,6 +418,14 @@ esp_err_t nsf_init_load_nes_rom(nsf_file_t *nsf)
     int offset = nsf->header.load_address - 0x8000;
     int max_len = 0xFFFF - nsf->header.load_address;
 
+    if (nsf->nes_memory.rom) {
+        free(nsf->nes_memory.rom);
+        nsf->nes_memory.rom = 0;
+    }
+    nsf->nes_memory.rom = malloc(32768);
+    bzero(nsf->nes_memory.rom, 32768);
+    bzero(nsf->nes_memory.rom_block, sizeof(nsf->nes_memory.rom_block));
+
     size_t n = fread(nsf->nes_memory.rom + offset, 1, max_len, nsf->file);
 
     if (n == 0) {
@@ -363,12 +435,32 @@ esp_err_t nsf_init_load_nes_rom(nsf_file_t *nsf)
         ESP_LOGW(TAG, "Short read: %d < %d", n, max_len);
     }
 
+    for(int i = 0; i < 8; i++) {
+        nsf->nes_memory.rom_block[i] = nsf->nes_memory.rom + (i * 4096);
+    }
+
     return ESP_OK;
 }
 
 esp_err_t nsf_init_load_nes_rom_banks(nsf_file_t *nsf)
 {
     esp_err_t ret = ESP_OK;
+
+    if (nsf->nes_memory.rom) {
+        free(nsf->nes_memory.rom);
+        nsf->nes_memory.rom = 0;
+    }
+    nsf->nes_memory.rom = malloc(ROM_BANK_SIZE * ROM_BANK_COUNT);
+    bzero(nsf->nes_memory.rom, ROM_BANK_SIZE * ROM_BANK_COUNT);
+    bzero(nsf->nes_memory.rom_bank_id, ROM_BANK_COUNT);
+    bzero(nsf->nes_memory.rom_bank_loaded, ROM_BANK_COUNT);
+
+    for (int i = 0; i < ROM_BANK_COUNT; i++) {
+        nsf->nes_memory.rom_bank_use_order[i] = -1;
+    }
+
+    bzero(nsf->nes_memory.rom_block, sizeof(nsf->nes_memory.rom_block));
+    bzero(nsf->nes_memory.rom_block_bank_id, sizeof(nsf->nes_memory.rom_block_bank_id));
 
     for (int i = 0; i < 8; i++) {
         ret = nsf_load_rom_bank(nsf, 0x5FF8 + i, nsf->header.bankswitch_init[i]);
@@ -385,35 +477,113 @@ esp_err_t nsf_load_rom_bank(nsf_file_t *nsf, uint16_t reg, uint8_t bank)
     if (reg < 0x5FF8 || reg > 0x5FFF) {
         return ESP_ERR_INVALID_ARG;
     }
-
     ESP_LOGD(TAG, "Load bank: $%04X -> %d", reg, bank);
 
+    int64_t time0 = esp_timer_get_time();
     nsf_nes_memory_t *nes_memory = &nsf->nes_memory;
     uint16_t padding = nsf->header.load_address & 0x0FFF;
-    uint16_t load_offset = (reg - 0x5FF8) * 4096;
+    uint8_t target_block = reg - 0x5FF8;
+    uint8_t i;
 
-    bzero(nes_memory->rom + load_offset, 4096);
-
-    if (bank == 0) {
-        if (fseek(nsf->file, 0x080, SEEK_SET) < 0) {
-            return ESP_FAIL;
+    // Check if bank is already loaded
+    int bank_index = -1;
+    for (i = 0; i < ROM_BANK_COUNT; i++) {
+        if (nes_memory->rom_bank_loaded[i] && nes_memory->rom_bank_id[i] == bank) {
+            bank_index = i;
+            break;
         }
+    }
 
-        size_t n = fread(nsf->nes_memory.rom + load_offset + padding, 1, 4096 - padding, nsf->file);
-        if (n == 0 && !feof(nsf->file)) {
-            ESP_LOGE(TAG, "Read error");
-            return ESP_FAIL;
-        }
+    if (bank_index != -1) {
+        // Bank is already loaded
+        nes_memory->rom_block[target_block] = nes_memory->rom + (bank_index * 4096);
+        nes_memory->rom_block_bank_id[target_block] = bank;
+        mark_rom_bank_used(nes_memory, bank);
     } else {
-        if (fseek(nsf->file, 0x080 + (4096 - padding) + (4096 * (bank - 1)), SEEK_SET) < 0) {
-            return ESP_FAIL;
+        // Bank is not loaded
+
+        // Find an empty bank slot
+        bank_index = -1;
+        for (i = 0; i < ROM_BANK_COUNT; i++) {
+            if (!nes_memory->rom_bank_loaded[i]) {
+                bank_index = i;
+                break;
+            }
+        }
+        if (bank_index == -1) {
+            ESP_LOGD(TAG, "No empty ROM banks available");
+
+            // Grab the ROM bank ID at the end of the use list
+            int oldest_bank = nes_memory->rom_bank_use_order[ROM_BANK_COUNT - 1];
+            if (oldest_bank == -1) {
+                ESP_LOGE(TAG, "LRU list should not have an empty tail");
+                return ESP_FAIL;
+            }
+            for (i = 0; i < ROM_BANK_COUNT; i++) {
+                if (nes_memory->rom_bank_id[i] == oldest_bank) {
+                    bank_index = i;
+                    break;
+                }
+            }
+            if (bank_index == -1) {
+                ESP_LOGE(TAG, "Unable to find bank %d in loaded bank set!", oldest_bank);
+                return ESP_FAIL;
+            }
+            ESP_LOGI(TAG, "Evicting bank %d from slot %d", nes_memory->rom_bank_id[bank_index], bank_index);
+            // Set the least recently used bank as unloaded
+            nes_memory->rom_bank_use_order[ROM_BANK_COUNT - 1] = -1;
+            nes_memory->rom_bank_loaded[bank_index] = 0;
+            nes_memory->rom_bank_id[bank_index] = 0;
+
+            // If the unloaded bank is still referenced by a ROM block, then
+            // that reference also needs to be cleared out.
+            for (i = 0; i < 8; i++) {
+                if (nes_memory->rom_block[i] && nes_memory->rom_block_bank_id[i] == bank_index) {
+                    nes_memory->rom_block[i] = 0;
+                    nes_memory->rom_block_bank_id[i] = 0;
+                    break;
+                }
+            }
         }
 
-        size_t n = fread(nsf->nes_memory.rom + load_offset, 1, 4096, nsf->file);
-        if (n == 0 && !feof(nsf->file)) {
-            ESP_LOGE(TAG, "Read error");
-            return ESP_FAIL;
+        uint8_t *rom_bank = nes_memory->rom + (bank_index * 4096);
+
+        // Clear the target bank
+        bzero(rom_bank, 4096);
+        nes_memory->rom_bank_loaded[bank_index] = 0;
+
+        // Load the bank data
+        if (bank == 0) {
+            if (fseek(nsf->file, 0x080, SEEK_SET) < 0) {
+                return ESP_FAIL;
+            }
+
+            size_t n = fread(rom_bank + padding, 1, 4096 - padding, nsf->file);
+            if (n == 0 && !feof(nsf->file)) {
+                ESP_LOGE(TAG, "Read error");
+                return ESP_FAIL;
+            }
+        } else {
+            if (fseek(nsf->file, 0x080 + (4096 - padding) + (4096 * (bank - 1)), SEEK_SET) < 0) {
+                return ESP_FAIL;
+            }
+
+            size_t n = fread(rom_bank, 1, 4096, nsf->file);
+            if (n == 0 && !feof(nsf->file)) {
+                ESP_LOGE(TAG, "Read error");
+                return ESP_FAIL;
+            }
         }
+
+        // Set the loaded state variables and pointers
+        nes_memory->rom_bank_loaded[bank_index] = 1;
+        nes_memory->rom_bank_id[bank_index] = bank;
+        nes_memory->rom_block[target_block] = rom_bank;
+        nes_memory->rom_block_bank_id[target_block] = bank;
+        mark_rom_bank_used(nes_memory, bank);
+
+        int64_t time1 = esp_timer_get_time();
+        ESP_LOGI(TAG, "Bank loaded: $%04X -> %d [%lld(us)]", reg, bank, (time1-time0));
     }
 
     return ESP_OK;
@@ -427,8 +597,10 @@ esp_err_t nsf_playback_init(nsf_file_t *nsf, uint8_t song, nsf_apu_write_cb_t ap
     nsf_init_nes_prg(nsf, song, 0);
 
     if (nsf_has_bank_switching(nsf)) {
+        ESP_LOGI(TAG, "Playback init loading bankswitched ROM");
         ret = nsf_init_load_nes_rom_banks(nsf);
     } else {
+        ESP_LOGI(TAG, "Playback init loading contiguous ROM");
         ret = nsf_init_load_nes_rom(nsf);
     }
     if (ret != ESP_OK) {
@@ -465,6 +637,9 @@ void nsf_free(nsf_file_t *nsf)
         assert(active_nsf_file == nsf);
         if (nsf->file) {
             fclose(nsf->file);
+        }
+        if (nsf->nes_memory.rom) {
+            free(nsf->nes_memory.rom);
         }
         free(nsf);
         active_nsf_file = NULL;

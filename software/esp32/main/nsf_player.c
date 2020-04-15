@@ -85,7 +85,7 @@ static void vgm_player_nsf_apu_write(nes_apu_register_t reg, uint8_t dat)
 
 esp_err_t nsf_player_prepare(nsf_player_t *player, uint8_t song)
 {
-    ESP_LOGI(TAG, "Preparing for playback");
+    ESP_LOGI(TAG, "Preparing for playback of song %d", song);
     const nsf_header_t *header = nsf_get_header(player->nsf_file);
 
     if (song < 1 || song > header->total_songs) {
@@ -106,6 +106,7 @@ esp_err_t nsf_player_play_loop(nsf_player_t *player)
     ESP_LOGI(TAG, "Starting playback");
     const nsf_header_t *header = nsf_get_header(player->nsf_file);
 
+    int64_t underrun = 0;
     while(true) {
         if ((xEventGroupGetBits(player->event_group) & BIT0) == BIT0) {
             break;
@@ -119,9 +120,17 @@ esp_err_t nsf_player_play_loop(nsf_player_t *player)
         int64_t time1 = esp_timer_get_time();
 
         int64_t time_remaining = header->play_speed_ntsc - (time1 - time0);
+        if (time_remaining > 0 && underrun > 0) {
+            time_remaining -= underrun;
+            underrun = 0;
+        }
 
         if (time_remaining > 0 && time_remaining <= header->play_speed_ntsc) {
             usleep(time_remaining);
+        }
+        if (time_remaining < 0) {
+            ESP_LOGW(TAG, "Frame underrun: %lld(us)", time_remaining);
+            underrun = time_remaining * -1;
         }
     }
 

@@ -60,6 +60,7 @@ esp_err_t sdcard_mount(const char *base_path)
 
     // SD/MMC host configuration
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
+    host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
 
     // SD/MMC slot configuration
     sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();

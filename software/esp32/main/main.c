@@ -56,6 +56,9 @@ static float brightness_pct_from_reading(uint16_t reading)
     }
 
     result = (MAX(result, 0.6F) - 0.6F) / 0.4F;
+    if (result >= 1.0F) {
+        result = 1.0F;
+    }
     return result;
 }
 

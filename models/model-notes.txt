@@ -1,0 +1,136 @@
+Top
+---
+Positioning touch pad:
+X = -1.965 mm
+Y = -24.04 mm
+
+Front panel DXF
+---------------
+Display center is is 6.049mm above panel center
+Bezel is 28.46mm (vertical) from panel center
+
+Hardware
+--------
+Base:
+94180A333 x 4
+	Heat-Set Inserts for Plastics
+	M3 x 0.5 mm Thread Size, 6.4 mm Installed Length
+94180A321 x 4
+	Heat-Set Inserts for Plastics
+	M2.5 x 0.45 mm Thread Size, 3.4 mm Installed Length
+92005A118 x 4
+	Steel Pan Head Phillips Screw
+	M3 x 0.5 mm Thread, 8 mm Long
+91166A210 x 4
+	Zinc-Plated Steel Washer
+	for M3 Screw Size, 3.2 mm ID, 7 mm OD
+91420A016 x 4
+	Steel Phillips Flat Head Screws
+	M2.5 x 0.45 mm Thread, 6 mm Long
+
+Top:
+94180A331 x 8
+	Heat-Set Inserts for Plastics
+	M3 x 0.5 mm Thread Size, 3.8 mm Installed Length
+94180A321 x 1
+	Heat-Set Inserts for Plastics
+	M2.5 x 0.45 mm Thread Size, 3.4 mm Installed Length
+92005A116 x 8
+	Steel Pan Head Phillips Screw
+	M3 x 0.5 mm Thread, 6 mm Long
+92005A061 x 1
+	Steel Pan Head Phillips Screw
+	M2.5 x 0.45 mm Thread, 5 mm Long
+91166A210 x 8
+	Zinc-Plated Steel Washer
+	for M3 Screw Size, 3.2 mm ID, 7 mm OD
+
+Connection:
+94180A333 x 4
+	Heat-Set Inserts for Plastics
+	M3 x 0.5 mm Thread Size, 6.4 mm Installed Length
+92005A118 x 4
+	Steel Pan Head Phillips Screw
+	M3 x 0.5 mm Thread, 8 mm Long
+
+Standard Dimensions
+-------------------
+M3 x L6.4mm inserts (94180A333)
+	Hole diameter: 5.31 mm (M3_L6_4mm_diameter)
+	Depth: 6.4 mm (M3_L6_4mm_depth)
+	Taper angle: -2.371 deg (M3_L6_4mm_taper)
+
+M3 x L3.8mm inserts (94180A331)
+	Hole diameter: 0.213 in (M3_L3_8mm_diameter)
+	Depth: 0.157 in (M3_L3_8mm_depth)
+	Taper angle: -3.16 deg (M3_L3_8mm_taper)
+
+M2.5 x L3.4mm inserts (94180A321)
+	Hole diameter: 0.163 in (M2_5_L3_4mm_diameter)
+	Depth: -3.4 mm (M2_5_L3_4mm_depth)
+	Taper angle: -2.021 deg (M2_5_L3_4mm_taper)
+
+Printing Notes
+--------------
+All parts printed on the Ultimaker 3
+Prints secured to bed with Magigoo
+0.4mm nozzle, unless specified otherwise
+
+All parts, except the thumbwheel, need a 90 degree rotation in Cura
+to print with the correct orientation.
+
+base.stl
+	- Atomic Filament 2.85mm Gray PLA
+	- Ultimaker Breakaway Material (supports)
+	- Layer Height: 0.1
+	- Infill: 20%
+	- Supports: yes (breakaway)
+	- Print time: 01d 12h 50min
+	- Material used: 116g
+
+top.stl / top-touchpad.stl
+	- Touchpad offset: Y = -14.9938 mm
+	- Atomic Filament 2.85mm Light Gray v2 PLA (top)
+	- Proto-Pasta 2.85mm Conductive PLA (touchpad)
+	- Infill: 20%
+	- Supports: yes (light gray)
+
+bezel.stl
+	- Ultimaker Red PLA
+	- Layer Height: 0.1mm
+	- Infill: 20%
+	- Supports: no
+
+top-speaker-gasket.stl
+	- Ultimaker Black TPU 95A
+	- Layer Height: 0.2mm
+	- Infill: 20%
+	- Supports: no
+
+thumbwheel.stl
+	- Nozzle: AA 0.25mm
+	- Ultimaker Black PLA
+	- Layer Height: 0.1mm
+	- Infill: 20%
+	- Supports: no
+
+button_4way.stl
+	- Nozzle: AA 0.25mm
+	- Ultimaker Black PLA
+	- Layer Height: 0.06mm
+	- Infill: 100%
+	- Supports: no
+
+button_select.stl (x2)
+	- Nozzle: AA 0.25mm
+	- Ultimaker Black PLA
+	- Layer Height: 0.06mm
+	- Infill: 100%
+	- Supports: no
+
+button_ab.stl (x2)
+	- Nozzle: AA 0.25mm
+	- Ultimaker Red PLA
+	- Layer Height: 0.06mm
+	- Infill: 100%
+	- Supports: no
